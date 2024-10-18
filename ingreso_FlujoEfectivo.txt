@@ -1,0 +1,54 @@
+Cobranza a clientes,101101
+Cobranza a clientes,101103
+Cobranza a clientes,101303
+Cobranza a clientes,101403
+Cobranza a clientes,101503
+Cobranza a clientes,101601
+Cobranza a clientes,101603
+Cobranza a clientes,101703
+Cobranza a clientes,103122
+Cobranza a clientes,103129
+Cobranza a clientes,103131
+Cobranza a clientes,103134
+Cobranza a clientes,103136
+Cobranza a clientes,103201
+Cobranza a clientes,103301
+Cobranza a clientes,103401
+Cobranza a clientes,103404
+Cobranza a clientes,103501
+Cobranza a clientes,103502
+Cobranza a clientes,103601
+Cobranza a clientes,103701
+Cobranza a clientes,104110
+Cobranza a clientes,104111
+Cobranza a clientes,104112
+Cobranza a clientes,104120
+Cobranza a clientes,104210
+Cobranza a clientes,121301
+Cobranza a clientes,122101
+Cobranza a clientes,971019
+Cobranza a clientes,103133
+Otras cobranzas,161210
+Otras cobranzas,422111
+Otras cobranzas,469981
+Otras cobranzas,469995
+Otras cobranzas,469996
+Otras cobranzas,169110
+Otras cobranzas,441111
+Otras cobranzas,711103
+Cobranza por cuota de socios,169920
+Cobranza por cuota de socios,461111
+Cobranza por cuota de socios,759910
+Cobranza por cuota de socios,759911
+Cobranza por cuota de socios,759912
+Cobranza por cuota de socios,759913
+Cobranza por cuota de socios,759914
+Cobranza por cuota de socios,759915
+Cobranza por cuota de socios,759916
+Cobranza por cuota de socios,759917
+Cobranza por cuota de socios,759918
+Cobranza por cuota de socios,759919
+Cobranza por cuota de socios,759920
+Cobranza por cuota de socios,759921
+Cobranza por cuota de socios,759922
+Cobranza por cuota de socios,779411

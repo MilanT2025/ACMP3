@@ -1,0 +1,52 @@
+Pago a proveedores y terceros,422111
+Pago a proveedores y terceros,421220
+Pago a proveedores y terceros,421210
+Pago a proveedores y terceros,424111
+Pago a proveedores y terceros,422113
+Pago de remuneraciones y beneficios sociales,411110
+Pago de remuneraciones y beneficios sociales,417140
+Pago de remuneraciones y beneficios sociales,417110
+Pago de remuneraciones y beneficios sociales,417130
+Pago de remuneraciones y beneficios sociales,417120
+Pago de remuneraciones y beneficios sociales,411410
+Pago de remuneraciones y beneficios sociales,415110
+Pago de remuneraciones y beneficios sociales,419110
+Pago de remuneraciones y beneficios sociales,411510
+Pago de tributos,401141
+Pago de tributos,401181
+Pago de tributos,403110
+Pago de tributos,403210
+Pago de tributos,401731
+Pago de tributos,401721
+Pago de tributos,401771
+Pago de tributos,401761
+Pago de tributos,403220
+Pago de tributos,403130
+Pago de tributos,403120
+Pago de tributos,401111
+Pago de tributos,401191
+Otros pagos,104210
+Otros pagos,971019
+Otros pagos,469995
+Otros pagos,461111
+Otros pagos,169918
+Otros pagos,779412
+Otros pagos,169110
+Otros pagos,469990
+Otros pagos,469961
+Otros pagos,971014
+Otros pagos,469911
+Otros pagos,971017
+Otros pagos,469951
+Otros pagos,942017
+Otros pagos,942010
+Otros pagos,122101
+Otros pagos,141110
+Otros pagos,421211
+Otros pagos,469921
+Otros pagos,469996
+Amortización fraccionamiento SUNAT / Multas,469972
+Otros pagos,759710
+Otros pagos,469941
+Otros pagos,759910
+Otros pagos,921810

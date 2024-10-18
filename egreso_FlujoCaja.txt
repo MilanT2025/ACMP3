@@ -1,0 +1,20 @@
+Luz,LUZ
+Agua,AGUA
+Servicios de terceros,SERVICIO
+Telefonia-Cable-Internet,INTERNET%TELEFONICA%CABLE%TELEFONO
+Arbitrios,ARBITRIOS
+Movilidad,MOVILIDAD
+Liquidaciones beneficios,LIQUIDACION
+Sueldos,SUELDO
+Impuestos,IMPUESTO
+Pagos Extra Judiciales,EXTRA
+Pagos Judiciales,JUDICIAL
+Multas,MULTA
+AFP,AFP
+Fondo fijo,FONDO FIJO
+Entrega a rendir,ENTREGA%RENDIR
+Deudas años anteriores,DEUDA
+Devolucion de Eventos,DEVOLUCION
+Gastos Bancarios,GASTOS BANCARIOS%COMISION
+Administrativo - Otros,OTROS
+Compra de Mercaderias,COMPRA
