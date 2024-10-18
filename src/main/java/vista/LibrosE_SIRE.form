@@ -313,7 +313,7 @@
                     <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                       <Font name="Roboto" size="13" style="1"/>
                     </Property>
-                    <Property name="text" type="java.lang.String" value="A&#xf1;o:"/>
+                    <Property name="text" type="java.lang.String" value="Mes:"/>
                   </Properties>
                 </Component>
                 <Component class="com.toedter.calendar.JMonthChooser" name="jMonthChooser1">
@@ -742,7 +742,7 @@
                     <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                       <Font name="Roboto" size="13" style="1"/>
                     </Property>
-                    <Property name="text" type="java.lang.String" value="A&#xf1;o:"/>
+                    <Property name="text" type="java.lang.String" value="Mes:"/>
                   </Properties>
                 </Component>
                 <Component class="com.toedter.calendar.JMonthChooser" name="jMonthChooser3">

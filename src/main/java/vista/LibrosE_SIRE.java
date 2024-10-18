@@ -999,7 +999,7 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
         jLabel4.setText("Año:");
 
         jLabel5.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        jLabel5.setText("Año:");
+        jLabel5.setText("Mes:");
 
         jMonthChooser1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jMonthChooser1.setForeground(new java.awt.Color(255, 0, 0));
@@ -1228,7 +1228,7 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
         jLabel12.setText("Año:");
 
         jLabel14.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        jLabel14.setText("Año:");
+        jLabel14.setText("Mes:");
 
         jMonthChooser3.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jMonthChooser3.setForeground(new java.awt.Color(255, 0, 0));
