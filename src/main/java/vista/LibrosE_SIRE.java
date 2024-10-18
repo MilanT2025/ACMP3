@@ -750,6 +750,50 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
             e.printStackTrace();
         }
     }
+    
+    public void cargarDatosDesdeTxt(DefaultTableModel tableModel, String rutaArchivo) {
+        int c = 0;
+        try (BufferedReader br = new BufferedReader(new FileReader(rutaArchivo))) {
+            String linea;
+
+            // Leer línea por línea el archivo
+            while ((linea = br.readLine()) != null) {
+                String[] columnas = linea.split("\\|");
+
+                System.out.println(jYearChooser1.getYear()+""+String.format("%02d", (jMonthChooser1.getMonth()+1)));
+                System.out.println(columnas[0].substring(0, 6));
+                if (columnas[0].substring(0, 6).equals(jYearChooser1.getYear()+""+String.format("%02d", (jMonthChooser1.getMonth()+1)))) {
+                    // Creamos un arreglo de tamaño acorde a la cantidad de columnas en el modelo
+                Object[] fila = new Object[tableModel.getColumnCount()];
+
+                fila[0] = txt_ruc.getText();
+                fila[1] = txt_razonsocial.getText();
+                // Vamos a saltar el dato 1, 2 y 3, y comenzar desde el dato 4
+                fila[2] = columnas[0].substring(0, 6);
+                if (columnas.length >= 4) {
+                    // Colocar el cuarto dato en la columna 5
+                    fila[4] = columnas[3]; // Colocar el cuarto dato del archivo en la columna 5
+
+                    // Si hay más datos después del cuarto, los añadimos a las siguientes columnas
+                    for (int i = 4; i < columnas.length; i++) {
+                        if (i < fila.length - 1) {
+                            fila[i + 1] = columnas[i]; // Desplazar los datos hacia adelante
+
+                        }
+
+                    }
+                }
+                // Agregar la fila con los datos nuevos al modelo
+                tableModel.addRow(fila);
+                c++;
+                }               
+            }
+            packColumns(TablaProcesada);
+            JOptionPane.showMessageDialog(this, "Se han añadido " + c + " registros a la tabla.", "Exito", JOptionPane.INFORMATION_MESSAGE);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void cargarDatosDesdeZipp(DefaultTableModel tableModel, String rutaArchivo) {
         int c = 0;
@@ -843,6 +887,7 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
         TablaProcesada = new javax.swing.JTable();
         jSeparator2 = new javax.swing.JSeparator();
         btn_ReemplazarV = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
         jYearChooser1 = new com.toedter.calendar.JYearChooser();
@@ -882,7 +927,6 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
         txt_moneda1 = new javax.swing.JLabel();
         jTextField6 = new javax.swing.JTextField();
         btn_Bcompras = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
         jPanel16 = new javax.swing.JPanel();
         jLabel19 = new javax.swing.JLabel();
 
@@ -916,6 +960,11 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
             }
         });
 
+        jLabel3.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
+        jLabel3.setForeground(new java.awt.Color(204, 0, 0));
+        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel3.setText("-");
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -923,6 +972,7 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 1136, Short.MAX_VALUE)
                     .addComponent(jSeparator2)
                     .addComponent(btn_ReemplazarV, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -932,8 +982,10 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 629, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 601, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btn_ReemplazarV, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -959,7 +1011,7 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
 
         btn_Rventas.setFont(new java.awt.Font("Roboto", 1, 12)); // NOI18N
         btn_Rventas.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8_add_32px.png"))); // NOI18N
-        btn_Rventas.setText("Abrir TXT - RECREACIÓN");
+        btn_Rventas.setText("Abrir TXT PLE - RECREACIÓN");
         btn_Rventas.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btn_RventasActionPerformed(evt);
@@ -993,7 +1045,7 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
 
         btn_Bventas.setFont(new java.awt.Font("Roboto", 1, 12)); // NOI18N
         btn_Bventas.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8_add_32px.png"))); // NOI18N
-        btn_Bventas.setText("Abrir ZIP - BAZAR");
+        btn_Bventas.setText("Abrir TXT PLE - BAZAR");
         btn_Bventas.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btn_BventasActionPerformed(evt);
@@ -1188,7 +1240,7 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
 
         btn_Rcompras.setFont(new java.awt.Font("Roboto", 1, 12)); // NOI18N
         btn_Rcompras.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8_add_32px.png"))); // NOI18N
-        btn_Rcompras.setText("Abrir TXT - RECREACIÓN");
+        btn_Rcompras.setText("Abrir TXT PLE - RECREACIÓN");
         btn_Rcompras.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btn_RcomprasActionPerformed(evt);
@@ -1222,17 +1274,10 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
 
         btn_Bcompras.setFont(new java.awt.Font("Roboto", 1, 12)); // NOI18N
         btn_Bcompras.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8_add_32px.png"))); // NOI18N
-        btn_Bcompras.setText("Abrir TXT - BAZAR");
+        btn_Bcompras.setText("Abrir TXT PLE - BAZAR");
         btn_Bcompras.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btn_BcomprasActionPerformed(evt);
-            }
-        });
-
-        jButton1.setText("jButton1");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
             }
         });
 
@@ -1263,9 +1308,7 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
                         .addComponent(jLabel18)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txt_moneda1, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton1)
-                        .addGap(26, 26, 26))
+                        .addGap(26, 145, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel14Layout.createSequentialGroup()
                         .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jTextField6, javax.swing.GroupLayout.Alignment.LEADING)
@@ -1290,9 +1333,6 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
                     .addComponent(jLabel16, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(txt_razonsocial1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel18, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(jPanel14Layout.createSequentialGroup()
-                        .addComponent(jButton1)
-                        .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(txt_moneda1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -1369,199 +1409,6 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btn_RventasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_RventasActionPerformed
-        String nombreArchivo = "";
-        nombreArchivo = "LE" + txt_ruc1.getText() + jYearChooser3.getYear() + String.format("%02d", (jMonthChooser3.getMonth() + 1)) + "00" + "140100";
-
-        jFileChooser1 = new JFileChooser();
-        jFileChooser1.setDialogTitle("Seleccione Archivo TXT");
-        jFileChooser1.setFileFilter(new FileNameExtensionFilter("Archivo TXT", "txt"));
-
-        // Obtener la última ubicación guardada
-        File lastDirectory = getLastDirectory();
-
-        // Establecer la última ubicación como directorio inicial del JFileChooser
-        if (lastDirectory != null && lastDirectory.exists()) {
-            jFileChooser1.setCurrentDirectory(lastDirectory);
-        }
-
-        int result = jFileChooser1.showOpenDialog(this);
-        if (result == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = jFileChooser1.getSelectedFile();
-            jTextField2.setText(selectedFile.getAbsolutePath());
-            this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-            btn_Rventas.setEnabled(false);
-            jYearChooser3.setEnabled(false);
-            jMonthChooser3.setEnabled(false);
-
-            if (!nombreArchivo.equals(selectedFile.getName().substring(0, 27))) {
-                JOptionPane.showMessageDialog(this, "Verifique el tipo de archivo y/o seleccione el archivo txt, segun el mes y año seleccionado", "Error", JOptionPane.ERROR_MESSAGE);
-                jTextField2.setText("");
-                btn_Rventas.setEnabled(true);
-                jYearChooser3.setEnabled(true);
-                jMonthChooser3.setEnabled(true);
-                saveLastDirectory(selectedFile.getParentFile());
-                this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                return;
-            }
-
-            cargarDatosDesdeTxt(modelo1, selectedFile.getAbsolutePath(), 11);
-
-            btn_Rventas.setEnabled(true);
-            btn_Bventas.setEnabled(true);
-            jYearChooser3.setEnabled(true);
-            jMonthChooser3.setEnabled(true);
-            btn_ReemplazarV.setEnabled(true);
-            saveLastDirectory(selectedFile.getParentFile());
-            this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-        }
-    }//GEN-LAST:event_btn_RventasActionPerformed
-
-    private void btn_BventasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_BventasActionPerformed
-
-        String nombreArchivo = "";
-        nombreArchivo = "LE" + txt_ruc1.getText() + jYearChooser3.getYear() + String.format("%02d", (jMonthChooser3.getMonth() + 1)) + "00" + "140100";
-
-        jFileChooser1 = new JFileChooser();
-        jFileChooser1.setDialogTitle("Seleccione Archivo TXT");
-        jFileChooser1.setFileFilter(new FileNameExtensionFilter("Archivo TXT", "txt"));
-
-        // Obtener la última ubicación guardada
-        File lastDirectory = getLastDirectory();
-
-        // Establecer la última ubicación como directorio inicial del JFileChooser
-        if (lastDirectory != null && lastDirectory.exists()) {
-            jFileChooser1.setCurrentDirectory(lastDirectory);
-        }
-
-        int result = jFileChooser1.showOpenDialog(this);
-        if (result == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = jFileChooser1.getSelectedFile();
-            jTextField4.setText(selectedFile.getAbsolutePath());
-            this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-            btn_Rventas.setEnabled(false);
-            jYearChooser3.setEnabled(false);
-            jMonthChooser3.setEnabled(false);
-
-            if (!nombreArchivo.equals(selectedFile.getName().substring(0, 27))) {
-                JOptionPane.showMessageDialog(this, "Verifique el tipo de archivo y/o seleccione el archivo txt, segun el mes y año seleccionado", "Error", JOptionPane.ERROR_MESSAGE);
-                jTextField4.setText("");
-                btn_Rventas.setEnabled(true);
-                jYearChooser3.setEnabled(true);
-                jMonthChooser3.setEnabled(true);
-                saveLastDirectory(selectedFile.getParentFile());
-                this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                return;
-            }
-
-            cargarDatosDesdeTxt(modelo1, selectedFile.getAbsolutePath(), 12);
-
-            btn_Bventas.setEnabled(true);
-            btn_Rventas.setEnabled(true);
-            jYearChooser3.setEnabled(true);
-            jMonthChooser3.setEnabled(true);
-            btn_ReemplazarV.setEnabled(true);
-            saveLastDirectory(selectedFile.getParentFile());
-            this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-        }
-//        String nombreArchivo = "";
-//        String tipoMoneda = "";
-//        nombreArchivo = "LE" + txt_ruc1.getText() + jYearChooser3.getYear() + String.format("%02d", (jMonthChooser3.getMonth() + 1)) + "00" + "140400";
-//
-//        jFileChooser1 = new JFileChooser();
-//        jFileChooser1.setDialogTitle("Choose ZIP File");
-//        jFileChooser1.setFileFilter(new FileNameExtensionFilter("ZIP files", "zip"));
-//        // Obtener la última ubicación guardada
-//        File lastDirectory = getLastDirectory();
-//
-//        // Establecer la última ubicación como directorio inicial del JFileChooser
-//        if (lastDirectory != null && lastDirectory.exists()) {
-//            jFileChooser1.setCurrentDirectory(lastDirectory);
-//        }
-//
-//        int result = jFileChooser1.showOpenDialog(this);
-//        if (result == JFileChooser.APPROVE_OPTION) {
-//            File selectedFile = jFileChooser1.getSelectedFile();
-//            jTextField4.setText(selectedFile.getAbsolutePath());
-//
-//            this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-//            btn_Bventas.setEnabled(false);
-//            jYearChooser3.setEnabled(false);
-//            jMonthChooser3.setEnabled(false);
-//
-//            if (!nombreArchivo.equals(selectedFile.getName().substring(0, 27))) {
-//                JOptionPane.showMessageDialog(this, "Verifique el tipo de archivo y/o seleccione el archivo txt, segun el mes y año seleccionado", "Error", JOptionPane.ERROR_MESSAGE);
-//                jTextField4.setText("");
-//                btn_Bventas.setEnabled(true);
-//                jYearChooser3.setEnabled(true);
-//                jMonthChooser3.setEnabled(true);
-//                saveLastDirectory(selectedFile.getParentFile());
-//                this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-//                return;
-//            }
-//
-//            cargarDatosDesdeZip(modelo1, selectedFile.getAbsolutePath());
-//
-//            btn_Bventas.setEnabled(true);
-//            btn_Rventas.setEnabled(true);
-//            jYearChooser3.setEnabled(true);
-//            jMonthChooser3.setEnabled(true);
-//            btn_ReemplazarV.setEnabled(true);
-//            saveLastDirectory(selectedFile.getParentFile());
-//            this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-//        }
-    }//GEN-LAST:event_btn_BventasActionPerformed
-
-    private void btn_RcomprasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_RcomprasActionPerformed
-        String nombreArchivo = "";
-        nombreArchivo = "LE" + txt_ruc1.getText() + jYearChooser3.getYear() + String.format("%02d", (jMonthChooser3.getMonth() + 1)) + "00" + "080100";
-
-        jFileChooser1 = new JFileChooser();
-        jFileChooser1.setDialogTitle("Seleccione Archivo TXT");
-        jFileChooser1.setFileFilter(new FileNameExtensionFilter("Archivo TXT", "txt"));
-
-        // Obtener la última ubicación guardada
-        File lastDirectory = getLastDirectory();
-
-        // Establecer la última ubicación como directorio inicial del JFileChooser
-        if (lastDirectory != null && lastDirectory.exists()) {
-            jFileChooser1.setCurrentDirectory(lastDirectory);
-        }
-
-        int result = jFileChooser1.showOpenDialog(this);
-        if (result == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = jFileChooser1.getSelectedFile();
-            jTextField5.setText(selectedFile.getAbsolutePath());
-            this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-            btn_Rcompras.setEnabled(false);
-            jYearChooser3.setEnabled(false);
-            jMonthChooser3.setEnabled(false);
-
-            if (!nombreArchivo.equals(selectedFile.getName().substring(0, 27))) {
-                JOptionPane.showMessageDialog(this, "Verifique el tipo de archivo y/o seleccione el archivo txt, segun el mes y año seleccionado", "Error", JOptionPane.ERROR_MESSAGE);
-                jTextField5.setText("");
-                btn_Rcompras.setEnabled(true);
-                jYearChooser3.setEnabled(true);
-                jMonthChooser3.setEnabled(true);
-                saveLastDirectory(selectedFile.getParentFile());
-                this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                return;
-            }
-
-            cargarDatosDesdeTxt(modelo2, selectedFile.getAbsolutePath(), 11);
-
-            btn_Rcompras.setEnabled(true);
-            btn_Bcompras.setEnabled(true);
-            jYearChooser3.setEnabled(true);
-            jMonthChooser3.setEnabled(true);
-            btn_ReemplazarC.setEnabled(true);
-            saveLastDirectory(selectedFile.getParentFile());
-            
-            sumarcolumnascompras();
-            this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-        }
-    }//GEN-LAST:event_btn_RcomprasActionPerformed
-
     private void sumarcolumnascompras() {
         double baseimponible = 0.0, igv = 0.0, exo = 0.0, totalcp = 0.0;
         for (int i = 0; i < modelo2.getRowCount(); i++) {
@@ -1574,6 +1421,20 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
         NumberFormat formatoPeru = NumberFormat.getCurrencyInstance(new Locale("es", "PE"));
 
         jLabel2.setText("Base Imponible: " + formatoPeru.format(baseimponible) + "  |  IGV: " + formatoPeru.format(igv) + "  |  Valor Adq. NG: " + formatoPeru.format(exo) + "  |  Total CP: " + formatoPeru.format(totalcp) + "");
+    }
+    
+    private void sumarcolumnascompras2() {
+        double baseimponible = 0.0, igv = 0.0, exo = 0.0, totalcp = 0.0;
+        for (int i = 0; i < modelo1.getRowCount(); i++) {
+            baseimponible = baseimponible + Double.parseDouble(modelo1.getValueAt(i, 14).toString());
+            igv = igv + Double.parseDouble(modelo1.getValueAt(i, 15).toString());
+            exo = exo + Double.parseDouble(modelo1.getValueAt(i, 20).toString());
+            totalcp = totalcp + Double.parseDouble(modelo1.getValueAt(i, 24).toString());
+        }
+        
+        NumberFormat formatoPeru = NumberFormat.getCurrencyInstance(new Locale("es", "PE"));
+
+        jLabel3.setText("Base Imponible: " + formatoPeru.format(baseimponible) + "  |  IGV: " + formatoPeru.format(igv) + "  |  Valor Adq. NG: " + formatoPeru.format(exo) + "  |  Total CP: " + formatoPeru.format(totalcp) + "");
     }
     
     private void validaciones_posteriores(){
@@ -1760,104 +1621,6 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
     
     }
     
-    private void btn_BcomprasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_BcomprasActionPerformed
-        String nombreArchivo = "";
-        nombreArchivo = "LE" + txt_ruc1.getText() + jYearChooser3.getYear() + String.format("%02d", (jMonthChooser3.getMonth() + 1)) + "00" + "080100";
-
-        jFileChooser1 = new JFileChooser();
-        jFileChooser1.setDialogTitle("Seleccione Archivo TXT");
-        jFileChooser1.setFileFilter(new FileNameExtensionFilter("Archivo TXT", "txt"));
-
-        // Obtener la última ubicación guardada
-        File lastDirectory = getLastDirectory();
-
-        // Establecer la última ubicación como directorio inicial del JFileChooser
-        if (lastDirectory != null && lastDirectory.exists()) {
-            jFileChooser1.setCurrentDirectory(lastDirectory);
-        }
-
-        int result = jFileChooser1.showOpenDialog(this);
-        if (result == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = jFileChooser1.getSelectedFile();
-            jTextField6.setText(selectedFile.getAbsolutePath());
-            this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-            btn_Bcompras.setEnabled(false);
-            jYearChooser3.setEnabled(false);
-            jMonthChooser3.setEnabled(false);
-
-            if (!nombreArchivo.equals(selectedFile.getName().substring(0, 27))) {
-                JOptionPane.showMessageDialog(this, "Verifique el tipo de archivo y/o seleccione el archivo txt, segun el mes y año seleccionado", "Error", JOptionPane.ERROR_MESSAGE);
-                jTextField6.setText("");
-                btn_Bcompras.setEnabled(true);
-                jYearChooser3.setEnabled(true);
-                jMonthChooser3.setEnabled(true);
-                saveLastDirectory(selectedFile.getParentFile());
-                this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                return;
-            }
-
-            cargarDatosDesdeTxt(modelo2, selectedFile.getAbsolutePath(), 11);
-
-            btn_Bcompras.setEnabled(true);
-            btn_Rcompras.setEnabled(true);
-            jYearChooser3.setEnabled(true);
-            jMonthChooser3.setEnabled(true);
-            btn_ReemplazarC.setEnabled(true);
-            saveLastDirectory(selectedFile.getParentFile());
-            
-            sumarcolumnascompras();
-            
-            this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-        }  
-
-//        String nombreArchivo = "";
-//        String tipoMoneda = "";
-//        nombreArchivo = "LE" + txt_ruc1.getText() + jYearChooser3.getYear() + String.format("%02d", (jMonthChooser3.getMonth() + 1)) + "00" + "080400";
-//
-//        jFileChooser1 = new JFileChooser();
-//        jFileChooser1.setDialogTitle("Choose ZIP File");
-//        jFileChooser1.setFileFilter(new FileNameExtensionFilter("ZIP files", "zip"));
-//        // Obtener la última ubicación guardada
-//        File lastDirectory = getLastDirectory();
-//
-//        // Establecer la última ubicación como directorio inicial del JFileChooser
-//        if (lastDirectory != null && lastDirectory.exists()) {
-//            jFileChooser1.setCurrentDirectory(lastDirectory);
-//        }
-//
-//        int result = jFileChooser1.showOpenDialog(this);
-//        if (result == JFileChooser.APPROVE_OPTION) {
-//            File selectedFile = jFileChooser1.getSelectedFile();
-//            jTextField6.setText(selectedFile.getAbsolutePath());
-//
-//            this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-//            btn_Bcompras.setEnabled(false);
-//            jYearChooser3.setEnabled(false);
-//            jMonthChooser3.setEnabled(false);
-//
-//            if (!nombreArchivo.equals(selectedFile.getName().substring(0, 27))) {
-//                JOptionPane.showMessageDialog(this, "Verifique el tipo de archivo y/o seleccione el archivo txt, segun el mes y año seleccionado", "Error", JOptionPane.ERROR_MESSAGE);
-//                jTextField6.setText("");
-//                btn_Bcompras.setEnabled(true);
-//                jYearChooser3.setEnabled(true);
-//                jMonthChooser3.setEnabled(true);
-//                saveLastDirectory(selectedFile.getParentFile());
-//                this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-//                return;
-//            }
-//
-//            cargarDatosDesdeZip(modelo2, selectedFile.getAbsolutePath());
-//
-//            btn_Bcompras.setEnabled(true);
-//            btn_Rcompras.setEnabled(true);
-//            jYearChooser3.setEnabled(true);
-//            jMonthChooser3.setEnabled(true);
-//            btn_ReemplazarC.setEnabled(true);
-//            saveLastDirectory(selectedFile.getParentFile());
-//            this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-//        }
-    }//GEN-LAST:event_btn_BcomprasActionPerformed
-
     private void btn_ReemplazarCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_ReemplazarCActionPerformed
         // Reemplazar Propuesta RCE
         String nombreArchivo = "";
@@ -1902,8 +1665,220 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btn_ReemplazarCActionPerformed
 
+    private void btn_RcomprasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_RcomprasActionPerformed
+        String nombreArchivo = "";
+        nombreArchivo = "LE" + txt_ruc1.getText() + jYearChooser3.getYear() + String.format("%02d", (jMonthChooser3.getMonth() + 1)) + "00" + "080100";
+
+        jFileChooser1 = new JFileChooser();
+        jFileChooser1.setDialogTitle("Seleccione Archivo TXT");
+        jFileChooser1.setFileFilter(new FileNameExtensionFilter("Archivo TXT", "txt"));
+
+        // Obtener la última ubicación guardada
+        File lastDirectory = getLastDirectory();
+
+        // Establecer la última ubicación como directorio inicial del JFileChooser
+        if (lastDirectory != null && lastDirectory.exists()) {
+            jFileChooser1.setCurrentDirectory(lastDirectory);
+        }
+
+        int result = jFileChooser1.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = jFileChooser1.getSelectedFile();
+            jTextField5.setText(selectedFile.getAbsolutePath());
+            this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+            btn_Rcompras.setEnabled(false);
+            jYearChooser3.setEnabled(false);
+            jMonthChooser3.setEnabled(false);
+
+            if (!nombreArchivo.equals(selectedFile.getName().substring(0, 27))) {
+                JOptionPane.showMessageDialog(this, "Verifique el tipo de archivo y/o seleccione el archivo txt, segun el mes y año seleccionado", "Error", JOptionPane.ERROR_MESSAGE);
+                jTextField5.setText("");
+                btn_Rcompras.setEnabled(true);
+                jYearChooser3.setEnabled(true);
+                jMonthChooser3.setEnabled(true);
+                saveLastDirectory(selectedFile.getParentFile());
+                this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                return;
+            }
+
+            cargarDatosDesdeTxt(modelo2, selectedFile.getAbsolutePath(), 11);
+
+            btn_Rcompras.setEnabled(true);
+            btn_Bcompras.setEnabled(true);
+            jYearChooser3.setEnabled(true);
+            jMonthChooser3.setEnabled(true);
+            btn_ReemplazarC.setEnabled(true);
+            saveLastDirectory(selectedFile.getParentFile());
+
+            validaciones_posteriores();
+            sumarcolumnascompras();
+            this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        }
+    }//GEN-LAST:event_btn_RcomprasActionPerformed
+
+    private void btn_BcomprasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_BcomprasActionPerformed
+        String nombreArchivo = "";
+        nombreArchivo = "LE" + txt_ruc1.getText() + jYearChooser3.getYear() + String.format("%02d", (jMonthChooser3.getMonth() + 1)) + "00" + "080100";
+
+        jFileChooser1 = new JFileChooser();
+        jFileChooser1.setDialogTitle("Seleccione Archivo TXT");
+        jFileChooser1.setFileFilter(new FileNameExtensionFilter("Archivo TXT", "txt"));
+
+        // Obtener la última ubicación guardada
+        File lastDirectory = getLastDirectory();
+
+        // Establecer la última ubicación como directorio inicial del JFileChooser
+        if (lastDirectory != null && lastDirectory.exists()) {
+            jFileChooser1.setCurrentDirectory(lastDirectory);
+        }
+
+        int result = jFileChooser1.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = jFileChooser1.getSelectedFile();
+            jTextField6.setText(selectedFile.getAbsolutePath());
+            this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+            btn_Bcompras.setEnabled(false);
+            jYearChooser3.setEnabled(false);
+            jMonthChooser3.setEnabled(false);
+
+            if (!nombreArchivo.equals(selectedFile.getName().substring(0, 27))) {
+                JOptionPane.showMessageDialog(this, "Verifique el tipo de archivo y/o seleccione el archivo txt, segun el mes y año seleccionado", "Error", JOptionPane.ERROR_MESSAGE);
+                jTextField6.setText("");
+                btn_Bcompras.setEnabled(true);
+                jYearChooser3.setEnabled(true);
+                jMonthChooser3.setEnabled(true);
+                saveLastDirectory(selectedFile.getParentFile());
+                this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                return;
+            }
+
+            cargarDatosDesdeTxt(modelo2, selectedFile.getAbsolutePath(), 11);
+
+            btn_Bcompras.setEnabled(true);
+            btn_Rcompras.setEnabled(true);
+            jYearChooser3.setEnabled(true);
+            jMonthChooser3.setEnabled(true);
+            btn_ReemplazarC.setEnabled(true);
+            saveLastDirectory(selectedFile.getParentFile());
+
+            validaciones_posteriores();
+            sumarcolumnascompras();
+
+            this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        }
+
+        //        String nombreArchivo = "";
+        //        String tipoMoneda = "";
+        //        nombreArchivo = "LE" + txt_ruc1.getText() + jYearChooser3.getYear() + String.format("%02d", (jMonthChooser3.getMonth() + 1)) + "00" + "080400";
+        //
+        //        jFileChooser1 = new JFileChooser();
+        //        jFileChooser1.setDialogTitle("Choose ZIP File");
+        //        jFileChooser1.setFileFilter(new FileNameExtensionFilter("ZIP files", "zip"));
+        //        // Obtener la última ubicación guardada
+        //        File lastDirectory = getLastDirectory();
+        //
+        //        // Establecer la última ubicación como directorio inicial del JFileChooser
+        //        if (lastDirectory != null && lastDirectory.exists()) {
+            //            jFileChooser1.setCurrentDirectory(lastDirectory);
+            //        }
+        //
+        //        int result = jFileChooser1.showOpenDialog(this);
+        //        if (result == JFileChooser.APPROVE_OPTION) {
+            //            File selectedFile = jFileChooser1.getSelectedFile();
+            //            jTextField6.setText(selectedFile.getAbsolutePath());
+            //
+            //            this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+            //            btn_Bcompras.setEnabled(false);
+            //            jYearChooser3.setEnabled(false);
+            //            jMonthChooser3.setEnabled(false);
+            //
+            //            if (!nombreArchivo.equals(selectedFile.getName().substring(0, 27))) {
+                //                JOptionPane.showMessageDialog(this, "Verifique el tipo de archivo y/o seleccione el archivo txt, segun el mes y año seleccionado", "Error", JOptionPane.ERROR_MESSAGE);
+                //                jTextField6.setText("");
+                //                btn_Bcompras.setEnabled(true);
+                //                jYearChooser3.setEnabled(true);
+                //                jMonthChooser3.setEnabled(true);
+                //                saveLastDirectory(selectedFile.getParentFile());
+                //                this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                //                return;
+                //            }
+            //
+            //            cargarDatosDesdeZip(modelo2, selectedFile.getAbsolutePath());
+            //
+            //            btn_Bcompras.setEnabled(true);
+            //            btn_Rcompras.setEnabled(true);
+            //            jYearChooser3.setEnabled(true);
+            //            jMonthChooser3.setEnabled(true);
+            //            btn_ReemplazarC.setEnabled(true);
+            //            saveLastDirectory(selectedFile.getParentFile());
+            //            this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            //        }
+    }//GEN-LAST:event_btn_BcomprasActionPerformed
+
+    private void Validaciones() {
+//        int filasEliminadas = 0; // Contador para las filas eliminadas
+//
+//        // Eliminar filas que contengan el período "202405"
+//        int totalFilas = modelo1.getRowCount();
+//        for (int i = totalFilas - 1; i >= 0; i--) {
+//            Object valor = modelo1.getValueAt(i, 3); // Obtener el valor de la columna 3
+//            if (valor != null && valor.equals("202405")) { // Verificar la condición
+//                modelo1.removeRow(i); // Eliminar la fila
+//                filasEliminadas++;
+//            }
+//        }
+//
+//        // Mensaje de confirmación sobre las filas eliminadas
+//        if (filasEliminadas > 0) {
+//            JOptionPane.showMessageDialog(null, "Se han eliminado " + filasEliminadas + " filas con el período 202405.");
+//        } else {
+//            JOptionPane.showMessageDialog(null, "No se encontraron filas para eliminar con el período 202405");
+//        }
+        // Segundo bucle para validar y modificar valores
+        for (int i = 0; i < modelo1.getRowCount(); i++) {
+            modelo1.setValueAt("", i, 27);
+
+            // Asegúrate de que el valor no sea null antes de compararlo
+            if (modelo1.getValueAt(i, 10) != null && modelo1.getValueAt(i, 10).equals("0")) {
+                modelo1.setValueAt("", i, 10);
+            }
+            if (modelo1.getValueAt(i, 11) != null && modelo1.getValueAt(i, 11).equals("0")) {
+                modelo1.setValueAt("", i, 11);
+            }
+            if (modelo1.getValueAt(i, 12) != null && modelo1.getValueAt(i, 12).equals("-")) {
+                modelo1.setValueAt("", i, 12);
+            }
+
+            if (modelo1.getValueAt(i, 10) != null && modelo1.getValueAt(i, 10).equals("")) {
+                modelo1.setValueAt("1", i, 10);
+            }
+            if (modelo1.getValueAt(i, 11) != null && modelo1.getValueAt(i, 11).equals("")) {
+                modelo1.setValueAt("00000001", i, 11);
+            }
+            if (modelo1.getValueAt(i, 12) != null
+                    && (modelo1.getValueAt(i, 12).toString().contains("CLIENTES VARIOS")
+                    || modelo1.getValueAt(i, 12).toString().contains("CLIENTE VARIOS")
+                    || modelo1.getValueAt(i, 12).toString().contains("CLIENTE VARIOS,"))) {
+                modelo1.setValueAt("", i, 12);
+            }
+            if (modelo1.getValueAt(i, 28) != null && modelo1.getValueAt(i, 28).equals("01/01/0001")) {
+                modelo1.setValueAt("", i, 28);
+            }
+            if (modelo1.getValueAt(i, 29) != null && modelo1.getValueAt(i, 29).equals("00")) {
+                modelo1.setValueAt("", i, 29);
+            }
+            if (modelo1.getValueAt(i, 30) != null && modelo1.getValueAt(i, 30).equals("-")) {
+                modelo1.setValueAt("", i, 30);
+            }
+            if (modelo1.getValueAt(i, 31) != null && modelo1.getValueAt(i, 31).equals("-")) {
+                modelo1.setValueAt("", i, 31);
+            }
+        }
+    }
+    
     private void btn_ReemplazarVActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_ReemplazarVActionPerformed
-         // Reemplazar Propuesta RVIE
+        Validaciones();
+        // Reemplazar Propuesta RVIE
         String nombreArchivo = "";
         String tipoMoneda = "";
         if (txt_moneda1.getText().equals("PEN")) {
@@ -1932,11 +1907,6 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
                 generarZIP(archivoTXT, nombreArchivo);
                 JOptionPane.showMessageDialog(null, "<html>El archivo de <b>ENVIO ZIP</b> se ha exportado exitosamente con el siguiente nombre:<br><br><font color='red'><b>" + nombreArchivo + ".zip </font></b></html>", "Exportación Exitosa", JOptionPane.INFORMATION_MESSAGE);
 
-                if (JOptionPane.showConfirmDialog(null, "¿Desea exportar un excel para verificar de informacion enviada?", "Confirmación", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                    ExcelExporter.exportToExcel2(archivoTXT.getAbsolutePath(), "RVIE", TablaProcesada, this, "REEMPLAZAR_PROPUESTA");
-                    JOptionPane.showMessageDialog(null, "<html>El archivo de <b>EXCEL</b> se ha exportado exitosamente con el siguiente nombre:<br><br><font color='red'><b>" + nombreArchivo + "_REEMPLAZAR_PROPUESTA.xlsx </font></b></html>", "Exportación Exitosa", JOptionPane.INFORMATION_MESSAGE);
-                }
-
                 btn_ReemplazarV.setEnabled(true);
                 setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             } catch (IOException ex) {
@@ -1946,10 +1916,151 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btn_ReemplazarVActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        validaciones_posteriores();
-        sumarcolumnascompras();
-    }//GEN-LAST:event_jButton1ActionPerformed
+    private void btn_RventasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_RventasActionPerformed
+        String nombreArchivo = "";
+        nombreArchivo = "LE" + txt_ruc1.getText() + jYearChooser1.getYear() + String.format("%02d", (jMonthChooser1.getMonth() + 1)) + "00" + "140100";
+        jFileChooser1 = new JFileChooser();
+        jFileChooser1.setDialogTitle("Seleccione Archivo TXT");
+        jFileChooser1.setFileFilter(new FileNameExtensionFilter("Archivo TXT", "txt"));
+
+        // Obtener la última ubicación guardada
+        File lastDirectory = getLastDirectory();
+
+        // Establecer la última ubicación como directorio inicial del JFileChooser
+        if (lastDirectory != null && lastDirectory.exists()) {
+            jFileChooser1.setCurrentDirectory(lastDirectory);
+        }
+
+        int result = jFileChooser1.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = jFileChooser1.getSelectedFile();
+            jTextField2.setText(selectedFile.getAbsolutePath());
+            this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+            btn_Rventas.setEnabled(false);
+            jYearChooser1.setEnabled(false);
+            jMonthChooser1.setEnabled(false);
+
+            if (!nombreArchivo.equals(selectedFile.getName().substring(0, 27))) {
+                JOptionPane.showMessageDialog(this, "Verifique el tipo de archivo y/o seleccione el archivo txt, segun el mes y año seleccionado", "Error", JOptionPane.ERROR_MESSAGE);
+                jTextField2.setText("");
+                btn_Rventas.setEnabled(true);
+                jYearChooser1.setEnabled(true);
+                jMonthChooser1.setEnabled(true);
+                saveLastDirectory(selectedFile.getParentFile());
+                this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                return;
+            }
+
+            cargarDatosDesdeTxt(modelo1, selectedFile.getAbsolutePath());
+            
+            sumarcolumnascompras2();
+
+            btn_Rventas.setEnabled(true);
+            btn_Bventas.setEnabled(true);
+            jYearChooser3.setEnabled(true);
+            jMonthChooser3.setEnabled(true);
+            btn_ReemplazarV.setEnabled(true);
+            saveLastDirectory(selectedFile.getParentFile());
+            this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        }
+    }//GEN-LAST:event_btn_RventasActionPerformed
+
+    private void btn_BventasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_BventasActionPerformed
+
+        String nombreArchivo = "";
+        nombreArchivo = "LE" + txt_ruc.getText() + jYearChooser1.getYear() + String.format("%02d", (jMonthChooser1.getMonth() + 1)) + "00" + "140100";
+
+        jFileChooser1 = new JFileChooser();
+        jFileChooser1.setDialogTitle("Seleccione Archivo TXT");
+        jFileChooser1.setFileFilter(new FileNameExtensionFilter("Archivo TXT", "txt"));
+
+        // Obtener la última ubicación guardada
+        File lastDirectory = getLastDirectory();
+
+        // Establecer la última ubicación como directorio inicial del JFileChooser
+        if (lastDirectory != null && lastDirectory.exists()) {
+            jFileChooser1.setCurrentDirectory(lastDirectory);
+        }
+
+        int result = jFileChooser1.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = jFileChooser1.getSelectedFile();
+            jTextField4.setText(selectedFile.getAbsolutePath());
+            this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+            btn_Bventas.setEnabled(false);
+            jYearChooser1.setEnabled(false);
+            jMonthChooser1.setEnabled(false);
+
+            if (!nombreArchivo.equals(selectedFile.getName().substring(0, 27))) {
+                JOptionPane.showMessageDialog(this, "Verifique el tipo de archivo y/o seleccione el archivo txt, segun el mes y año seleccionado", "Error", JOptionPane.ERROR_MESSAGE);
+                jTextField4.setText("");
+                btn_Bventas.setEnabled(true);
+                jYearChooser1.setEnabled(true);
+                jMonthChooser1.setEnabled(true);
+                saveLastDirectory(selectedFile.getParentFile());
+                this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                return;
+            }
+
+            cargarDatosDesdeTxt(modelo1, selectedFile.getAbsolutePath());
+            
+            sumarcolumnascompras2();
+
+            btn_Bventas.setEnabled(true);
+            btn_Rventas.setEnabled(true);
+            jYearChooser1.setEnabled(true);
+            jMonthChooser1.setEnabled(true);
+            btn_ReemplazarV.setEnabled(true);
+            saveLastDirectory(selectedFile.getParentFile());
+            this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        }
+        //        String nombreArchivo = "";
+        //        String tipoMoneda = "";
+        //        nombreArchivo = "LE" + txt_ruc1.getText() + jYearChooser3.getYear() + String.format("%02d", (jMonthChooser3.getMonth() + 1)) + "00" + "140400";
+        //
+        //        jFileChooser1 = new JFileChooser();
+        //        jFileChooser1.setDialogTitle("Choose ZIP File");
+        //        jFileChooser1.setFileFilter(new FileNameExtensionFilter("ZIP files", "zip"));
+        //        // Obtener la última ubicación guardada
+        //        File lastDirectory = getLastDirectory();
+        //
+        //        // Establecer la última ubicación como directorio inicial del JFileChooser
+        //        if (lastDirectory != null && lastDirectory.exists()) {
+            //            jFileChooser1.setCurrentDirectory(lastDirectory);
+            //        }
+        //
+        //        int result = jFileChooser1.showOpenDialog(this);
+        //        if (result == JFileChooser.APPROVE_OPTION) {
+            //            File selectedFile = jFileChooser1.getSelectedFile();
+            //            jTextField4.setText(selectedFile.getAbsolutePath());
+            //
+            //            this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+            //            btn_Bventas.setEnabled(false);
+            //            jYearChooser3.setEnabled(false);
+            //            jMonthChooser3.setEnabled(false);
+            //
+            //            if (!nombreArchivo.equals(selectedFile.getName().substring(0, 27))) {
+                //                JOptionPane.showMessageDialog(this, "Verifique el tipo de archivo y/o seleccione el archivo txt, segun el mes y año seleccionado", "Error", JOptionPane.ERROR_MESSAGE);
+                //                jTextField4.setText("");
+                //                btn_Bventas.setEnabled(true);
+                //                jYearChooser3.setEnabled(true);
+                //                jMonthChooser3.setEnabled(true);
+                //                saveLastDirectory(selectedFile.getParentFile());
+                //                this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                //                return;
+                //            }
+            //
+            //            cargarDatosDesdeZip(modelo1, selectedFile.getAbsolutePath());
+            //
+            //            btn_Bventas.setEnabled(true);
+            //            btn_Rventas.setEnabled(true);
+            //            jYearChooser3.setEnabled(true);
+            //            jMonthChooser3.setEnabled(true);
+            //            btn_ReemplazarV.setEnabled(true);
+            //            saveLastDirectory(selectedFile.getParentFile());
+            //            this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            //        }
+    }//GEN-LAST:event_btn_BventasActionPerformed
 
     /**
      * @param args the command line arguments
@@ -1986,7 +2097,6 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
     private javax.swing.JButton btn_Rventas;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;
-    private javax.swing.JButton jButton1;
     private javax.swing.JFileChooser jFileChooser1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel11;
@@ -1999,6 +2109,7 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private com.toedter.calendar.JMonthChooser jMonthChooser1;

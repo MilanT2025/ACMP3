@@ -276,7 +276,7 @@ public class EstructuraFEfectivo extends javax.swing.JDialog {
             TableColumn optionsColumn = tb_resultado.getColumnModel().getColumn(0);
             optionsColumn.setCellEditor(new DefaultCellEditor(comboBox));
 
-            String nombreArchivo = "cuenta33_FlujoEfectivo.txt"; // Nombre del archivo
+            String nombreArchivo = "cuenta_FlujoEfectivo.txt"; // Nombre del archivo
             try (BufferedReader reader = new BufferedReader(new FileReader(nombreArchivo))) {
                 String linea;
 
