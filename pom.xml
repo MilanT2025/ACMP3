@@ -66,6 +66,7 @@
             <artifactId>AbsoluteLayout</artifactId>
             <version>RELEASE180</version>
         </dependency>
+
     </dependencies>
     
     <build>
