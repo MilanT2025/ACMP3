@@ -19,6 +19,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
@@ -55,7 +56,7 @@ public class CargaCopere extends javax.swing.JFrame {
         header.setPreferredSize(new java.awt.Dimension(header.getWidth(), 40)); // Establece la altura deseada (por ejemplo, 30 píxeles)
 
         // Cambiar el color del encabezado
-        header.setBackground(new java.awt.Color(255, 217, 102)); // Melon (RGB: 255, 140, 105)
+        header.setBackground(new java.awt.Color(255, 140, 105)); // Melon (RGB: 255, 140, 105)
         Tabla_Copere.getTableHeader().setFont(new java.awt.Font("Roboto", java.awt.Font.BOLD, 12));
 
         TableColumnModel columnModel = Tabla_Copere.getColumnModel();
@@ -63,15 +64,16 @@ public class CargaCopere extends javax.swing.JFrame {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                label.setHorizontalAlignment(JLabel.CENTER); // Centrar el texto del encabezado
+                setHorizontalAlignment(SwingConstants.CENTER); // Centrar el texto del encabezado
                 //cambiar el color del encabezado
                 label.setOpaque(true); //necesario para que el color de fondo se aplique
-                label.setBackground(new Color(253, 49, 5)); //establece el color de fondo
-                label.setForeground(new Color(0, 0, 0)); //establece el color de texto
-                label.setFont(new java.awt.Font("Roboto", java.awt.Font.BOLD, 12));
+                label.setBackground(new Color(255, 140, 105)); //establece el color de fondo
+                label.setForeground(new Color(255, 255, 255)); //establece el color de texto
+                label.setFont(new java.awt.Font("Roboto", java.awt.Font.BOLD, 15));
                 return label;
             }
         });
+
         for (int col = 0; col < Tabla_Copere.getColumnCount(); col++) {
             TableColumn tableColumn = columnModel.getColumn(col);
             Component comp = header.getDefaultRenderer().getTableCellRendererComponent(Tabla_Copere, tableColumn.getHeaderValue(), false, false, 0, col);
@@ -106,15 +108,15 @@ public class CargaCopere extends javax.swing.JFrame {
         Tabla_Copere = new javax.swing.JTable();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
-        jButton3 = new javax.swing.JButton();
         jTextField1 = new javax.swing.JTextField();
+        jButton3 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jPanel16.setBackground(new java.awt.Color(253, 49, 5));
 
         jLabel19.setFont(new java.awt.Font("Roboto", 1, 18)); // NOI18N
+        jLabel19.setForeground(new java.awt.Color(255, 255, 255));
         jLabel19.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel19.setText("Registro de Contable (COPERE)");
         jLabel19.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -181,7 +183,7 @@ public class CargaCopere extends javax.swing.JFrame {
                 .addComponent(jLabel16)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(txt_razonsocial1, javax.swing.GroupLayout.PREFERRED_SIZE, 279, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(567, Short.MAX_VALUE))
         );
         jPanel14Layout.setVerticalGroup(
             jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -208,21 +210,37 @@ public class CargaCopere extends javax.swing.JFrame {
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, true, false
+                false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
             }
         });
-        Tabla_Copere.setSelectionBackground(new java.awt.Color(255, 0, 51));
+        Tabla_Copere.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        Tabla_Copere.setFocusTraversalPolicyProvider(true);
+        Tabla_Copere.setRowHeight(30);
+        Tabla_Copere.setSelectionBackground(new java.awt.Color(0, 153, 204));
         Tabla_Copere.setShowGrid(true);
         Tabla_Copere.setShowHorizontalLines(true);
         jScrollPane1.setViewportView(Tabla_Copere);
+        if (Tabla_Copere.getColumnModel().getColumnCount() > 0) {
+            Tabla_Copere.getColumnModel().getColumn(0).setResizable(false);
+            Tabla_Copere.getColumnModel().getColumn(1).setResizable(false);
+            Tabla_Copere.getColumnModel().getColumn(2).setResizable(false);
+            Tabla_Copere.getColumnModel().getColumn(3).setResizable(false);
+            Tabla_Copere.getColumnModel().getColumn(4).setResizable(false);
+            Tabla_Copere.getColumnModel().getColumn(5).setResizable(false);
+        }
 
         jButton1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/agregar.png"))); // NOI18N
         jButton1.setText("<html>Registrar<br>Afiliados</html>");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         jButton2.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Microsoft excel.png"))); // NOI18N
@@ -233,14 +251,9 @@ public class CargaCopere extends javax.swing.JFrame {
             }
         });
 
-        jPanel1.setLayout(null);
-
+        jButton3.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/buscar.png"))); // NOI18N
         jButton3.setText("Buscar");
-        jPanel1.add(jButton3);
-        jButton3.setBounds(0, 0, 100, 30);
-        jPanel1.add(jTextField1);
-        jTextField1.setBounds(110, 0, 110, 30);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -250,17 +263,17 @@ public class CargaCopere extends javax.swing.JFrame {
             .addComponent(jPanel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 699, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(219, 219, 219)
+                        .addComponent(jTextField1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
                         .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(28, 28, 28)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(29, 29, 29)
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 222, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(210, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -269,17 +282,14 @@ public class CargaCopere extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel14, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 559, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(192, 192, 192)
-                                .addComponent(jButton2)))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jButton2))
+                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jTextField1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE))
         );
 
         pack();
@@ -288,6 +298,11 @@ public class CargaCopere extends javax.swing.JFrame {
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         Mostrar();
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        RegistroAfiliadoCopere ini = new RegistroAfiliadoCopere(this, true);
+        ini.setVisible(true);
+    }//GEN-LAST:event_jButton1ActionPerformed
     /**
      * @param args the command line arguments
      */
@@ -320,6 +335,7 @@ public class CargaCopere extends javax.swing.JFrame {
                         data[i] = (value != null) ? value.toString() : ""; // Maneja nulls
                     }
                 }
+                data[0] = jYearChooser3.getYear() + "" + (jMonthChooser3.getMonth() + 1);
                 modelo1.addRow(data);
             }
 
@@ -385,13 +401,12 @@ public class CargaCopere extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel19;
-    private com.toedter.calendar.JMonthChooser jMonthChooser3;
-    private javax.swing.JPanel jPanel1;
+    public static com.toedter.calendar.JMonthChooser jMonthChooser3;
     private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel16;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField jTextField1;
-    private com.toedter.calendar.JYearChooser jYearChooser3;
+    public static com.toedter.calendar.JYearChooser jYearChooser3;
     private javax.swing.JLabel txt_razonsocial1;
     private javax.swing.JLabel txt_ruc1;
     // End of variables declaration//GEN-END:variables
