@@ -14,6 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -105,6 +106,9 @@ public class CargaCopere extends javax.swing.JFrame {
         Tabla_Copere = new javax.swing.JTable();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
+        jButton3 = new javax.swing.JButton();
+        jTextField1 = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -121,7 +125,7 @@ public class CargaCopere extends javax.swing.JFrame {
             jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel16Layout.createSequentialGroup()
                 .addGap(50, 50, 50)
-                .addComponent(jLabel19, javax.swing.GroupLayout.DEFAULT_SIZE, 1224, Short.MAX_VALUE)
+                .addComponent(jLabel19, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGap(50, 50, 50))
         );
         jPanel16Layout.setVerticalGroup(
@@ -194,6 +198,7 @@ public class CargaCopere extends javax.swing.JFrame {
                     .addComponent(txt_razonsocial1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
 
+        Tabla_Copere.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
         Tabla_Copere.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -202,14 +207,17 @@ public class CargaCopere extends javax.swing.JFrame {
                 "Mes Proceso", "<html>Codigo<br>Descuento</html>", "<html>N° Admin</html>", "Monto", "N° de Cuotas", "Total de Cuotas"
             }
         ) {
-            Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, true, false
             };
 
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
             }
         });
+        Tabla_Copere.setSelectionBackground(new java.awt.Color(255, 0, 51));
+        Tabla_Copere.setShowGrid(true);
+        Tabla_Copere.setShowHorizontalLines(true);
         jScrollPane1.setViewportView(Tabla_Copere);
 
         jButton1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
@@ -225,6 +233,15 @@ public class CargaCopere extends javax.swing.JFrame {
             }
         });
 
+        jPanel1.setLayout(null);
+
+        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/buscar.png"))); // NOI18N
+        jButton3.setText("Buscar");
+        jPanel1.add(jButton3);
+        jButton3.setBounds(0, 0, 100, 30);
+        jPanel1.add(jTextField1);
+        jTextField1.setBounds(110, 0, 110, 30);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -234,11 +251,16 @@ public class CargaCopere extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 699, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(53, 53, 53)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(219, 219, 219)
+                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(28, 28, 28)
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(29, 29, 29)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 222, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(210, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -248,15 +270,16 @@ public class CargaCopere extends javax.swing.JFrame {
                 .addComponent(jPanel14, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 559, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 559, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(41, 41, 41)
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(11, 11, 11)
-                        .addComponent(jButton2)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(192, 192, 192)
+                                .addComponent(jButton2)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
 
         pack();
@@ -273,30 +296,33 @@ public class CargaCopere extends javax.swing.JFrame {
         Connection cnn = null;
         PreparedStatement pst = null;
         ResultSet rs = null;
-        String[] data = new String[7];
         try {
-            DefaultTableModel modelo = (DefaultTableModel) Tabla_Copere.getModel();
-            modelo.setRowCount(0);
+            DefaultTableModel modelo1 = (DefaultTableModel) Tabla_Copere.getModel();
+            modelo1.setRowCount(0); // Limpiar la tabla
             cnn = Conexion.getConnection();
-            String sql = "SELECT * FROM [PlanillaCopere]";
-
-            // Asumiendo que ya has inicializado tu conexión cnn
+            String sql = "SELECT [Mes] "
+                    + "      ,[Cod_Descuento] "
+                    + "      ,[Num_Admin] "
+                    + "      ,[Monto] "
+                    + "      ,[Nro_Cuota] "
+                    + "      ,[Total_Cuota] "
+                    + "  FROM [dbo].[PlanillaCopere]";
             pst = cnn.prepareStatement(sql);
             rs = pst.executeQuery();
 
             while (rs.next()) {
+                Object[] data = new Object[6];
                 for (int i = 0; i < data.length; i++) {
                     Object value = rs.getObject(i + 1);
                     if (value instanceof Number) {
-                        data[i] = String.valueOf(value); // Convierte a String si es un número
+                        data[i] = value; // Mantén el valor como número
                     } else {
-                        data[i] = value != null ? value.toString() : ""; // Maneja nulls
+                        data[i] = (value != null) ? value.toString() : ""; // Maneja nulls
                     }
                 }
-                modelo.addRow(data);
+                modelo1.addRow(data);
             }
-            // Cambia setmodel a setModel
-            Tabla_Copere.setModel(modelo);
+
         } catch (SQLException ex) {
             ex.printStackTrace(); // Muestra el error en la consola
         } finally {
@@ -315,7 +341,6 @@ public class CargaCopere extends javax.swing.JFrame {
                 ex.printStackTrace(); // Muestra el error en la consola
             }
         }
-
     }
 
     public static void main(String args[]) {
@@ -354,15 +379,18 @@ public class CargaCopere extends javax.swing.JFrame {
     private javax.swing.JTable Tabla_Copere;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel19;
     private com.toedter.calendar.JMonthChooser jMonthChooser3;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel16;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextField jTextField1;
     private com.toedter.calendar.JYearChooser jYearChooser3;
     private javax.swing.JLabel txt_razonsocial1;
     private javax.swing.JLabel txt_ruc1;
