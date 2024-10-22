@@ -18,13 +18,16 @@ import java.text.SimpleDateFormat;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.RowFilter;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableRowSorter;
 
 /**
  *
@@ -56,7 +59,7 @@ public class CargaCopere extends javax.swing.JFrame {
         header.setPreferredSize(new java.awt.Dimension(header.getWidth(), 40)); // Establece la altura deseada (por ejemplo, 30 píxeles)
 
         // Cambiar el color del encabezado
-        header.setBackground(new java.awt.Color(255, 140, 105)); // Melon (RGB: 255, 140, 105)
+        header.setBackground(new java.awt.Color(93, 173, 226)); // Melon (RGB: 255, 140, 105)
         Tabla_Copere.getTableHeader().setFont(new java.awt.Font("Roboto", java.awt.Font.BOLD, 12));
 
         TableColumnModel columnModel = Tabla_Copere.getColumnModel();
@@ -67,7 +70,7 @@ public class CargaCopere extends javax.swing.JFrame {
                 setHorizontalAlignment(SwingConstants.CENTER); // Centrar el texto del encabezado
                 //cambiar el color del encabezado
                 label.setOpaque(true); //necesario para que el color de fondo se aplique
-                label.setBackground(new Color(255, 140, 105)); //establece el color de fondo
+                label.setBackground(new Color(93, 173, 226)); //establece el color de fondo
                 label.setForeground(new Color(255, 255, 255)); //establece el color de texto
                 label.setFont(new java.awt.Font("Roboto", java.awt.Font.BOLD, 15));
                 return label;
@@ -106,14 +109,15 @@ public class CargaCopere extends javax.swing.JFrame {
         txt_razonsocial1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         Tabla_Copere = new javax.swing.JTable();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jTextField1 = new javax.swing.JTextField();
-        jButton3 = new javax.swing.JButton();
+        btnAfiliar = new javax.swing.JButton();
+        btnDescargar = new javax.swing.JButton();
+        TxtBuscar = new javax.swing.JTextField();
+        btnBuscar = new javax.swing.JButton();
+        btnActualizar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jPanel16.setBackground(new java.awt.Color(253, 49, 5));
+        jPanel16.setBackground(new java.awt.Color(93, 173, 226));
 
         jLabel19.setFont(new java.awt.Font("Roboto", 1, 18)); // NOI18N
         jLabel19.setForeground(new java.awt.Color(255, 255, 255));
@@ -183,7 +187,7 @@ public class CargaCopere extends javax.swing.JFrame {
                 .addComponent(jLabel16)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(txt_razonsocial1, javax.swing.GroupLayout.PREFERRED_SIZE, 279, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(567, Short.MAX_VALUE))
+                .addContainerGap(643, Short.MAX_VALUE))
         );
         jPanel14Layout.setVerticalGroup(
             jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -233,47 +237,63 @@ public class CargaCopere extends javax.swing.JFrame {
             Tabla_Copere.getColumnModel().getColumn(5).setResizable(false);
         }
 
-        jButton1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/agregar.png"))); // NOI18N
-        jButton1.setText("<html>Registrar<br>Afiliados</html>");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        btnAfiliar.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnAfiliar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/agregar.png"))); // NOI18N
+        btnAfiliar.setText("<html>Registrar<br>Afiliados</html>");
+        btnAfiliar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                btnAfiliarActionPerformed(evt);
             }
         });
 
-        jButton2.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Microsoft excel.png"))); // NOI18N
-        jButton2.setText("Exportar");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        btnDescargar.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnDescargar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Microsoft excel.png"))); // NOI18N
+        btnDescargar.setText("Exportar");
+        btnDescargar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                btnDescargarActionPerformed(evt);
             }
         });
 
-        jButton3.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/buscar.png"))); // NOI18N
-        jButton3.setText("Buscar");
+        btnBuscar.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnBuscar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/buscar.png"))); // NOI18N
+        btnBuscar.setText("Buscar");
+        btnBuscar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBuscarActionPerformed(evt);
+            }
+        });
+
+        btnActualizar.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnActualizar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/refrescar.png"))); // NOI18N
+        btnActualizar.setText("Actualizar");
+        btnActualizar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnActualizarActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel16, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jPanel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel16, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jTextField1)
+                        .addComponent(TxtBuscar)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane1))
-                .addContainerGap())
+                        .addComponent(btnActualizar)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnDescargar)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnAfiliar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())
+                    .addComponent(jScrollPane1)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -283,30 +303,93 @@ public class CargaCopere extends javax.swing.JFrame {
                 .addComponent(jPanel14, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(TxtBuscar)
+                    .addComponent(btnAfiliar)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jButton2))
-                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jTextField1))
+                        .addComponent(btnDescargar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnActualizar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnBuscar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 512, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        Mostrar();
-    }//GEN-LAST:event_jButton2ActionPerformed
+    private void btnDescargarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDescargarActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_btnDescargarActionPerformed
+
+    private void btnAfiliarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAfiliarActionPerformed
         RegistroAfiliadoCopere ini = new RegistroAfiliadoCopere(this, true);
         ini.setVisible(true);
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_btnAfiliarActionPerformed
+
+    private void btnActualizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnActualizarActionPerformed
+        Mostrar();
+    }//GEN-LAST:event_btnActualizarActionPerformed
+
+    private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
+                DefaultTableModel modelo1 = (DefaultTableModel) Tabla_Copere.getModel();
+        TableRowSorter<DefaultTableModel> rowSorter = new TableRowSorter<>(modelo1);
+        Tabla_Copere.setRowSorter(rowSorter);
+        if (!TxtBuscar.getText().isEmpty()) {
+            // Realizar búsqueda utilizando el filtro de texto
+            RowFilter<DefaultTableModel, Object> filter = RowFilter.regexFilter(TxtBuscar.getText());
+            rowSorter.setRowFilter(filter);
+            TxtBuscar.setText("");
+        }
+    }//GEN-LAST:event_btnBuscarActionPerformed
+
+    private void BuscarCip(String Nume_Admin) {
+        Connection cnn = null;
+        PreparedStatement pst = null;
+        ResultSet rs = null;
+
+        try {
+            DefaultTableModel modelo1 = (DefaultTableModel) Tabla_Copere.getModel();
+            modelo1.setRowCount(0); // Limpiar la tabla
+            cnn = Conexion.getConnection();
+            String sql = "SELECT [IdPersonal] "
+                    + "      ,[Mes] "
+                    + "      ,[Cod_Descuento] "
+                    + "      ,[Num_Admin] "
+                    + "      ,[Monto] "
+                    + "      ,[Nro_Cuota] "
+                    + "      ,[Total_Cuota] "
+                    + "      ,[FechaIngreso] "
+                    + "      ,[FechaEgreso] "
+                    + "      ,[Estado] "
+                    + "  FROM [dbo].[PlanillaCopere] "
+                    + "WHERE [Num_Admin] = '" + Nume_Admin + "'";
+            pst = cnn.prepareStatement(sql);
+            rs = pst.executeQuery();
+            if (rs.next()) {
+                TxtBuscar.setText(rs.getString(4));
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace(); // Muestra el error en la consola
+        } finally {
+            // Cerrar recursos
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pst != null) {
+                    pst.close();
+                }
+                if (cnn != null) {
+                    cnn.close();
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace(); // Muestra el error en la consola
+            }
+        }
+    }
+
     /**
      * @param args the command line arguments
      */
-
     private void Mostrar() {
         Connection cnn = null;
         PreparedStatement pst = null;
@@ -393,9 +476,11 @@ public class CargaCopere extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable Tabla_Copere;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
+    private javax.swing.JTextField TxtBuscar;
+    private javax.swing.JButton btnActualizar;
+    private javax.swing.JButton btnAfiliar;
+    private javax.swing.JButton btnBuscar;
+    private javax.swing.JButton btnDescargar;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel16;
@@ -405,7 +490,6 @@ public class CargaCopere extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel16;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextField jTextField1;
     public static com.toedter.calendar.JYearChooser jYearChooser3;
     private javax.swing.JLabel txt_razonsocial1;
     private javax.swing.JLabel txt_ruc1;

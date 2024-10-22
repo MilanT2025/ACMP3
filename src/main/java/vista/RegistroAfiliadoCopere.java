@@ -5,6 +5,8 @@
 package vista;
 
 import Controlador.Conexion;
+import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -12,7 +14,13 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableModel;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 
 /**
  *
@@ -26,6 +34,9 @@ public class RegistroAfiliadoCopere extends javax.swing.JDialog {
     public RegistroAfiliadoCopere(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        setSize(500, 500);
+        setLocationRelativeTo(null); // Centra el JDialog respecto al JFrame
+
     }
 
     /**
@@ -46,7 +57,7 @@ public class RegistroAfiliadoCopere extends javax.swing.JDialog {
         jLabel1 = new javax.swing.JLabel();
         jDateChooser1 = new com.toedter.calendar.JDateChooser();
         jTextField4 = new javax.swing.JTextField();
-        jButton2 = new javax.swing.JButton();
+        btnPdf = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
@@ -57,7 +68,7 @@ public class RegistroAfiliadoCopere extends javax.swing.JDialog {
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel3.setText("Codigo Cip");
         getContentPane().add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 140, 100, -1));
-        getContentPane().add(jTextField2, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 140, 129, -1));
+        getContentPane().add(jTextField2, new org.netbeans.lib.awtextra.AbsoluteConstraints(189, 140, 170, -1));
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel4.setText("Monto");
@@ -82,11 +93,16 @@ public class RegistroAfiliadoCopere extends javax.swing.JDialog {
         jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel1.setText("Fecha Ingreso");
         getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 100, 100, -1));
-        getContentPane().add(jDateChooser1, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 100, 129, -1));
-        getContentPane().add(jTextField4, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 220, 129, -1));
+        getContentPane().add(jDateChooser1, new org.netbeans.lib.awtextra.AbsoluteConstraints(189, 100, 170, -1));
+        getContentPane().add(jTextField4, new org.netbeans.lib.awtextra.AbsoluteConstraints(189, 220, 170, -1));
 
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/pdf.png"))); // NOI18N
-        getContentPane().add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(370, 210, 50, 40));
+        btnPdf.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/pdf.png"))); // NOI18N
+        btnPdf.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPdfActionPerformed(evt);
+            }
+        });
+        getContentPane().add(btnPdf, new org.netbeans.lib.awtextra.AbsoluteConstraints(370, 210, 50, 40));
 
         jPanel1.setBackground(new java.awt.Color(253, 49, 5));
 
@@ -125,6 +141,26 @@ public class RegistroAfiliadoCopere extends javax.swing.JDialog {
         agregarAfiliadoCopere();
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void btnPdfActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPdfActionPerformed
+
+        ImportarPDF();
+    }//GEN-LAST:event_btnPdfActionPerformed
+       private static void cargarPDFenTabla(String rutaArchivo, DefaultTableModel model) {
+        try (PDDocument document = PDDocument.load(new File(rutaArchivo))) {
+            PDFTextStripper pdfStripper = new PDFTextStripper();
+            int numPaginas = document.getNumberOfPages();
+
+            for (int i = 1; i <= numPaginas; i++) {
+                pdfStripper.setStartPage(i);
+                pdfStripper.setEndPage(i);
+                String contenido = pdfStripper.getText(document);
+                model.addRow(new Object[]{i, contenido.trim()}); // Agregar la página y el contenido
+            }
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "Error al cargar el PDF: " + e.getMessage());
+        }
+    }
+    
     /**
      * @param args the command line arguments
      */
@@ -168,8 +204,8 @@ public class RegistroAfiliadoCopere extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnPdf;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private com.toedter.calendar.JDateChooser jDateChooser1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
@@ -203,20 +239,39 @@ public class RegistroAfiliadoCopere extends javax.swing.JDialog {
                     + "           ,1\n"
                     + "           ,GETDATE());\n";
             PreparedStatement pstm = con.prepareStatement(sql);
-            pstm.setString(1, CargaCopere.jYearChooser3.getYear() + "" + (CargaCopere.jMonthChooser3.getMonth()+1));
+            pstm.setString(1, CargaCopere.jYearChooser3.getYear() + "" + (CargaCopere.jMonthChooser3.getMonth() + 1));
             pstm.setString(2, jTextField2.getText());
             pstm.setString(3, jTextField3.getText());
-            
+
             pstm.executeUpdate();
-            
+
             JOptionPane.showMessageDialog(null, "Se ha guardado correctamente la información");
-            
+
         } catch (SQLException ex) {
             Logger.getLogger(RegistroAfiliadoCopere.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-        
-        
-        
+
+    }
+
+    private void ImportarPDF() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.isDirectory() || f.getName().toLowerCase().endsWith(".pdf");
+            }
+
+            @Override
+            public String getDescription() {
+                return "Archivos PDF (*.pdf)";
+            }
+        });
+
+        int result = fileChooser.showOpenDialog(null);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            jTextField4.setText(selectedFile.getName());
+        }
+
     }
 }
