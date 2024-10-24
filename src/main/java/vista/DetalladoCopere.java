@@ -41,7 +41,7 @@ public class DetalladoCopere extends javax.swing.JDialog {
         modelo.addColumn("Total Aporte");
         
         JTableHeader header = tb_resultado.getTableHeader();
-        header.setPreferredSize(new java.awt.Dimension(header.getWidth(), 40));
+        header.setPreferredSize(new java.awt.Dimension(header.getWidth(), 35));
 
         header.setBackground(new java.awt.Color(255, 217, 102));
         tb_resultado.getTableHeader().setFont(new java.awt.Font("Roboto", java.awt.Font.BOLD, 12));
