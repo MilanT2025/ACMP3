@@ -8,9 +8,6 @@ import java.io.File;
 import java.io.IOException;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
-import static org.apache.commons.math3.fitting.leastsquares.LeastSquaresFactory.model;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
 
 /**
  *
@@ -76,27 +73,7 @@ public class procesados extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        modelo.addColumn("a");
-        modelo.addColumn("b");
-        modelo.addColumn("c");
-        modelo.addColumn("d");
-        modelo.addColumn("e");
-        modelo.addColumn("f");
-        modelo.addColumn("g");
-        modelo.addColumn("h");
-        try (PDDocument document = PDDocument.load(new File("C:\\Users\\ejmg3\\Desktop\\PROYECTO 2 ACMP\\COPERE SET 24.pdf"))) {
-            PDFTextStripper pdfStripper = new PDFTextStripper();
-            int numPaginas = document.getNumberOfPages();
-
-            for (int i = 1; i <= numPaginas; i++) {
-                pdfStripper.setStartPage(i);
-                pdfStripper.setEndPage(i);
-                String contenido = pdfStripper.getText(document);
-                modelo.addRow(new Object[]{i, contenido.trim()}); // Agregar la página y el contenido
-            }
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(null, "Error al cargar el PDF: " + e.getMessage());
-        }
+      
         }//GEN-LAST:event_jButton1ActionPerformed
 public class Modelo extends DefaultTableModel {
 
