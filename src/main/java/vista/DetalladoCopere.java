@@ -95,7 +95,7 @@ public class DetalladoCopere extends javax.swing.JDialog {
                     + "    SUM(CASE WHEN Mes = 11 THEN Monto ELSE 0 END) AS Noviembre, "
                     + "    SUM(CASE WHEN Mes = 12 THEN Monto ELSE 0 END) AS Diciembre "
                     + "FROM HistorialCopere "
-                    + "WHERE Numero_CIP = '" + numerocip + "' "
+                    + "WHERE Numero_CIP = '" + numerocip + "' AND Estado = 1"
                     + "GROUP BY Año, Numero_CIP "
                     + "ORDER BY Año DESC";
             ResultSet rs = st.executeQuery(sql);

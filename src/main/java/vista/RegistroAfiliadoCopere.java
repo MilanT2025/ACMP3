@@ -6,16 +6,15 @@ package vista;
 
 import Controlador.Conexion;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -31,7 +30,7 @@ public class RegistroAfiliadoCopere extends javax.swing.JDialog {
         initComponents();
         setSize(550, 500);
         setLocationRelativeTo(null); // Centra el JDialog respecto al JFrame
-
+        ruta.setText(null);
     }
 
     /**
@@ -43,6 +42,7 @@ public class RegistroAfiliadoCopere extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        ruta = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
@@ -54,6 +54,8 @@ public class RegistroAfiliadoCopere extends javax.swing.JDialog {
         jTextField4 = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         btnPdf = new javax.swing.JButton();
+
+        ruta.setText("jLabel1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -71,7 +73,7 @@ public class RegistroAfiliadoCopere extends javax.swing.JDialog {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -129,7 +131,7 @@ public class RegistroAfiliadoCopere extends javax.swing.JDialog {
                             .addComponent(jTextField4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(btnPdf, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(51, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -150,9 +152,9 @@ public class RegistroAfiliadoCopere extends javax.swing.JDialog {
                         .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(btnPdf, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 59, Short.MAX_VALUE)
+                .addGap(35, 35, 35)
                 .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(20, 20, 20))
+                .addGap(25, 25, 25))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -160,18 +162,15 @@ public class RegistroAfiliadoCopere extends javax.swing.JDialog {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(0, 0, 0)
                 .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                .addGap(0, 0, 0))
         );
 
         pack();
@@ -182,7 +181,6 @@ public class RegistroAfiliadoCopere extends javax.swing.JDialog {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void btnPdfActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPdfActionPerformed
-
         ImportarPDF();
     }//GEN-LAST:event_btnPdfActionPerformed
 
@@ -238,6 +236,7 @@ public class RegistroAfiliadoCopere extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JTextField jTextField4;
+    private javax.swing.JLabel ruta;
     private javax.swing.JTextField txtcodigocip;
     private javax.swing.JTextField txtmonto;
     // End of variables declaration//GEN-END:variables
@@ -246,18 +245,29 @@ public class RegistroAfiliadoCopere extends javax.swing.JDialog {
         try {
             Connection con = Conexion.getConnection();
             String sql = "INSERT INTO [dbo].[EstructuraCopere] "
-                    + "([Numero_CIP], [Monto_Descuento]) " // Corregido: paréntesis cerrados
-                    + "VALUES (?, ?)";
+                    + "([Numero_CIP], [Monto_Descuento], [FechaRegistro], [Estado], [Acta]) " // Corregido: paréntesis cerrados
+                    + "VALUES (?, ?, GETDATE(), 1, ?)";
 
             PreparedStatement pstm = con.prepareStatement(sql);
             pstm.setString(1, txtcodigocip.getText());
             pstm.setString(2, txtmonto.getText());
+            if (ruta.getText() == null || ruta.getText().isEmpty()) {
+                pstm.setNull(3, java.sql.Types.VARBINARY);
+            } else {
+                File archivo = new File(ruta.getText());
+
+                try (FileInputStream inputStream = new FileInputStream(ruta.getText())) {
+                    byte[] contenidoArchivo = new byte[(int) archivo.length()];
+                    inputStream.read(contenidoArchivo);
+                    pstm.setBytes(3, contenidoArchivo);
+                }
+            }
 
             pstm.executeUpdate();
 
             JOptionPane.showMessageDialog(null, "Se ha guardado correctamente la información");
 
-        } catch (SQLException ex) {
+        } catch (SQLException | IOException ex) {
             Logger.getLogger(RegistroAfiliadoCopere.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -280,6 +290,7 @@ public class RegistroAfiliadoCopere extends javax.swing.JDialog {
         if (result == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
             jTextField4.setText(selectedFile.getName());
+            ruta.setText(fileChooser.getSelectedFile().toString());
         }
 
     }
