@@ -57,8 +57,9 @@ import org.apache.poi.ss.usermodel.Workbook;
 public class CargaCopere extends javax.swing.JFrame {
     //ESTADOS -> 1 ES PROCESADO  -- 2 FALTA DE LIQUIDEZ Y 3 NO RECIBE SUELDO
     
-    private final Modelo modelo = new Modelo();
-    private final Modelo2 modelo2 = new Modelo2();
+    private final Modelo modeloCopere = new Modelo();
+    private final Modelo2 modeloCaja = new Modelo2();
+    private final Modelo3 modeloOprefa = new Modelo3();
 
     private void mostrarDialogoProgreso(JFrame parentFrame) {
         JDialog dialogoProgreso = new JDialog(parentFrame, "Guardando...", true);
@@ -92,11 +93,11 @@ public class CargaCopere extends javax.swing.JFrame {
                     pstm.setInt(1, jdc_año.getYear());
                     pstm.setInt(2, (jdc_mes.getMonth() + 1));
 
-                    int rowCount = modelo.getRowCount();
+                    int rowCount = modeloCopere.getRowCount();
                     for (int i = 0; i < rowCount; i++) {
                         // Insertar los datos
-                        pstm.setString(3, modelo.getValueAt(i, 2).toString());
-                        pstm.setDouble(4, Double.parseDouble(modelo.getValueAt(i, 3).toString()));
+                        pstm.setString(3, modeloCopere.getValueAt(i, 2).toString());
+                        pstm.setDouble(4, Double.parseDouble(modeloCopere.getValueAt(i, 3).toString()));
                         pstm.executeUpdate();
 
                         // Calcular y actualizar el progreso
@@ -134,10 +135,86 @@ public class CargaCopere extends javax.swing.JFrame {
         // Mostrar el diálogo mientras el SwingWorker trabaja
         dialogoProgreso.setVisible(true);
     }
+    
+    
+    private void mostrarDialogoProgresoCajaPensiones(JFrame parentFrame) {
+        JDialog dialogoProgreso = new JDialog(parentFrame, "Guardando...", true);
+        JProgressBar progressBar = new JProgressBar(0, 100);
+        progressBar.setStringPainted(true); // Mostrar el porcentaje
+
+        // Configurar el diálogo
+        dialogoProgreso.setLayout(new BorderLayout());
+        dialogoProgreso.add(progressBar, BorderLayout.CENTER);
+        dialogoProgreso.setSize(300, 100);
+        dialogoProgreso.setLocationRelativeTo(parentFrame); // Centrar sobre la ventana principal
+
+        // Crear el SwingWorker para realizar el guardado en segundo plano
+        SwingWorker<Void, Integer> worker = new SwingWorker<Void, Integer>() {
+            @Override
+            protected Void doInBackground() {
+                try {
+                    // Conexión a la base de datos
+                    Connection con = Conexion.getConnection();
+
+                    // Eliminar los datos existentes
+                    String sql = "DELETE FROM HistorialCajaPensiones WHERE Año = ? AND Mes = ?";
+                    PreparedStatement pstm = con.prepareStatement(sql);
+                    pstm.setInt(1, jdc_año.getYear());
+                    pstm.setInt(2, (jdc_mes.getMonth() + 1));
+                    pstm.executeUpdate();
+
+                    // Preparar la inserción de nuevos datos
+                    sql = "INSERT INTO HistorialCajaPensiones ([FechaRegistro],[Año],[Mes],[Documento],[Monto],[Estado]) VALUES (GETDATE(), ?, ?, ?, ?, 1);";
+                    pstm = con.prepareStatement(sql);
+                    pstm.setInt(1, jdc_año.getYear());
+                    pstm.setInt(2, (jdc_mes.getMonth() + 1));
+
+                    int rowCount = modeloCaja.getRowCount();
+                    for (int i = 0; i < rowCount; i++) {
+                        // Insertar los datos
+                        pstm.setString(3, modeloCaja.getValueAt(i, 4).toString());
+                        pstm.setDouble(4, Double.parseDouble(modeloCaja.getValueAt(i, 8).toString()));
+                        pstm.executeUpdate();
+
+                        // Calcular y actualizar el progreso
+                        int progress = (int) ((i + 1) * 100 / rowCount);
+                        publish(progress); // Enviar el progreso
+                    }
+
+                    pstm.close();
+                    con.close();
+                } catch (SQLException ex) {
+                    Logger.getLogger(CargaCopere.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+                return null;
+            }
+
+            @Override
+            protected void process(List<Integer> chunks) {
+                // Actualizar la barra de progreso con el valor más reciente
+                int mostRecentProgress = chunks.get(chunks.size() - 1);
+                progressBar.setValue(mostRecentProgress);
+            }
+
+            @Override
+            protected void done() {
+                // Cerrar el diálogo al finalizar
+                dialogoProgreso.dispose();
+                JOptionPane.showMessageDialog(parentFrame, "Se ha guardado correctamente los descuentos CAJA DE PENSIONES", "Aviso", JOptionPane.INFORMATION_MESSAGE);
+            }
+        };
+
+        // Ejecutar el SwingWorker en segundo plano
+        worker.execute();
+
+        // Mostrar el diálogo mientras el SwingWorker trabaja
+        dialogoProgreso.setVisible(true);
+    }
 
     private void CargarDatosCajaPensiones() {
         try {
-            modelo2.setRowCount(0);
+            modeloCaja.setRowCount(0);
             
             String[] data = new String[9];
             Connection con = Conexion.getConnection();
@@ -155,11 +232,11 @@ public class CargaCopere extends javax.swing.JFrame {
                 data[6] = String.valueOf(jdc_año.getYear());
                 data[7] = String.format("%02d" , (jdc_mes.getMonth()+1));
                 data[8] = String.format(Locale.US, "%010.2f", rs.getDouble(4));
-                modelo2.addRow(data);
+                modeloCaja.addRow(data);
             }
             
-            if (modelo.getRowCount()>0) {
-                btnExportar1.setEnabled(true);
+            if (modeloCaja.getRowCount()>0) {
+                btnExportarCaja.setEnabled(true);
             }
             
             rs.close();
@@ -170,6 +247,41 @@ public class CargaCopere extends javax.swing.JFrame {
         }
 
         
+    }
+
+    private void CargarDatosOprefa() {
+        try {
+            modeloOprefa.setRowCount(0);
+            
+            String[] data = new String[9];
+            Connection con = Conexion.getConnection();
+            Statement st = con.createStatement();
+            String sql = "SELECT * FROM EstructuraCajaPensiones";
+            ResultSet rs = st.executeQuery(sql);
+
+            while (rs.next()) {
+                data[0] = "004460192";
+                data[1] = rs.getString(1);
+                data[2] = rs.getString(2);
+                data[3] = "LE";
+                data[4] = rs.getString(3);
+                data[5] = "  ";
+                data[6] = String.valueOf(jdc_año.getYear());
+                data[7] = String.format("%02d" , (jdc_mes.getMonth()+1));
+                data[8] = String.format(Locale.US, "%010.2f", rs.getDouble(4));
+                modeloOprefa.addRow(data);
+            }
+            
+            if (modeloOprefa.getRowCount()>0) {
+                btnExportarOprefa.setEnabled(true);
+            }
+            
+            rs.close();
+            st.close();
+            con.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(CargaCopere.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     public class Modelo extends DefaultTableModel {
@@ -187,6 +299,15 @@ public class CargaCopere extends javax.swing.JFrame {
             return false;
         }
     }
+    
+    public class Modelo3 extends DefaultTableModel {
+
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return false;
+        }
+    }
+
 
     /**
      * Creates new form CargaCopere
@@ -250,18 +371,18 @@ public class CargaCopere extends javax.swing.JFrame {
             dataStyle.setFont(font); 
             // Crear fila de encabezados
             Row headerRow = sheet.createRow(0);
-            for (int i = 0; i < modelo.getColumnCount(); i++) {
+            for (int i = 0; i < modeloCopere.getColumnCount(); i++) {
                 Cell cell = headerRow.createCell(i);
-                cell.setCellValue(modelo.getColumnName(i));  // Asigna el nombre de la columna como encabezado
+                cell.setCellValue(modeloCopere.getColumnName(i));  // Asigna el nombre de la columna como encabezado
                 cell.setCellStyle(headerStyle);  // Aplicar estilo de encabezado
             }
 
             // Crear filas con los datos
-            for (int rowIndex = 0; rowIndex < modelo.getRowCount(); rowIndex++) {
+            for (int rowIndex = 0; rowIndex < modeloCopere.getRowCount(); rowIndex++) {
                 Row row = sheet.createRow(rowIndex + 1);  // +1 porque la fila 0 es para encabezados
-                for (int colIndex = 0; colIndex < modelo.getColumnCount(); colIndex++) {
+                for (int colIndex = 0; colIndex < modeloCopere.getColumnCount(); colIndex++) {
                     Cell cell = row.createCell(colIndex);
-                    Object value = modelo.getValueAt(rowIndex, colIndex);
+                    Object value = modeloCopere.getValueAt(rowIndex, colIndex);
                     if (value != null) {
                         if (colIndex == 3) { // Columna 0 y 3 como número
                             cell.setCellValue(Double.parseDouble(value.toString()));  // Convertir a número
@@ -274,7 +395,7 @@ public class CargaCopere extends javax.swing.JFrame {
             }
 
             // Ajustar el ancho de las columnas automáticamente
-            for (int i = 0; i < modelo.getColumnCount(); i++) {
+            for (int i = 0; i < modeloCopere.getColumnCount(); i++) {
                 sheet.autoSizeColumn(i); // Ajustar el ancho de la columna
             }
 
@@ -301,7 +422,7 @@ public class CargaCopere extends javax.swing.JFrame {
                     "NUM_CHEQUE"
                 };
 
-                modelo.setColumnIdentifiers(columnNames);
+                modeloCopere.setColumnIdentifiers(columnNames);
 
                 JTableHeader header = tbCopere.getTableHeader();
                 header.setPreferredSize(new java.awt.Dimension(header.getWidth(), 40));
@@ -333,7 +454,7 @@ public class CargaCopere extends javax.swing.JFrame {
                     "MONTO APORTE"
                 };
 
-                modelo2.setColumnIdentifiers(columnNames);
+                modeloCaja.setColumnIdentifiers(columnNames);
 
                 JTableHeader header = tbCajaPensiones.getTableHeader();
                 header.setPreferredSize(new java.awt.Dimension(header.getWidth(), 40));
@@ -374,25 +495,32 @@ public class CargaCopere extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel3 = new javax.swing.JPanel();
-        btn_Nuevo = new javax.swing.JButton();
-        btnNoProcesados = new javax.swing.JButton();
+        btnAfiliadoCopere = new javax.swing.JButton();
+        btnNoProcesadosCopere = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tbCopere = new javax.swing.JTable();
-        txtBuscar = new javax.swing.JTextField();
-        btnBuscar = new javax.swing.JButton();
-        btnExportar = new javax.swing.JButton();
-        btnGrabar = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
+        txtBuscarCopere = new javax.swing.JTextField();
+        btnBuscarCopere = new javax.swing.JButton();
+        btnExportarCopere = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         btnAfiliadoCaja = new javax.swing.JButton();
         jPanel6 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         tbCajaPensiones = new javax.swing.JTable();
-        txtBuscar1 = new javax.swing.JTextField();
-        btnBuscar1 = new javax.swing.JButton();
-        btnExportar1 = new javax.swing.JButton();
+        txtBuscarCaja = new javax.swing.JTextField();
+        btnBuscarCaja = new javax.swing.JButton();
+        btnExportarCaja = new javax.swing.JButton();
+        btnNoProcesadosCaja = new javax.swing.JButton();
         jPanel5 = new javax.swing.JPanel();
+        btnAfiliadoOprefa = new javax.swing.JButton();
+        jPanel7 = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        tbOprefa = new javax.swing.JTable();
+        txtBuscarOprefa = new javax.swing.JTextField();
+        btnBuscarOprefa = new javax.swing.JButton();
+        btnExportarOprefa = new javax.swing.JButton();
+        btnNoProcesadosOprefa = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -507,28 +635,28 @@ public class CargaCopere extends javax.swing.JFrame {
 
         jPanel3.setBackground(new java.awt.Color(255, 255, 255));
 
-        btn_Nuevo.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btn_Nuevo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8_add_32px.png"))); // NOI18N
-        btn_Nuevo.setText("Registrar Afiliado");
-        btn_Nuevo.addActionListener(new java.awt.event.ActionListener() {
+        btnAfiliadoCopere.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnAfiliadoCopere.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8_add_32px.png"))); // NOI18N
+        btnAfiliadoCopere.setText("Registrar Afiliado");
+        btnAfiliadoCopere.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btn_NuevoActionPerformed(evt);
+                btnAfiliadoCopereActionPerformed(evt);
             }
         });
 
-        btnNoProcesados.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnNoProcesados.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/flecha-hacia-abajo.png"))); // NOI18N
-        btnNoProcesados.setText("Modulo de No Procesados");
-        btnNoProcesados.addActionListener(new java.awt.event.ActionListener() {
+        btnNoProcesadosCopere.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnNoProcesadosCopere.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/flecha-hacia-abajo.png"))); // NOI18N
+        btnNoProcesadosCopere.setText("Modulo de No Procesados");
+        btnNoProcesadosCopere.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnNoProcesadosActionPerformed(evt);
+                btnNoProcesadosCopereActionPerformed(evt);
             }
         });
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Datos", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Roboto", 1, 12))); // NOI18N
 
-        tbCopere.setModel(modelo);
+        tbCopere.setModel(modeloCopere);
         tbCopere.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         tbCopere.setFocusTraversalPolicyProvider(true);
         tbCopere.setRowHeight(32);
@@ -549,37 +677,24 @@ public class CargaCopere extends javax.swing.JFrame {
             tbCopere.getColumnModel().getColumn(5).setResizable(false);
         }
 
-        btnBuscar.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnBuscar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/buscar.png"))); // NOI18N
-        btnBuscar.setText("Buscar");
-        btnBuscar.addActionListener(new java.awt.event.ActionListener() {
+        btnBuscarCopere.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnBuscarCopere.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/buscar.png"))); // NOI18N
+        btnBuscarCopere.setText("Buscar");
+        btnBuscarCopere.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnBuscarActionPerformed(evt);
+                btnBuscarCopereActionPerformed(evt);
             }
         });
 
-        btnExportar.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnExportar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/sobresalir.png"))); // NOI18N
-        btnExportar.setText("Exportar XLSX");
-        btnExportar.setEnabled(false);
-        btnExportar.addActionListener(new java.awt.event.ActionListener() {
+        btnExportarCopere.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnExportarCopere.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/sobresalir.png"))); // NOI18N
+        btnExportarCopere.setText("Guardar y Exportar EXCEL");
+        btnExportarCopere.setEnabled(false);
+        btnExportarCopere.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnExportarActionPerformed(evt);
+                btnExportarCopereActionPerformed(evt);
             }
         });
-
-        btnGrabar.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnGrabar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Save.png"))); // NOI18N
-        btnGrabar.setText("Grabar Información en BD");
-        btnGrabar.setEnabled(false);
-        btnGrabar.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnGrabarActionPerformed(evt);
-            }
-        });
-
-        jLabel1.setFont(new java.awt.Font("Roboto", 1, 24)); // NOI18N
-        jLabel1.setText(">");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -588,33 +703,24 @@ public class CargaCopere extends javax.swing.JFrame {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 900, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(txtBuscar)
+                        .addComponent(txtBuscarCopere)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                        .addComponent(btnGrabar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btnExportar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addComponent(btnBuscarCopere, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnExportarCopere, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnBuscar))
+                    .addComponent(txtBuscarCopere, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnBuscarCopere))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE)
                 .addGap(9, 9, 9)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(btnExportar, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(btnGrabar, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addComponent(btnExportarCopere, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -623,23 +729,22 @@ public class CargaCopere extends javax.swing.JFrame {
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(btn_Nuevo, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(516, Short.MAX_VALUE)
+                        .addComponent(btnAfiliadoCopere, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnNoProcesados, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())))
+                        .addComponent(btnNoProcesadosCopere))
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btn_Nuevo)
-                    .addComponent(btnNoProcesados, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnAfiliadoCopere)
+                    .addComponent(btnNoProcesadosCopere, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -658,7 +763,7 @@ public class CargaCopere extends javax.swing.JFrame {
         jPanel6.setBackground(new java.awt.Color(255, 255, 255));
         jPanel6.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Datos", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Roboto", 1, 12))); // NOI18N
 
-        tbCajaPensiones.setModel(modelo2);
+        tbCajaPensiones.setModel(modeloCaja);
         tbCajaPensiones.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         tbCajaPensiones.setFocusTraversalPolicyProvider(true);
         tbCajaPensiones.setRowHeight(32);
@@ -679,22 +784,22 @@ public class CargaCopere extends javax.swing.JFrame {
             tbCajaPensiones.getColumnModel().getColumn(5).setResizable(false);
         }
 
-        btnBuscar1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnBuscar1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/buscar.png"))); // NOI18N
-        btnBuscar1.setText("Buscar");
-        btnBuscar1.addActionListener(new java.awt.event.ActionListener() {
+        btnBuscarCaja.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnBuscarCaja.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/buscar.png"))); // NOI18N
+        btnBuscarCaja.setText("Buscar");
+        btnBuscarCaja.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnBuscar1ActionPerformed(evt);
+                btnBuscarCajaActionPerformed(evt);
             }
         });
 
-        btnExportar1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnExportar1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Rich Text Converter_1.png"))); // NOI18N
-        btnExportar1.setText("Exportar TXT");
-        btnExportar1.setEnabled(false);
-        btnExportar1.addActionListener(new java.awt.event.ActionListener() {
+        btnExportarCaja.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnExportarCaja.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Rich Text Converter_1.png"))); // NOI18N
+        btnExportarCaja.setText("Guardar y Exportar TXT");
+        btnExportarCaja.setEnabled(false);
+        btnExportarCaja.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnExportar1ActionPerformed(evt);
+                btnExportarCajaActionPerformed(evt);
             }
         });
 
@@ -707,57 +812,163 @@ public class CargaCopere extends javax.swing.JFrame {
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 900, Short.MAX_VALUE)
                     .addGroup(jPanel6Layout.createSequentialGroup()
-                        .addComponent(txtBuscar1)
+                        .addComponent(txtBuscarCaja)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnBuscar1, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(btnExportar1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(btnBuscarCaja, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnExportarCaja, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel6Layout.createSequentialGroup()
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtBuscar1, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnBuscar1))
+                    .addComponent(txtBuscarCaja, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnBuscarCaja))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE)
                 .addGap(9, 9, 9)
-                .addComponent(btnExportar1, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnExportarCaja, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
+
+        btnNoProcesadosCaja.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnNoProcesadosCaja.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/flecha-hacia-abajo.png"))); // NOI18N
+        btnNoProcesadosCaja.setText("Modulo de No Procesados");
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btnAfiliadoCaja, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnAfiliadoCaja, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnNoProcesadosCaja))
+                    .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(btnAfiliadoCaja)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnNoProcesadosCaja, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnAfiliadoCaja, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("CAJA DE PENSIONES", jPanel4);
 
+        btnAfiliadoOprefa.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnAfiliadoOprefa.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8_add_32px.png"))); // NOI18N
+        btnAfiliadoOprefa.setText("Registrar Afiliado");
+        btnAfiliadoOprefa.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAfiliadoOprefaActionPerformed(evt);
+            }
+        });
+
+        jPanel7.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel7.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Datos", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Roboto", 1, 12))); // NOI18N
+
+        tbOprefa.setModel(modeloOprefa);
+        tbOprefa.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        tbOprefa.setFocusTraversalPolicyProvider(true);
+        tbOprefa.setRowHeight(32);
+        tbOprefa.setSelectionBackground(new java.awt.Color(0, 153, 204));
+        tbOprefa.setShowGrid(true);
+        tbOprefa.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tbOprefaMouseClicked(evt);
+            }
+        });
+        jScrollPane3.setViewportView(tbOprefa);
+        if (tbOprefa.getColumnModel().getColumnCount() > 0) {
+            tbOprefa.getColumnModel().getColumn(0).setResizable(false);
+            tbOprefa.getColumnModel().getColumn(1).setResizable(false);
+            tbOprefa.getColumnModel().getColumn(2).setResizable(false);
+            tbOprefa.getColumnModel().getColumn(3).setResizable(false);
+            tbOprefa.getColumnModel().getColumn(4).setResizable(false);
+            tbOprefa.getColumnModel().getColumn(5).setResizable(false);
+        }
+
+        btnBuscarOprefa.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnBuscarOprefa.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/buscar.png"))); // NOI18N
+        btnBuscarOprefa.setText("Buscar");
+        btnBuscarOprefa.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBuscarOprefaActionPerformed(evt);
+            }
+        });
+
+        btnExportarOprefa.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnExportarOprefa.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Rich Text Converter_1.png"))); // NOI18N
+        btnExportarOprefa.setText("Guardar y Exportar EXCEL");
+        btnExportarOprefa.setEnabled(false);
+        btnExportarOprefa.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExportarOprefaActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
+        jPanel7.setLayout(jPanel7Layout);
+        jPanel7Layout.setHorizontalGroup(
+            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel7Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 900, Short.MAX_VALUE)
+                    .addGroup(jPanel7Layout.createSequentialGroup()
+                        .addComponent(txtBuscarOprefa)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnBuscarOprefa, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnExportarOprefa, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jPanel7Layout.setVerticalGroup(
+            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel7Layout.createSequentialGroup()
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtBuscarOprefa, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnBuscarOprefa))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE)
+                .addGap(9, 9, 9)
+                .addComponent(btnExportarOprefa, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        btnNoProcesadosOprefa.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnNoProcesadosOprefa.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/flecha-hacia-abajo.png"))); // NOI18N
+        btnNoProcesadosOprefa.setText("Modulo de No Procesados");
+
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 930, Short.MAX_VALUE)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnAfiliadoOprefa, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnNoProcesadosOprefa))
+                    .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 428, Short.MAX_VALUE)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnNoProcesadosOprefa, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnAfiliadoOprefa, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("OPREFA", jPanel5);
@@ -804,48 +1015,47 @@ public class CargaCopere extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
-        TableRowSorter<DefaultTableModel> rowSorter = new TableRowSorter<>(modelo);
+    private void btnBuscarCopereActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarCopereActionPerformed
+        TableRowSorter<DefaultTableModel> rowSorter = new TableRowSorter<>(modeloCopere);
         tbCopere.setRowSorter(rowSorter);
-        if (!txtBuscar.getText().isEmpty()) {
-            RowFilter<DefaultTableModel, Object> filter = RowFilter.regexFilter(txtBuscar.getText());
+        if (!txtBuscarCopere.getText().isEmpty()) {
+            RowFilter<DefaultTableModel, Object> filter = RowFilter.regexFilter(txtBuscarCopere.getText());
             rowSorter.setRowFilter(filter);
-            txtBuscar.setText("");
+            txtBuscarCopere.setText("");
         }
-    }//GEN-LAST:event_btnBuscarActionPerformed
+    }//GEN-LAST:event_btnBuscarCopereActionPerformed
 
-    private void btn_NuevoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_NuevoActionPerformed
+    private void btnAfiliadoCopereActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAfiliadoCopereActionPerformed
         RegistroAfiliadoCopere ini = new RegistroAfiliadoCopere(this, true);
         ini.setVisible(true);
-    }//GEN-LAST:event_btn_NuevoActionPerformed
+    }//GEN-LAST:event_btnAfiliadoCopereActionPerformed
 
-    private void btnNoProcesadosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNoProcesadosActionPerformed
-        ModuloNoProcesado ini = new ModuloNoProcesado(this, true);
+    private void btnNoProcesadosCopereActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNoProcesadosCopereActionPerformed
+        NoProcesadosCOPERE ini = new NoProcesadosCOPERE(this, true);
         ini.setVisible(true);
-    }//GEN-LAST:event_btnNoProcesadosActionPerformed
+    }//GEN-LAST:event_btnNoProcesadosCopereActionPerformed
 
-    private void btnExportarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExportarActionPerformed
-        if (JOptionPane.showConfirmDialog(null, "Desea EXPORTAR el archivo COPERE", "Confirmación", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+    private void btnExportarCopereActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExportarCopereActionPerformed
+        if (JOptionPane.showConfirmDialog(null, "Esta seguro que desea GUARDAR/REEMPLAZAR la informacion COPERE?", "Confirmación", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+            mostrarDialogoProgreso(this);
+        }
+
+        if (JOptionPane.showConfirmDialog(null, "Desea EXPORTAR el archivo XLS COPERE", "Confirmación", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
             exportarXLSCopere();
         }
-    }//GEN-LAST:event_btnExportarActionPerformed
+    }//GEN-LAST:event_btnExportarCopereActionPerformed
 
     private void tbCopereMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tbCopereMouseClicked
         if (evt.getClickCount() == 2 && evt.getButton() == MouseEvent.BUTTON1) {
-            DetalladoCopere ini = new DetalladoCopere(this, true, modelo.getValueAt(tbCopere.getSelectedRow(), 2).toString());
+            DetalladoCopere ini = new DetalladoCopere(this, true, modeloCopere.getValueAt(tbCopere.getSelectedRow(), 2).toString());
             ini.setVisible(true);
         }
     }//GEN-LAST:event_tbCopereMouseClicked
 
-    private void btnGrabarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGrabarActionPerformed
-        if (JOptionPane.showConfirmDialog(null, "Esta seguro que desea GUARDAR/REEMPLAZAR la informacion COPERE?", "Confirmación", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-            mostrarDialogoProgreso(this);
-        }
-    }//GEN-LAST:event_btnGrabarActionPerformed
-
     private void jdc_mesPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_jdc_mesPropertyChange
         CargarDatosCopere();
         CargarDatosCajaPensiones();
+        CargarDatosOprefa();
     }//GEN-LAST:event_jdc_mesPropertyChange
 
     private void jdc_mesVetoableChange(java.beans.PropertyChangeEvent evt)throws java.beans.PropertyVetoException {//GEN-FIRST:event_jdc_mesVetoableChange
@@ -858,20 +1068,44 @@ public class CargaCopere extends javax.swing.JFrame {
     }//GEN-LAST:event_jdc_añoPropertyChange
 
     private void btnAfiliadoCajaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAfiliadoCajaActionPerformed
-        // TODO add your handling code here:
+        RegistroAfiliadoCaja ini = new RegistroAfiliadoCaja(this, true);
+        ini.setVisible(true);
     }//GEN-LAST:event_btnAfiliadoCajaActionPerformed
 
     private void tbCajaPensionesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tbCajaPensionesMouseClicked
         // TODO add your handling code here:
     }//GEN-LAST:event_tbCajaPensionesMouseClicked
 
-    private void btnBuscar1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscar1ActionPerformed
+    private void btnBuscarCajaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarCajaActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_btnBuscar1ActionPerformed
+    }//GEN-LAST:event_btnBuscarCajaActionPerformed
 
-    private void btnExportar1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExportar1ActionPerformed
-        saveTableToFile(tbCajaPensiones, jdc_año.getYear(), (jdc_mes.getMonth()+1));
-    }//GEN-LAST:event_btnExportar1ActionPerformed
+    private void btnExportarCajaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExportarCajaActionPerformed
+        if (JOptionPane.showConfirmDialog(null, "Esta seguro que desea GUARDAR/REEMPLAZAR la informacion CAJA DE PENSIONES?", "Confirmación", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+            mostrarDialogoProgresoCajaPensiones(this);
+        }
+
+        if (JOptionPane.showConfirmDialog(null, "Desea EXPORTAR el archivo TXT CAJA DE PENSIONES", "Confirmación", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+            saveTableToFile(tbCajaPensiones, jdc_año.getYear(), (jdc_mes.getMonth()+1));
+        }
+        
+    }//GEN-LAST:event_btnExportarCajaActionPerformed
+
+    private void btnAfiliadoOprefaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAfiliadoOprefaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnAfiliadoOprefaActionPerformed
+
+    private void tbOprefaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tbOprefaMouseClicked
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tbOprefaMouseClicked
+
+    private void btnBuscarOprefaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarOprefaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnBuscarOprefaActionPerformed
+
+    private void btnExportarOprefaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExportarOprefaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnExportarOprefaActionPerformed
 
     
     public static void saveTableToFile(JTable table, int year, int month) {
@@ -911,7 +1145,7 @@ public class CargaCopere extends javax.swing.JFrame {
         Statement st = null;
         ResultSet rs = null;
         try {
-            modelo.setRowCount(0);
+            modeloCopere.setRowCount(0);
             cnn = Conexion.getConnection();
             String sql = "SELECT Cod_Descuento = '8070', Numero_CIP, Monto_Descuento FROM EstructuraCopere";
             st = cnn.createStatement();
@@ -923,12 +1157,11 @@ public class CargaCopere extends javax.swing.JFrame {
                     data[i]  = rs.getString(i);
                 }
                 
-                modelo.addRow(data);
+                modeloCopere.addRow(data);
             }
             
-            if (modelo.getRowCount()>0) {
-                btnExportar.setEnabled(true);
-                btnGrabar.setEnabled(true);
+            if (modeloCopere.getRowCount()>0) {
+                btnExportarCopere.setEnabled(true);
             }
 
         } catch (SQLException ex) {
@@ -970,14 +1203,17 @@ public class CargaCopere extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAfiliadoCaja;
-    private javax.swing.JButton btnBuscar;
-    private javax.swing.JButton btnBuscar1;
-    private javax.swing.JButton btnExportar;
-    private javax.swing.JButton btnExportar1;
-    private javax.swing.JButton btnGrabar;
-    private javax.swing.JButton btnNoProcesados;
-    private javax.swing.JButton btn_Nuevo;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JButton btnAfiliadoCopere;
+    private javax.swing.JButton btnAfiliadoOprefa;
+    private javax.swing.JButton btnBuscarCaja;
+    private javax.swing.JButton btnBuscarCopere;
+    private javax.swing.JButton btnBuscarOprefa;
+    private javax.swing.JButton btnExportarCaja;
+    private javax.swing.JButton btnExportarCopere;
+    private javax.swing.JButton btnExportarOprefa;
+    private javax.swing.JButton btnNoProcesadosCaja;
+    private javax.swing.JButton btnNoProcesadosCopere;
+    private javax.swing.JButton btnNoProcesadosOprefa;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel16;
@@ -991,15 +1227,19 @@ public class CargaCopere extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
+    private javax.swing.JPanel jPanel7;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTabbedPane jTabbedPane1;
     public static com.toedter.calendar.JYearChooser jdc_año;
     public static com.toedter.calendar.JMonthChooser jdc_mes;
     private javax.swing.JTable tbCajaPensiones;
     private javax.swing.JTable tbCopere;
-    private javax.swing.JTextField txtBuscar;
-    private javax.swing.JTextField txtBuscar1;
+    private javax.swing.JTable tbOprefa;
+    private javax.swing.JTextField txtBuscarCaja;
+    private javax.swing.JTextField txtBuscarCopere;
+    private javax.swing.JTextField txtBuscarOprefa;
     private javax.swing.JLabel txt_razonsocial1;
     private javax.swing.JLabel txt_ruc1;
     // End of variables declaration//GEN-END:variables

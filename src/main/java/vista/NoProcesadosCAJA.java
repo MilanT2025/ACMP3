@@ -28,7 +28,7 @@ import javax.swing.table.TableColumnModel;
  *
  * @author Farmacia-Ingeniero
  */
-public class ModuloNoProcesado extends javax.swing.JDialog {
+public class NoProcesadosCAJA extends javax.swing.JDialog {
 
     private final Modelo modelo = new Modelo();
     int c = 1;
@@ -86,7 +86,7 @@ public class ModuloNoProcesado extends javax.swing.JDialog {
             JOptionPane.showMessageDialog(null, "Se han actualizado los registros no procesados", "Aviso", JOptionPane.INFORMATION_MESSAGE);
 
         } catch (SQLException ex) {
-            Logger.getLogger(ModuloNoProcesado.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(NoProcesadosCAJA.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -101,14 +101,12 @@ public class ModuloNoProcesado extends javax.swing.JDialog {
     /**
      * Creates new form ModuloNoProcesado
      */
-    public ModuloNoProcesado(java.awt.Frame parent, boolean modal) {
+    public NoProcesadosCAJA(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
         this.setLocationRelativeTo(null);
         int monthIndex = CargaCopere.jdc_mes.getMonth();
         String monthName = getMonthName(monthIndex);
-        txtMes.setText(monthName);
-        txtAño.setText(String.valueOf(CargaCopere.jdc_año.getYear()));
 
         llenar_tabla();
     }
@@ -135,18 +133,12 @@ public class ModuloNoProcesado extends javax.swing.JDialog {
         jLabel5 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tb_resultado = new javax.swing.JTable();
-        jLabel1 = new javax.swing.JLabel();
-        txtNroAdmin = new javax.swing.JTextField();
         btnIngresar = new javax.swing.JButton();
-        jLabel2 = new javax.swing.JLabel();
-        cbObservacion = new javax.swing.JComboBox<>();
         btnProcesar = new javax.swing.JButton();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        txtAño = new javax.swing.JLabel();
-        txtMes = new javax.swing.JLabel();
         txtTotalIndebidos = new javax.swing.JLabel();
         txtTotalRegistros = new javax.swing.JLabel();
+        jTextField1 = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -188,29 +180,13 @@ public class ModuloNoProcesado extends javax.swing.JDialog {
         });
         jScrollPane1.setViewportView(tb_resultado);
 
-        jLabel1.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        jLabel1.setText("Nro. Admin");
-
-        txtNroAdmin.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
-        txtNroAdmin.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                txtNroAdminKeyPressed(evt);
-            }
-        });
-
         btnIngresar.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        btnIngresar.setText("Ingresar");
+        btnIngresar.setText("Abrir");
         btnIngresar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnIngresarActionPerformed(evt);
             }
         });
-
-        jLabel2.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        jLabel2.setText("Observacion");
-
-        cbObservacion.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
-        cbObservacion.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<<SELECCIONE>>", "1 - CONFORME", "2 - FALTA DE LIQUIDEZ", "3 - NO RECIBE SUELDO" }));
 
         btnProcesar.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
         btnProcesar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/flecha-hacia-abajo.png"))); // NOI18N
@@ -222,20 +198,6 @@ public class ModuloNoProcesado extends javax.swing.JDialog {
             }
         });
 
-        jLabel3.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        jLabel3.setText("Año:");
-
-        jLabel4.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        jLabel4.setText("Mes:");
-
-        txtAño.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        txtAño.setForeground(new java.awt.Color(255, 0, 0));
-        txtAño.setText("-");
-
-        txtMes.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        txtMes.setForeground(new java.awt.Color(255, 0, 0));
-        txtMes.setText("-");
-
         txtTotalIndebidos.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
         txtTotalIndebidos.setForeground(new java.awt.Color(255, 0, 0));
         txtTotalIndebidos.setText("TOTAL INDEBIDOS DE LA ENTIDAD S/ : 0.00");
@@ -243,6 +205,8 @@ public class ModuloNoProcesado extends javax.swing.JDialog {
         txtTotalRegistros.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
         txtTotalRegistros.setForeground(new java.awt.Color(255, 0, 0));
         txtTotalRegistros.setText("TOTAL DE REGISTROS: 0");
+
+        jLabel6.setText("Ruta del Archivo:");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -252,32 +216,16 @@ public class ModuloNoProcesado extends javax.swing.JDialog {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 909, Short.MAX_VALUE)
                     .addComponent(btnProcesar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel3)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(txtAño, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txtNroAdmin, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel2)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(cbObservacion, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(btnIngresar))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel4)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txtMes, javax.swing.GroupLayout.PREFERRED_SIZE, 361, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addComponent(txtTotalIndebidos, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(txtTotalRegistros, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(txtTotalRegistros, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel6)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jTextField1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnIngresar)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -285,18 +233,11 @@ public class ModuloNoProcesado extends javax.swing.JDialog {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(jLabel4)
-                    .addComponent(txtAño)
-                    .addComponent(txtMes))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(txtNroAdmin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnIngresar)
-                    .addComponent(jLabel2)
-                    .addComponent(cbObservacion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnIngresar)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -313,8 +254,8 @@ public class ModuloNoProcesado extends javax.swing.JDialog {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -325,11 +266,6 @@ public class ModuloNoProcesado extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnIngresarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIngresarActionPerformed
-        if (cbObservacion.getSelectedIndex() == 0) {
-            JOptionPane.showMessageDialog(null, "Debe seleccionar una observacion para continuar", "Error", JOptionPane.ERROR_MESSAGE);
-            cbObservacion.showPopup();
-            return;
-        }
 
         try {
             int repeticiones = 0;
@@ -348,26 +284,24 @@ public class ModuloNoProcesado extends javax.swing.JDialog {
 
             Connection con = Conexion.getConnection();
             Statement st = con.createStatement();
-            String sql = "SELECT Estado FROM HistorialCopere WHERE Numero_CIP = '" + txtNroAdmin.getText() + "' AND Año IN (" + ultimoAño + ") AND Mes IN (" + ultimoMes + ") AND Estado <> 1";
+            String sql = "SELECT Estado FROM HistorialCopere WHERE Numero_CIP = '' AND Año IN (" + ultimoAño + ") AND Mes IN (" + ultimoMes + ") AND Estado <> 1";
             ResultSet rs = st.executeQuery(sql);
             if (rs.next()) {
                 repeticiones++;
             }
 
-            sql = "SELECT Estado FROM HistorialCopere WHERE Numero_CIP = '" + txtNroAdmin.getText() + "' AND Año IN (" + penultimoAño + ") AND Mes IN (" + penultimoMes + ") AND Estado <> 1";
+            sql = "SELECT Estado FROM HistorialCopere WHERE Numero_CIP = '' AND Año IN (" + penultimoAño + ") AND Mes IN (" + penultimoMes + ") AND Estado <> 1";
             rs = st.executeQuery(sql);
             if (rs.next()) {
                 repeticiones++;
             }
             Object[] data = new Object[5];
 
-            sql = "SELECT Monto FROM HistorialCopere WHERE Numero_CIP = '" + txtNroAdmin.getText() + "' AND Año IN (" + CargaCopere.jdc_año.getYear() + ") AND Mes IN (" + (CargaCopere.jdc_mes.getMonth() + 1) + ")";
+            sql = "SELECT Monto FROM HistorialCopere WHERE Numero_CIP = '' AND Año IN (" + CargaCopere.jdc_año.getYear() + ") AND Mes IN (" + (CargaCopere.jdc_mes.getMonth() + 1) + ")";
             rs = st.executeQuery(sql);
             if (rs.next()) {
                 data[0] = c;
-                data[1] = txtNroAdmin.getText();
                 data[2] = rs.getDouble(1);
-                data[3] = cbObservacion.getSelectedItem();
                 data[4] = "NO";
                 if (repeticiones == 2) {
                     if (JOptionPane.showConfirmDialog(null, "El Nro. Admin. registrado, ya cuenta con los 2 meses anteriores sin aportaciones, desea eliminarlo para el siguiente reporte mensualizado?", "Confirmación", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
@@ -376,18 +310,14 @@ public class ModuloNoProcesado extends javax.swing.JDialog {
                 }
                 modelo.addRow(data);
                 c++;
-                txtNroAdmin.setText("");
-                txtNroAdmin.requestFocus();
                 actualizarIndebidosyRegistros();
                 ajustarColumnas(tb_resultado);
             } else {
                 JOptionPane.showMessageDialog(null, "Verifique el Nro. Admin, no existe o se encuentra inhabilitado", "Error", JOptionPane.ERROR_MESSAGE);
-                txtNroAdmin.requestFocus();
-                txtNroAdmin.selectAll();
             }
 
         } catch (SQLException ex) {
-            Logger.getLogger(ModuloNoProcesado.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(NoProcesadosCAJA.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }//GEN-LAST:event_btnIngresarActionPerformed
@@ -403,12 +333,6 @@ public class ModuloNoProcesado extends javax.swing.JDialog {
             }
         }
     }//GEN-LAST:event_tb_resultadoKeyPressed
-
-    private void txtNroAdminKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtNroAdminKeyPressed
-        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-            btnIngresar.doClick();
-        }
-    }//GEN-LAST:event_txtNroAdminKeyPressed
 
     private void btnProcesarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProcesarActionPerformed
         if (JOptionPane.showConfirmDialog(null, "¿Estas seguro que desea GUARDAR los registros NO PROCESADOS", "Advertencia", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
@@ -478,20 +402,23 @@ public class ModuloNoProcesado extends javax.swing.JDialog {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(ModuloNoProcesado.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(NoProcesadosCAJA.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(ModuloNoProcesado.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(NoProcesadosCAJA.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(ModuloNoProcesado.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(NoProcesadosCAJA.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(ModuloNoProcesado.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(NoProcesadosCAJA.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                ModuloNoProcesado dialog = new ModuloNoProcesado(new javax.swing.JFrame(), true);
+                NoProcesadosCAJA dialog = new NoProcesadosCAJA(new javax.swing.JFrame(), true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {
@@ -506,19 +433,13 @@ public class ModuloNoProcesado extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnIngresar;
     private javax.swing.JButton btnProcesar;
-    private javax.swing.JComboBox<String> cbObservacion;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextField jTextField1;
     private javax.swing.JTable tb_resultado;
-    private javax.swing.JLabel txtAño;
-    private javax.swing.JLabel txtMes;
-    private javax.swing.JTextField txtNroAdmin;
     private javax.swing.JLabel txtTotalIndebidos;
     private javax.swing.JLabel txtTotalRegistros;
     // End of variables declaration//GEN-END:variables

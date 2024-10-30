@@ -299,7 +299,7 @@ public class RegistroAfiliadoCaja extends javax.swing.JDialog {
 
             PreparedStatement pstm = con.prepareStatement(sql);
             pstm.setString(1, txtcodigocip.getText());
-            pstm.setString(2, cbxcodigo.getSelectedItem().toString().substring(0, 1));
+            pstm.setString(2, cbxcodigo.getSelectedItem().toString().substring(0, 2));
             pstm.setString(3, txtdocumento.getText());
             pstm.setString(4, txtmonto.getText());
 
