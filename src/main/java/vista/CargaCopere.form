@@ -386,7 +386,7 @@
                           <Group type="102" attributes="0">
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jScrollPane1" max="32767" attributes="0"/>
+                                  <Component id="jScrollPane1" pref="900" max="32767" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
@@ -408,7 +408,7 @@
                                       <Component id="txtBuscarCopere" alignment="3" min="-2" pref="27" max="-2" attributes="0"/>
                                       <Component id="btnBuscarCopere" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="jLabel1" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="jLabel1" alignment="0" min="-2" pref="27" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jScrollPane1" pref="259" max="32767" attributes="0"/>
@@ -631,7 +631,7 @@
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="txtBuscarCaja" alignment="3" min="-2" pref="27" max="-2" attributes="0"/>
                                   <Component id="btnBuscarCaja" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="jLabel2" alignment="3" max="32767" attributes="0"/>
+                                  <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="jScrollPane2" pref="259" max="32767" attributes="0"/>
@@ -867,10 +867,10 @@
                                       <Component id="txtBuscarOprefa" alignment="3" min="-2" pref="27" max="-2" attributes="0"/>
                                       <Component id="btnBuscarOprefa" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="jLabel3" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="jLabel3" alignment="0" min="-2" pref="27" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jScrollPane3" pref="259" max="32767" attributes="0"/>
+                              <Component id="jScrollPane3" pref="250" max="32767" attributes="0"/>
                               <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
                               <Component id="btnExportarOprefa" min="-2" pref="47" max="-2" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>

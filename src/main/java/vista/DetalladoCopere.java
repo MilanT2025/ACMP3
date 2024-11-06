@@ -1,7 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JDialog.java to edit this template
- */
+
 package vista;
 
 import Controlador.Conexion;
@@ -17,11 +14,9 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
-/**
- *
- * @author Farmacia-Ingeniero
- */
+
 public class DetalladoCopere extends javax.swing.JDialog {
+
     private final Modelo modelo = new Modelo();
 
     private void llenar_tabla() {
@@ -39,7 +34,7 @@ public class DetalladoCopere extends javax.swing.JDialog {
         modelo.addColumn("Noviembre");
         modelo.addColumn("Diciembre");
         modelo.addColumn("Total Aporte");
-        
+
         JTableHeader header = tb_resultado.getTableHeader();
         header.setPreferredSize(new java.awt.Dimension(header.getWidth(), 35));
 
@@ -54,7 +49,7 @@ public class DetalladoCopere extends javax.swing.JDialog {
             tableColumn.setPreferredWidth(width);
         }
     }
-    
+
     public class Modelo extends DefaultTableModel {
 
         @Override
@@ -73,37 +68,37 @@ public class DetalladoCopere extends javax.swing.JDialog {
         llenar_tabla();
         cargarDatos(numerocip);
     }
-    
+
     private void cargarDatos(String numerocip) {
         try {
             String[] data = new String[14];
             Connection con = Conexion.getConnection();
             Statement st = con.createStatement();
-            String sql = "SELECT "
-                    + "    Año, "
-                    + "	Numero_CIP, "
-                    + "    SUM(CASE WHEN Mes = 1 THEN Monto ELSE 0 END) AS Enero, "
-                    + "    SUM(CASE WHEN Mes = 2 THEN Monto ELSE 0 END) AS Febrero, "
-                    + "    SUM(CASE WHEN Mes = 3 THEN Monto ELSE 0 END) AS Marzo, "
-                    + "    SUM(CASE WHEN Mes = 4 THEN Monto ELSE 0 END) AS Abril, "
-                    + "    SUM(CASE WHEN Mes = 5 THEN Monto ELSE 0 END) AS Mayo, "
-                    + "    SUM(CASE WHEN Mes = 6 THEN Monto ELSE 0 END) AS Junio, "
-                    + "    SUM(CASE WHEN Mes = 7 THEN Monto ELSE 0 END) AS Julio, "
-                    + "    SUM(CASE WHEN Mes = 8 THEN Monto ELSE 0 END) AS Agosto, "
-                    + "    SUM(CASE WHEN Mes = 9 THEN Monto ELSE 0 END) AS Septiembre, "
-                    + "    SUM(CASE WHEN Mes = 10 THEN Monto ELSE 0 END) AS Octubre, "
-                    + "    SUM(CASE WHEN Mes = 11 THEN Monto ELSE 0 END) AS Noviembre, "
-                    + "    SUM(CASE WHEN Mes = 12 THEN Monto ELSE 0 END) AS Diciembre "
-                    + "FROM HistorialCopere "
-                    + "WHERE Numero_CIP = '" + numerocip + "' AND Estado = 1"
-                    + "GROUP BY Año, Numero_CIP "
-                    + "ORDER BY Año DESC";
+            String sql = "SELECT Año,Numero_CIP, "
+                    + "		   SUM(CASE WHEN Mes = 1 THEN Monto ELSE 0 END) AS Enero, "
+                    + "		   SUM(CASE WHEN Mes = 2 THEN Monto ELSE 0 END) AS Febrero, "
+                    + "            SUM(CASE WHEN Mes = 3 THEN Monto ELSE 0 END) AS Marzo, "
+                    + "            SUM(CASE WHEN Mes = 4 THEN Monto ELSE 0 END) AS Abril, "
+                    + "            SUM(CASE WHEN Mes = 5 THEN Monto ELSE 0 END) AS Mayo, "
+                    + "            SUM(CASE WHEN Mes = 6 THEN Monto ELSE 0 END) AS Junio, "
+                    + "            SUM(CASE WHEN Mes = 7 THEN Monto ELSE 0 END) AS Julio, "
+                    + "            SUM(CASE WHEN Mes = 8 THEN Monto ELSE 0 END) AS Agosto, "
+                    + "            SUM(CASE WHEN Mes = 9 THEN Monto ELSE 0 END) AS Septiembre, "
+                    + "            SUM(CASE WHEN Mes = 10 THEN Monto ELSE 0 END) AS Octubre, "
+                    + "            SUM(CASE WHEN Mes = 11 THEN Monto ELSE 0 END) AS Noviembre, "
+                    + "            SUM(CASE WHEN Mes = 12 THEN Monto ELSE 0 END) AS Diciembre, "
+                    + "		   ISNULL ((pe.Nombres+''+pe.A_Paterno+''+pe.A_Materno),'No se encuentra el afiliado en la BD') AS Afiliado, ISNULL(pe.Dni,'-') AS DNI"
+                    + "            FROM HistorialCopere hc "
+                    + "LEFT JOIN Personal as pe on hc.Numero_CIP = pe.NroCip "
+                    + "WHERE Numero_CIP = '" + numerocip + "' AND Estado = 1 "
+                    + "GROUP BY Año, Numero_CIP,pe.Nombres,pe.A_Paterno,pe.A_Materno,pe.Dni "
+                    + "ORDER BY Año DESC;";
             ResultSet rs = st.executeQuery(sql);
             while (rs.next()) {
-                txtdni.setText("-");
-                txtnomape.setText("-");
+                txtdni.setText(rs.getString(16));
+                txtnomape.setText(rs.getString(15));
                 txtcip.setText(rs.getString(2));
-                
+
                 data[0] = rs.getString(1);
                 data[1] = rs.getString(3);
                 data[2] = rs.getString(4);
@@ -117,8 +112,8 @@ public class DetalladoCopere extends javax.swing.JDialog {
                 data[10] = rs.getString(12);
                 data[11] = rs.getString(13);
                 data[12] = rs.getString(14);
-                data[13] = 
-                      String.valueOf(
+                data[13]
+                        = String.valueOf(
                                 rs.getDouble(3)
                                 + rs.getDouble(4)
                                 + rs.getDouble(5)
@@ -132,14 +127,14 @@ public class DetalladoCopere extends javax.swing.JDialog {
                                 + rs.getDouble(13)
                                 + rs.getDouble(14)
                         );
-                
+
                 modelo.addRow(data);
-                
+
             }
         } catch (SQLException ex) {
             Logger.getLogger(DetalladoCopere.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
     }
 
     /**
