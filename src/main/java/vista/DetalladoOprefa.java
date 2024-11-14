@@ -1,4 +1,3 @@
-
 package vista;
 
 import Controlador.Conexion;
@@ -13,7 +12,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-
 
 public class DetalladoOprefa extends javax.swing.JDialog {
 
@@ -61,38 +59,51 @@ public class DetalladoOprefa extends javax.swing.JDialog {
     /**
      * Creates new form DetalladoCopere
      */
-    public DetalladoOprefa(java.awt.Frame parent, boolean modal, String numerocip) {
+    public DetalladoOprefa(java.awt.Frame parent, boolean modal, String nrodocumento) {
         super(parent, modal);
         initComponents();
         this.setLocationRelativeTo(null);
         llenar_tabla();
-        cargarDatos(numerocip);
+        cargarDatos(nrodocumento);
     }
 
-    private void cargarDatos(String numerocip) {
+    private void cargarDatos(String nrodocumento) {
         try {
             String[] data = new String[14];
             Connection con = Conexion.getConnection();
             Statement st = con.createStatement();
-            String sql = "SELECT Año,Numero_CIP, "
-                    + "		   SUM(CASE WHEN Mes = 1 THEN Monto ELSE 0 END) AS Enero, "
-                    + "		   SUM(CASE WHEN Mes = 2 THEN Monto ELSE 0 END) AS Febrero, "
-                    + "            SUM(CASE WHEN Mes = 3 THEN Monto ELSE 0 END) AS Marzo, "
-                    + "            SUM(CASE WHEN Mes = 4 THEN Monto ELSE 0 END) AS Abril, "
-                    + "            SUM(CASE WHEN Mes = 5 THEN Monto ELSE 0 END) AS Mayo, "
-                    + "            SUM(CASE WHEN Mes = 6 THEN Monto ELSE 0 END) AS Junio, "
-                    + "            SUM(CASE WHEN Mes = 7 THEN Monto ELSE 0 END) AS Julio, "
-                    + "            SUM(CASE WHEN Mes = 8 THEN Monto ELSE 0 END) AS Agosto, "
-                    + "            SUM(CASE WHEN Mes = 9 THEN Monto ELSE 0 END) AS Septiembre, "
-                    + "            SUM(CASE WHEN Mes = 10 THEN Monto ELSE 0 END) AS Octubre, "
-                    + "            SUM(CASE WHEN Mes = 11 THEN Monto ELSE 0 END) AS Noviembre, "
-                    + "            SUM(CASE WHEN Mes = 12 THEN Monto ELSE 0 END) AS Diciembre, "
-                    + "		   ISNULL ((pe.Nombres+''+pe.A_Paterno+''+pe.A_Materno),'No se encuentra el afiliado en la BD') AS Afiliado, ISNULL(pe.Dni,'-') AS DNI"
-                    + "            FROM HistorialCopere hc "
-                    + "LEFT JOIN Personal as pe on hc.Numero_CIP = pe.NroCip "
-                    + "WHERE Numero_CIP = '" + numerocip + "' AND Estado = 1 "
-                    + "GROUP BY Año, Numero_CIP,pe.Nombres,pe.A_Paterno,pe.A_Materno,pe.Dni "
-                    + "ORDER BY Año DESC;";
+            String sql = "SELECT "
+                    + "    Año, "
+                    + "    ISNULL(NroCip,'-') AS NroCip, "
+                    + "    SUM(CASE WHEN Mes = 1 THEN Monto ELSE 0 END) AS Enero, "
+                    + "    SUM(CASE WHEN Mes = 2 THEN Monto ELSE 0 END) AS Febrero, "
+                    + "    SUM(CASE WHEN Mes = 3 THEN Monto ELSE 0 END) AS Marzo, "
+                    + "    SUM(CASE WHEN Mes = 4 THEN Monto ELSE 0 END) AS Abril, "
+                    + "    SUM(CASE WHEN Mes = 5 THEN Monto ELSE 0 END) AS Mayo, "
+                    + "    SUM(CASE WHEN Mes = 6 THEN Monto ELSE 0 END) AS Junio, "
+                    + "    SUM(CASE WHEN Mes = 7 THEN Monto ELSE 0 END) AS Julio, "
+                    + "    SUM(CASE WHEN Mes = 8 THEN Monto ELSE 0 END) AS Agosto, "
+                    + "    SUM(CASE WHEN Mes = 9 THEN Monto ELSE 0 END) AS Septiembre, "
+                    + "    SUM(CASE WHEN Mes = 10 THEN Monto ELSE 0 END) AS Octubre, "
+                    + "    SUM(CASE WHEN Mes = 11 THEN Monto ELSE 0 END) AS Noviembre, "
+                    + "    SUM(CASE WHEN Mes = 12 THEN Monto ELSE 0 END) AS Diciembre, "
+                    + "    ISNULL(pe.Nombres + ' ' + pe.A_Paterno + ' ' + pe.A_Materno, 'No se encuentra el afiliado en la BD') AS Afiliado, "
+                    + "    ISNULL(pe.Dni, '-') AS DNI "
+                    + "FROM "
+                    + "    HistorialOprefa ho "
+                    + "LEFT JOIN "
+                    + "    Personal AS pe ON ho.Documento = pe.Dni "
+                    + "WHERE "
+                    + "    Documento = '"+nrodocumento+"' AND Estado = 1 "
+                    + "GROUP BY "
+                    + "    Año, "
+                    + "    NroCip, "
+                    + "    pe.Nombres, "
+                    + "    pe.A_Paterno, "
+                    + "    pe.A_Materno, "
+                    + "    pe.Dni "
+                    + "ORDER BY "
+                    + "    Año DESC;";
             ResultSet rs = st.executeQuery(sql);
             while (rs.next()) {
                 txtdni.setText(rs.getString(16));

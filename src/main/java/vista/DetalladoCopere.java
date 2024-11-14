@@ -213,8 +213,6 @@ public class DetalladoCopere extends javax.swing.JDialog {
         tb_resultado.setModel(modelo);
         tb_resultado.setRowHeight(30);
         tb_resultado.setShowGrid(true);
-        tb_resultado.setShowHorizontalLines(true);
-        tb_resultado.setShowVerticalLines(true);
         jScrollPane1.setViewportView(tb_resultado);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);

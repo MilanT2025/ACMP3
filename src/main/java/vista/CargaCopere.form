@@ -1,10 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
+  <NonVisualComponents>
+    <Menu class="javax.swing.JMenuBar" name="jMenuBar1">
+      <SubComponents>
+        <Menu class="javax.swing.JMenu" name="jMenu1">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Opciones"/>
+          </Properties>
+          <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="MenuRegistrarEmpleado">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Registrar Empleados"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuRegistrarEmpleadoActionPerformed"/>
+              </Events>
+            </MenuItem>
+          </SubComponents>
+        </Menu>
+      </SubComponents>
+    </Menu>
+  </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="3"/>
   </Properties>
   <SyntheticProperties>
+    <SyntheticProperty name="menuBar" type="java.lang.String" value="jMenuBar1"/>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
     <SyntheticProperty name="generateCenter" type="boolean" value="false"/>
   </SyntheticProperties>
@@ -411,7 +433,7 @@
                                   <Component id="jLabel1" alignment="0" min="-2" pref="27" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jScrollPane1" pref="259" max="32767" attributes="0"/>
+                              <Component id="jScrollPane1" pref="236" max="32767" attributes="0"/>
                               <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
                               <Component id="btnExportarCopere" min="-2" pref="47" max="-2" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -634,7 +656,7 @@
                                   <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane2" pref="259" max="32767" attributes="0"/>
+                              <Component id="jScrollPane2" pref="236" max="32767" attributes="0"/>
                               <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
                               <Component id="btnExportarCaja" min="-2" pref="47" max="-2" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -870,7 +892,7 @@
                                   <Component id="jLabel3" alignment="0" min="-2" pref="27" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jScrollPane3" pref="250" max="32767" attributes="0"/>
+                              <Component id="jScrollPane3" pref="236" max="32767" attributes="0"/>
                               <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
                               <Component id="btnExportarOprefa" min="-2" pref="47" max="-2" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
