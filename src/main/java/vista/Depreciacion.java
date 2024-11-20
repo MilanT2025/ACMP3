@@ -10,6 +10,9 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,16 +26,24 @@ import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
@@ -249,7 +260,7 @@ public class Depreciacion extends javax.swing.JFrame {
                     totalAnioActual = totalAnioActual + Double.parseDouble(tb_resultado.getValueAt(i, j).toString());
                 }
             }
-            
+
             Object valor = tb_resultado.getValueAt(i, 18);
             double depreciacionAnioAnterior = 0.0;
 
@@ -262,11 +273,11 @@ public class Depreciacion extends javax.swing.JFrame {
             tb_resultado.setValueAt(Double.valueOf(tb_resultado.getValueAt(i, 15).toString()), i, 33);
             tb_resultado.setValueAt(Double.parseDouble(tb_resultado.getValueAt(i, 15).toString()) - (depreciacionAnioAnterior + totalAnioActual), i, 34);
         }
-        
+
         packColumns(tb_resultado);
 
     }
-    
+
     private void packColumns(JTable table) {
         TableColumnModel columnModel = table.getColumnModel();
         for (int columnIndex = 0; columnIndex < columnModel.getColumnCount(); columnIndex++) {
@@ -311,12 +322,12 @@ public class Depreciacion extends javax.swing.JFrame {
         jdc_mes = new com.toedter.calendar.JMonthChooser();
         jButton1 = new javax.swing.JButton();
         jPanel15 = new javax.swing.JPanel();
-        jButton2 = new javax.swing.JButton();
+        jButton3 = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
-        jMenuItem2 = new javax.swing.JMenuItem();
+        ExportarExcel = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -388,12 +399,12 @@ public class Depreciacion extends javax.swing.JFrame {
         jPanel15.setBackground(new java.awt.Color(255, 255, 255));
         jPanel15.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        jButton2.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Save.png"))); // NOI18N
-        jButton2.setText("Guardar Depreciación Anual");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        jButton3.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
+        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Save.png"))); // NOI18N
+        jButton3.setText("Guardar Depreciación Anual");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                jButton3ActionPerformed(evt);
             }
         });
 
@@ -402,15 +413,15 @@ public class Depreciacion extends javax.swing.JFrame {
         jPanel15Layout.setHorizontalGroup(
             jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel15Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jButton2)
+                .addGap(16, 16, 16)
+                .addComponent(jButton3)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel15Layout.setVerticalGroup(
             jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel15Layout.createSequentialGroup()
+            .addGroup(jPanel15Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -457,11 +468,21 @@ public class Depreciacion extends javax.swing.JFrame {
         jMenu2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/flecha-hacia-abajo.png"))); // NOI18N
         jMenu2.setText("Exportar");
         jMenu2.setFont(new java.awt.Font("Roboto", 1, 12)); // NOI18N
+        jMenu2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenu2ActionPerformed(evt);
+            }
+        });
 
-        jMenuItem2.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
-        jMenuItem2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Microsoft excel.png"))); // NOI18N
-        jMenuItem2.setText("Excel");
-        jMenu2.add(jMenuItem2);
+        ExportarExcel.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
+        ExportarExcel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Microsoft excel.png"))); // NOI18N
+        ExportarExcel.setText("Excel");
+        ExportarExcel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ExportarExcelActionPerformed(evt);
+            }
+        });
+        jMenu2.add(ExportarExcel);
 
         jMenuBar1.add(jMenu2);
 
@@ -484,11 +505,48 @@ public class Depreciacion extends javax.swing.JFrame {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         llenar_tabla();
     }//GEN-LAST:event_jButton1ActionPerformed
+    // Método para exportar archivos en XLSX
+    public static void exportarArchivoExcel(DefaultTableModel model) {
+    JFileChooser jFileChooser = new JFileChooser();
+    jFileChooser.setDialogTitle("Guardar archivo Excel");
+    jFileChooser.setFileFilter(new FileNameExtensionFilter("Archivos XLSX", "xlsx"));
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton2ActionPerformed
+    int result = jFileChooser.showSaveDialog(null);
+    if (result == JFileChooser.APPROVE_OPTION) {
+        File selectedFile = jFileChooser.getSelectedFile();
+        if (!selectedFile.getName().endsWith(".xlsx")) {
+            selectedFile = new File(selectedFile.getAbsolutePath() + ".xlsx");
+        }
+        try (Workbook workbook = new XSSFWorkbook(); FileOutputStream fos = new FileOutputStream(selectedFile)) {
+            Sheet sheet = workbook.createSheet("Datos");
 
+            // Crear encabezados
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < model.getColumnCount(); i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(model.getColumnName(i));
+            }
+
+            // Crear datos
+            for (int i = 0; i < model.getRowCount(); i++) {
+                Row row = sheet.createRow(i + 1);
+                for (int j = 0; j < model.getColumnCount(); j++) {
+                    Cell cell = row.createCell(j);
+                    Object value = model.getValueAt(i, j);
+                    String cellValue = (value != null) ? value.toString() : "";
+                    cell.setCellValue(cellValue);
+                }
+            }
+
+            workbook.write(fos);
+            JOptionPane.showMessageDialog(null, "Archivo exportado exitosamente.");
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "Error al exportar el archivo: " + e.getMessage());
+        }
+    } else {
+        JOptionPane.showMessageDialog(null, "Exportación cancelada.");
+    }
+    }
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
         AgregarActivos ini = new AgregarActivos(this, true);
         int maxValue = Integer.MIN_VALUE;
@@ -505,6 +563,24 @@ public class Depreciacion extends javax.swing.JFrame {
         ini.toFront();
         ini.setVisible(true);
     }//GEN-LAST:event_jMenuItem1ActionPerformed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void ExportarExcelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ExportarExcelActionPerformed
+       DefaultTableModel modelo = (DefaultTableModel) tb_resultado.getModel();
+
+        if (modelo.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(null, "No hay datos para exportar.");
+            return;
+        }
+
+        exportarArchivoExcel(modelo);    }//GEN-LAST:event_ExportarExcelActionPerformed
+
+    private void jMenu2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenu2ActionPerformed
+
+    }//GEN-LAST:event_jMenu2ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -532,15 +608,15 @@ public class Depreciacion extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem ExportarExcel;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel15;
