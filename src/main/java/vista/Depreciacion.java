@@ -17,6 +17,7 @@ import java.sql.Statement;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
@@ -210,7 +211,11 @@ public class Depreciacion extends javax.swing.JFrame {
                     long diasDiferencia = ChronoUnit.DAYS.between(fechaActivacion, fechaColumna);
                     double total = Double.parseDouble(tb_resultado.getValueAt(i, 15).toString());
                     double vidaUtil = Double.parseDouble(tb_resultado.getValueAt(i, 16).toString());
-                    primerDato = (total / vidaUtil) * (diasDiferencia + 1) / 30;
+                    
+                    int ultimoDiaMes = YearMonth.of(fechaColumna.getYear(), fechaColumna.getMonth()).lengthOfMonth();
+
+                    primerDato = (total / vidaUtil) * (diasDiferencia + 1) / ultimoDiaMes;
+                    
                     if (fechaActivacion.getMonthValue() == fechaColumna.getMonthValue()) {
                         tb_resultado.setValueAt(primerDato, i, j);
                     }

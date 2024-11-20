@@ -11,7 +11,9 @@ import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -81,7 +83,7 @@ public class AgregarActivos extends javax.swing.JDialog {
                 return true;
             }
             // Permitir edición solo para columnas específicas
-            return column == 2 || column == 4 || column == 6 || column == 8 || column == 9 || column == 10 || column == 14 || column == 17;
+            return column == 1 || column == 3 || column == 5 || column == 7 || column == 8 || column == 9 || column == 13 || column == 16;
         }
 
         @Override
@@ -107,7 +109,6 @@ public class AgregarActivos extends javax.swing.JDialog {
             Connection con = Conexion.getConnection();
             Statement st = con.createStatement();
             String sql = "SELECT "
-                    + "	[Cta# Cont#], "
                     + "	'' AS Item, "
                     + "	FORMAT(DATEFROMPARTS(año, mes, 1), 'MMM-yy') AS Periodo, "
                     + "	'' AS Ubicacion, "
@@ -115,16 +116,17 @@ public class AgregarActivos extends javax.swing.JDialog {
                     + "	FORMAT([F# Emision], 'dd/MM/yyyy') AS [Fecha de Activación], "
                     + "	[Razon Social] AS Marca, "
                     + "	'' AS [Cuenta de Gasto Nueva], "
-                    + "	'' AS [Cta Depre Nueva], "
-                    + "	'' AS [Cta Contab Nueva], "
-                    + "	Descripcion, "
+                    + "	CDE.CuentaDepreciacion AS [Cta Depre Nueva], "
+                    + "	[Cta# Cont#] AS [Cta Contab Nueva], "
+                    + "	C.Descripcion, "
                     + "	CASE WHEN Moneda = 'S/' THEN 'PEN' ELSE Moneda END AS [Mon.], "
                     + "	Cant# AS Cantidad, "
                     + "	[U/M], "
-                    + "	CAST([Precio Sin IGV] AS DECIMAL(20,2)) AS [Valor U/M], "
+                    + "	[Precio Sin IGV] AS [Valor U/M], "
                     + "	[Sub Total MN] AS Total, "
                     + "	'' AS [Vida Util Meses] "
-                    + "FROM cuenta33 "
+                    + "FROM cuenta33 C "
+                    + "	LEFT JOIN CuentasDepreciacionEquivalentes CDE ON C.[Cta# Cont#] = CDE.CuentaContable "
                     + "WHERE "
                     + "	Año = " + año + " AND "
                     + "	Mes = " + mes + " ";
@@ -243,34 +245,61 @@ public class AgregarActivos extends javax.swing.JDialog {
     private void agregarActivos(){
         for (int i = 0; i < tb_data.getRowCount(); i++) {
             if (Boolean.parseBoolean(tb_data.getValueAt(i, 0).toString()) == true) {
-                if (tb_data.getValueAt(i, 2).toString().trim().equals("")) {
-                    JOptionPane.showMessageDialog(null, "La columna [Item], no puede estar vacia", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                if (!tb_data.getValueAt(i, 2).toString().trim().equals("") && Integer.parseInt(tb_data.getValueAt(i, 2).toString()) <= Integer.parseInt(ultimoItem.getText())) {
-                    JOptionPane.showMessageDialog(null, "La columna [Item], debe ser mayor al [Ultimo N° de Item]", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                if (tb_data.getValueAt(i, 9).toString().trim().equals("")) {
-                    JOptionPane.showMessageDialog(null, "La columna [Cta Depre Nueva], no puede estar vacia", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                if (tb_data.getValueAt(i, 10).toString().trim().equals("")) {
-                    JOptionPane.showMessageDialog(null, "La columna [Cta Contab Nueva], no puede estar vacia", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                if (tb_data.getValueAt(i, 17).toString().trim().equals("")) {
-                    JOptionPane.showMessageDialog(null, "La columna [Vida Util Meses], no puede estar vacia", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                if (tb_data.isEditing()) {
-                    TableCellEditor editor = tb_data.getCellEditor();
-                    if (editor != null) {
-                        editor.stopCellEditing();
+                try {
+                    if (tb_data.getValueAt(i, 1).toString().trim().equals("")) {
+                        JOptionPane.showMessageDialog(null, "La columna [Item], no puede estar vacia", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
                     }
+                    if (!tb_data.getValueAt(i, 1).toString().trim().equals("") && Integer.parseInt(tb_data.getValueAt(i, 1).toString()) <= Integer.parseInt(ultimoItem.getText())) {
+                        JOptionPane.showMessageDialog(null, "La columna [Item], debe ser mayor al [Ultimo N° de Item]", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    if (tb_data.getValueAt(i, 8).toString().trim().equals("")) {
+                        JOptionPane.showMessageDialog(null, "La columna [Cta Depre Nueva], no puede estar vacia", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    if (tb_data.getValueAt(i, 9).toString().trim().equals("")) {
+                        JOptionPane.showMessageDialog(null, "La columna [Cta Contab Nueva], no puede estar vacia", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    if (tb_data.getValueAt(i, 16).toString().trim().equals("")) {
+                        JOptionPane.showMessageDialog(null, "La columna [Vida Util Meses], no puede estar vacia", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    if (tb_data.isEditing()) {
+                        tb_data.getCellEditor().stopCellEditing();
+                    }
+                    
+                    Connection cn = Conexion.getConnection();
+                    String sql = "INSERT INTO [dbo].[Activos] "
+                            + "([Item], [Periodo], [Ubicacion], [Comprobante], [FechaActivacion], [Marca], "
+                            + "[CuentaGastoNuevo], [CuentaDepreNuevo], [CuentaContaNuevo], [Descripcion], "
+                            + "[Moneda], [Cantidad], [UnidadMedida], [ValorUnidad], [Total], [VidaUtilMeses]) "
+                            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    PreparedStatement pstmt = cn.prepareStatement(sql);
+                    
+                    pstmt.setInt(1, Integer.parseInt(tb_data.getValueAt(i, 1).toString()));
+                    pstmt.setString(2, tb_data.getValueAt(i, 2).toString());
+                    pstmt.setString(3, tb_data.getValueAt(i, 3).toString());
+                    pstmt.setString(4, tb_data.getValueAt(i, 4).toString());
+                    pstmt.setString(5, tb_data.getValueAt(i, 5).toString()); // java.sql.Date
+                    pstmt.setString(6, tb_data.getValueAt(i, 6).toString());
+                    pstmt.setInt(7, Integer.parseInt(tb_data.getValueAt(i, 7).toString()));
+                    pstmt.setInt(8, Integer.parseInt(tb_data.getValueAt(i, 8).toString()));
+                    pstmt.setInt(9, Integer.parseInt(tb_data.getValueAt(i, 9).toString()));
+                    pstmt.setString(10, tb_data.getValueAt(i, 10).toString());
+                    pstmt.setString(11, tb_data.getValueAt(i, 11).toString());
+                    pstmt.setInt(12, Integer.parseInt(tb_data.getValueAt(i, 12).toString()));
+                    pstmt.setString(13, tb_data.getValueAt(i, 13).toString());
+                    pstmt.setDouble(14, Double.parseDouble(tb_data.getValueAt(i, 14).toString())); // Use BigDecimal for money
+                    pstmt.setDouble(15, Double.parseDouble(tb_data.getValueAt(i, 15).toString()));      // Use BigDecimal for money
+                    pstmt.setInt(16, Integer.parseInt(tb_data.getValueAt(i, 16).toString()));
+
+                    pstmt.executeUpdate();
+                    
+                } catch (SQLException ex) {
+                    Logger.getLogger(AgregarActivos.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                
-                System.out.println("PASO");
                 
                 
             }
