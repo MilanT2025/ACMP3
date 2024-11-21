@@ -1015,6 +1015,11 @@ public class CargaCopere extends javax.swing.JFrame {
         btnNoProcesadosCaja.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnNoProcesadosCaja.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/flecha-hacia-abajo.png"))); // NOI18N
         btnNoProcesadosCaja.setText("Modulo de No Procesados");
+        btnNoProcesadosCaja.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnNoProcesadosCajaActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -1135,6 +1140,11 @@ public class CargaCopere extends javax.swing.JFrame {
         btnNoProcesadosOprefa.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnNoProcesadosOprefa.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/flecha-hacia-abajo.png"))); // NOI18N
         btnNoProcesadosOprefa.setText("Modulo de No Procesados");
+        btnNoProcesadosOprefa.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnNoProcesadosOprefaActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
@@ -1320,6 +1330,16 @@ public class CargaCopere extends javax.swing.JFrame {
         RegistrarEmpleado dialog = new RegistrarEmpleado(CargaCopere.this);
         dialog.setVisible(true); // Mostrar el JDialog
     }//GEN-LAST:event_MenuRegistrarEmpleadoActionPerformed
+
+    private void btnNoProcesadosCajaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNoProcesadosCajaActionPerformed
+        NoProcesadosCAJAP ini = new NoProcesadosCAJAP(this, true);
+        ini.setVisible(true);
+    }//GEN-LAST:event_btnNoProcesadosCajaActionPerformed
+
+    private void btnNoProcesadosOprefaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNoProcesadosOprefaActionPerformed
+        NoProcesadosOPREFA ini = new NoProcesadosOPREFA(this, true);
+        ini.setVisible(true);
+    }//GEN-LAST:event_btnNoProcesadosOprefaActionPerformed
 
     public static void saveTableToFile(JTable table, int year, int month) {
         // Formato del nombre de archivo

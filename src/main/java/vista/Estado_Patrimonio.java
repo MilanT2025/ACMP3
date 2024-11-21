@@ -470,7 +470,7 @@ public class Estado_Patrimonio extends javax.swing.JFrame {
                 }
             }
             
-            sql = "SELECT Cuenta, [Debe Anterior], [Haber Anterior], [Debe Mes (restando)], [Haber Mes (sumar)] FROM patrimonio WHERE Cuenta IN (591111, 591211, 592211) AND Año = " + año.getYear() + " AND Mes = " + (mes.getMonth()+1) + " ";
+            sql = "SELECT Cuenta, [Debe Anterior], [Haber Anterior], [Debe Mes (restando)], [Haber Mes (sumar)] FROM patrimonio WHERE Cuenta IN (591111, 591211, 592211, 592111) AND Año = " + año.getYear() + " AND Mes = " + (mes.getMonth()+1) + " ";
             rs = st.executeQuery(sql);
             Double valor1 = 0.0, valor2 = 0.0, total1, total2, valor3 = 0.0, valor4 = 0.0;
             while (rs.next()) {
@@ -588,6 +588,7 @@ public class Estado_Patrimonio extends javax.swing.JFrame {
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
+        AgregarNuevaCuenta = new javax.swing.JMenuItem();
 
         tb_IngresosTemporal.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -823,6 +824,16 @@ public class Estado_Patrimonio extends javax.swing.JFrame {
         });
         jMenu1.add(jMenuItem1);
 
+        AgregarNuevaCuenta.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
+        AgregarNuevaCuenta.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/sobresalir.png"))); // NOI18N
+        AgregarNuevaCuenta.setText("N° de Cuenta");
+        AgregarNuevaCuenta.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                AgregarNuevaCuentaActionPerformed(evt);
+            }
+        });
+        jMenu1.add(AgregarNuevaCuenta);
+
         jMenuBar1.add(jMenu1);
 
         setJMenuBar(jMenuBar1);
@@ -985,6 +996,10 @@ public class Estado_Patrimonio extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_tb_resultadoMouseClicked
 
+    private void AgregarNuevaCuentaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AgregarNuevaCuentaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_AgregarNuevaCuentaActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -1010,6 +1025,7 @@ public class Estado_Patrimonio extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem AgregarNuevaCuenta;
     private com.toedter.calendar.JYearChooser año;
     private javax.swing.JButton btn_cargar;
     private javax.swing.JButton btn_mensual;
