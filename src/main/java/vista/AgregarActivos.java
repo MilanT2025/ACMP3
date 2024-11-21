@@ -11,7 +11,6 @@ import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -28,7 +27,6 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -76,23 +74,46 @@ public class AgregarActivos extends javax.swing.JDialog {
     }
 
     public class Modelo extends DefaultTableModel {
-
+        
         @Override
         public boolean isCellEditable(int row, int column) {
-            if (column == 0) { // Permitir edición para el checkbox
+            if (column == 0) { 
                 return true;
             }
-            // Permitir edición solo para columnas específicas
+           
             return column == 1 || column == 3 || column == 5 || column == 7 || column == 8 || column == 9 || column == 13 || column == 16;
         }
 
         @Override
         public Class<?> getColumnClass(int columnIndex) {
             if (columnIndex == 0) {
-                return Boolean.class; // La primera columna será de tipo Boolean (checkbox)
+                return Boolean.class; 
             }
             return super.getColumnClass(columnIndex);
         }
+        
+        @Override
+        public void setValueAt(Object aValue, int row, int column) {
+            if (column == 1 || column == 7 || column == 8  || column == 9 || column == 16) {
+                try {
+                    if (aValue == null || aValue.toString().trim().isEmpty()) {
+                        super.setValueAt(null, row, column);
+                    } else {
+                        int intValue = Integer.parseInt(aValue.toString().trim());
+                        super.setValueAt(intValue, row, column);
+                    }
+                } catch (NumberFormatException ex) {
+                    javax.swing.JOptionPane.showMessageDialog(null,
+                            "Por favor ingrese un número entero válido en la columna",
+                            "Error de entrada",
+                            javax.swing.JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                // Permitir otros valores sin restricciones en las demás columnas
+                super.setValueAt(aValue, row, column);
+            }
+        }
+        
     }
 
     public void cargarDatos(int año, int mes) {
@@ -120,7 +141,7 @@ public class AgregarActivos extends javax.swing.JDialog {
                     + "	[Cta# Cont#] AS [Cta Contab Nueva], "
                     + "	C.Descripcion, "
                     + "	CASE WHEN Moneda = 'S/' THEN 'PEN' ELSE Moneda END AS [Mon.], "
-                    + "	Cant# AS Cantidad, "
+                    + "	CAST(Cant# AS INT) AS Cantidad, "
                     + "	[U/M], "
                     + "	[Precio Sin IGV] AS [Valor U/M], "
                     + "	[Sub Total MN] AS Total, "
@@ -277,31 +298,46 @@ public class AgregarActivos extends javax.swing.JDialog {
                             + "[Moneda], [Cantidad], [UnidadMedida], [ValorUnidad], [Total], [VidaUtilMeses]) "
                             + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     PreparedStatement pstmt = cn.prepareStatement(sql);
-                    
+
                     pstmt.setInt(1, Integer.parseInt(tb_data.getValueAt(i, 1).toString()));
                     pstmt.setString(2, tb_data.getValueAt(i, 2).toString());
-                    pstmt.setString(3, tb_data.getValueAt(i, 3).toString());
+                    if (tb_data.getValueAt(i, 3).equals("")) {
+                        pstmt.setNull(3, java.sql.Types.VARCHAR);
+                    } else {
+                        pstmt.setString(3, tb_data.getValueAt(i, 3).toString());
+                    }
                     pstmt.setString(4, tb_data.getValueAt(i, 4).toString());
                     pstmt.setString(5, tb_data.getValueAt(i, 5).toString()); // java.sql.Date
                     pstmt.setString(6, tb_data.getValueAt(i, 6).toString());
-                    pstmt.setInt(7, Integer.parseInt(tb_data.getValueAt(i, 7).toString()));
+                    if (tb_data.getValueAt(i, 7).equals("")) {
+                        pstmt.setNull(7, java.sql.Types.INTEGER);
+                    } else {
+                        pstmt.setInt(7, Integer.parseInt(tb_data.getValueAt(i, 7).toString()));
+                    }
                     pstmt.setInt(8, Integer.parseInt(tb_data.getValueAt(i, 8).toString()));
                     pstmt.setInt(9, Integer.parseInt(tb_data.getValueAt(i, 9).toString()));
                     pstmt.setString(10, tb_data.getValueAt(i, 10).toString());
                     pstmt.setString(11, tb_data.getValueAt(i, 11).toString());
                     pstmt.setInt(12, Integer.parseInt(tb_data.getValueAt(i, 12).toString()));
-                    pstmt.setString(13, tb_data.getValueAt(i, 13).toString());
+                    if (tb_data.getValueAt(i, 13).equals("")) {
+                        pstmt.setNull(13, java.sql.Types.VARCHAR);
+                    } else {
+                        pstmt.setString(13, tb_data.getValueAt(i, 13).toString());
+                    }
                     pstmt.setDouble(14, Double.parseDouble(tb_data.getValueAt(i, 14).toString())); // Use BigDecimal for money
                     pstmt.setDouble(15, Double.parseDouble(tb_data.getValueAt(i, 15).toString()));      // Use BigDecimal for money
                     pstmt.setInt(16, Integer.parseInt(tb_data.getValueAt(i, 16).toString()));
 
                     pstmt.executeUpdate();
                     
+                    JOptionPane.showMessageDialog(this, "Se ha insertado los Activos correctamente!", "Información", JOptionPane.INFORMATION_MESSAGE);
+                    this.dispose();
+                    
+                    Depreciacion.jButton2.doClick();
+
                 } catch (SQLException ex) {
                     Logger.getLogger(AgregarActivos.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                
-                
             }
         }
     

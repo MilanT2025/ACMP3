@@ -153,6 +153,10 @@ public class Depreciacion extends javax.swing.JFrame {
                 });
             }
         }
+        
+        ocultarColumnaAncho(tb_resultado, 0);
+        ocultarColumnaAncho(tb_resultado, 17);
+        ocultarColumnaAncho(tb_resultado, 18);
 
         cargarActivos();
 
@@ -307,7 +311,13 @@ public class Depreciacion extends javax.swing.JFrame {
             column.setMinWidth(maxCellWidth);
         }
     }
-
+    
+    public void ocultarColumnaAncho(JTable tabla, int columnaIndex) {
+        tabla.getColumnModel().getColumn(columnaIndex).setMinWidth(0);
+        tabla.getColumnModel().getColumn(columnaIndex).setMaxWidth(0);
+        tabla.getColumnModel().getColumn(columnaIndex).setWidth(0);
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -333,6 +343,13 @@ public class Depreciacion extends javax.swing.JFrame {
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         ExportarExcel = new javax.swing.JMenuItem();
+
+        jButton2.setText("jButton2");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -587,6 +604,10 @@ public class Depreciacion extends javax.swing.JFrame {
 
     }//GEN-LAST:event_jMenu2ActionPerformed
 
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        llenar_tabla();
+    }//GEN-LAST:event_jButton2ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -615,6 +636,7 @@ public class Depreciacion extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem ExportarExcel;
     private javax.swing.JButton jButton1;
+    public static final javax.swing.JButton jButton2 = new javax.swing.JButton();
     private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel14;
