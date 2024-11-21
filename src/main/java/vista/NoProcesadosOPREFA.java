@@ -158,7 +158,7 @@ public class NoProcesadosOPREFA extends javax.swing.JDialog {
         jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
         jLabel5.setForeground(new java.awt.Color(255, 255, 255));
         jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel5.setText("MODULO DE NO PROCESADOS");
+        jLabel5.setText("MODULO DE NO PROCESADOS DE OPREFA");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -210,7 +210,7 @@ public class NoProcesadosOPREFA extends javax.swing.JDialog {
         jLabel2.setText("Observacion");
 
         cbObservacion.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
-        cbObservacion.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<<SELECCIONE>>", "1 - CONFORME", "2 - FALTA DE LIQUIDEZ", "3 - NO RECIBE SUELDO" }));
+        cbObservacion.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<<SELECCIONE>>", "1 - FALTA DE LIQUIDEZ", "2 - NO RECIBE SUELDO" }));
 
         btnProcesar.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
         btnProcesar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/flecha-hacia-abajo.png"))); // NOI18N

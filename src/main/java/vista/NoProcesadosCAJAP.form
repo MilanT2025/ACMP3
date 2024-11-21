@@ -161,7 +161,7 @@
                   <Color blue="ff" green="ff" red="ff" type="rgb"/>
                 </Property>
                 <Property name="horizontalAlignment" type="int" value="0"/>
-                <Property name="text" type="java.lang.String" value="MODULO DE NO PROCESADOS"/>
+                <Property name="text" type="java.lang.String" value="MODULO DE NO PROCESADOS DE C. DE PENSIONES"/>
               </Properties>
             </Component>
           </SubComponents>
@@ -233,11 +233,10 @@
               <Font name="Roboto" size="13" style="0"/>
             </Property>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="4">
+              <StringArray count="3">
                 <StringItem index="0" value="&lt;&lt;SELECCIONE&gt;&gt;"/>
-                <StringItem index="1" value="1 - CONFORME"/>
-                <StringItem index="2" value="2 - FALTA DE LIQUIDEZ"/>
-                <StringItem index="3" value="3 - NO RECIBE SUELDO"/>
+                <StringItem index="1" value="1 - FALTA DE LIQUIDEZ"/>
+                <StringItem index="2" value="2 - NO RECIBE SUELDO"/>
               </StringArray>
             </Property>
           </Properties>
