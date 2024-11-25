@@ -10,6 +10,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -33,12 +34,16 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableModel;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -87,7 +92,7 @@ public class LibroMayor extends javax.swing.JFrame {
         modelo.setColumnIdentifiers(columnNames);
 
         JTableHeader header = tb_resultado.getTableHeader();
-        header.setPreferredSize(new java.awt.Dimension(header.getWidth(), 40));
+        header.setPreferredSize(new java.awt.Dimension(header.getWidth(), 45));
 
         header.setBackground(new java.awt.Color(0, 102, 153));
         header.setForeground(new java.awt.Color(255, 255, 255));
@@ -291,6 +296,192 @@ public class LibroMayor extends javax.swing.JFrame {
         }
     }
 
+    public static List<Bloque> encontrarBloques(JTable table) {
+        List<Bloque> bloques = new ArrayList<>();
+        int inicio = -1;
+        String numeroCuenta = null;
+
+        for (int i = 0; i < table.getRowCount(); i++) {
+            String col1 = table.getValueAt(i, 0) != null ? table.getValueAt(i, 0).toString() : "";
+            String col2 = table.getValueAt(i, 1) != null ? table.getValueAt(i, 1).toString() : "";
+            String col4 = table.getValueAt(i, 3) != null ? table.getValueAt(i, 3).toString() : "";
+
+            // Detectar posición inicial
+            if ("Cuenta: ".equals(col1)) {
+                inicio = i;
+                numeroCuenta = col2.isEmpty() ? "999999" : col2.trim(); // Guardar el número de cuenta
+            }
+
+            // Detectar posición final
+            if ("SALDO DEUDOR:  ".equals(col4) || "SALDO ACREEDOR:  ".equals(col4)) {
+                if (inicio != -1) { // Solo si hay un inicio válido
+                    if (i + 1 >= table.getRowCount()) {
+                        bloques.add(new Bloque(inicio, i, numeroCuenta));
+                    } else {
+                        bloques.add(new Bloque(inicio, i + 1, numeroCuenta));
+                    }
+
+                    inicio = -1; // Reiniciar el inicio
+                    numeroCuenta = null; // Reiniciar el número de cuenta
+                }
+            }
+        }
+
+        return bloques;
+    }
+
+    static class Bloque {
+
+        int inicioFila;
+        int finFila;
+        String numeroCuenta;
+
+        public Bloque(int inicioFila, int finFila, String numeroCuenta) {
+            this.inicioFila = inicioFila;
+            this.finFila = finFila;
+            this.numeroCuenta = numeroCuenta;
+        }
+    }
+
+    public static void reorganizarTabla(JTable table, List<Bloque> bloques) {
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
+
+        // Crear una nueva lista para las filas ordenadas
+        List<Object[]> filasOrdenadas = new ArrayList<>();
+
+        for (Bloque bloque : bloques) {
+            // Copiar las filas de cada bloque al nuevo orden
+            for (int i = bloque.inicioFila; i <= bloque.finFila; i++) {
+                Object[] fila = new Object[table.getColumnCount()];
+                for (int j = 0; j < table.getColumnCount(); j++) {
+                    fila[j] = table.getValueAt(i, j);
+                }
+                filasOrdenadas.add(fila);
+            }
+        }
+
+        // Limpiar el modelo de la tabla y añadir las filas ordenadas
+        model.setRowCount(0);
+        for (Object[] fila : filasOrdenadas) {
+            model.addRow(fila);
+        }
+    }
+
+    private void encontrarequivalencias() {
+        try {
+            Connection con = Conexion.getConnection();
+            Statement st = con.createStatement();
+            String sql = "SELECT * FROM LibroMayorEquivalencias";
+            ResultSet rs = st.executeQuery(sql);
+            while (rs.next()) {
+                replicarDatos(modelo, rs.getString(1), rs.getString(3), rs.getString(4));
+            }
+
+            rs.close();
+            st.close();
+            con.close();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(LibroMayor.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void ordenarJTableCuentas() {
+        List<Bloque> bloques = encontrarBloques(tb_resultado);
+
+        bloques.sort(Comparator.comparingInt(b -> Integer.parseInt(b.numeroCuenta)));
+
+        reorganizarTabla(tb_resultado, bloques);
+    }
+    
+     public static void exportarAExcel(JTable table) throws IOException {
+        // Crear un libro de trabajo
+        Workbook workbook = new XSSFWorkbook();
+        // Crear una hoja
+        Sheet sheet = workbook.createSheet("Datos");
+
+        // Crear una fuente de Arial, tamaño 9
+        Font fuente = workbook.createFont();
+        fuente.setFontName("Arial");
+        fuente.setFontHeightInPoints((short) 9);
+
+        // Crear un estilo de celda con la fuente
+        CellStyle estiloCelda = workbook.createCellStyle();
+        estiloCelda.setFont(fuente);
+
+        // Obtener el modelo de tabla
+        TableModel model = table.getModel();
+
+        // Crear las cabeceras de columna
+        Row filaCabecera = sheet.createRow(0);
+        for (int col = 0; col < model.getColumnCount(); col++) {
+            Cell celda = filaCabecera.createCell(col);
+            celda.setCellValue(model.getColumnName(col));
+            celda.setCellStyle(estiloCelda);  // Aplicar el estilo a las cabeceras
+        }
+
+        // Rellenar las filas con los datos
+        for (int row = 0; row < model.getRowCount(); row++) {
+            Row fila = sheet.createRow(row + 1);  // Empezar desde la segunda fila (la primera es la cabecera)
+            for (int col = 0; col < model.getColumnCount(); col++) {
+                Cell celda = fila.createCell(col);
+                Object valorCelda = model.getValueAt(row, col);
+
+                if (valorCelda != null) {
+                    if (valorCelda instanceof String) {
+                        celda.setCellValue((String) valorCelda);
+                    } else if (valorCelda instanceof Integer) {
+                        celda.setCellValue((Integer) valorCelda);
+                    } else if (valorCelda instanceof Double) {
+                        celda.setCellValue((Double) valorCelda);
+                    } else if (valorCelda instanceof Boolean) {
+                        celda.setCellValue((Boolean) valorCelda);
+                    }
+                }
+                celda.setCellStyle(estiloCelda);  // Aplicar el estilo a cada celda
+            }
+        }
+
+        // Ajustar el tamaño de las columnas
+        for (int i = 0; i < model.getColumnCount(); i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        // Abrir JFileChooser para seleccionar la ruta y el nombre del archivo
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Guardar archivo Excel");
+        fileChooser.setAcceptAllFileFilterUsed(false);
+        // Filtrar para solo aceptar archivos .xlsx
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Archivos Excel", "xlsx");
+        fileChooser.addChoosableFileFilter(filter);
+
+        // Mostrar el JFileChooser
+        int seleccion = fileChooser.showSaveDialog(null);
+
+        if (seleccion == JFileChooser.APPROVE_OPTION) {
+            // Obtener la ruta y el nombre del archivo seleccionado
+            String filePath = fileChooser.getSelectedFile().getAbsolutePath();
+
+            // Asegurarse de que el archivo termine con ".xlsx"
+            if (!filePath.endsWith(".xlsx")) {
+                filePath += ".xlsx";
+            }
+
+            // Guardar el archivo Excel en la ubicación seleccionada
+            try (FileOutputStream fileOut = new FileOutputStream(filePath)) {
+                workbook.write(fileOut);
+            }
+
+            // Mostrar mensaje de éxito
+            JOptionPane.showMessageDialog(null, "Archivo exportado con éxito: " + filePath);
+        } else {
+            JOptionPane.showMessageDialog(null, "Operación cancelada.");
+        }
+
+        // Cerrar el libro
+        workbook.close();
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -306,12 +497,11 @@ public class LibroMayor extends javax.swing.JFrame {
         jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tb_resultado = new javax.swing.JTable();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jTextField1 = new javax.swing.JTextField();
-        jButton3 = new javax.swing.JButton();
         txtBuscar = new javax.swing.JTextField();
         jButton4 = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
+        jTextField1 = new javax.swing.JTextField();
+        jButton5 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -342,11 +532,20 @@ public class LibroMayor extends javax.swing.JFrame {
         );
 
         jPanel3.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Datos", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Roboto", 1, 12))); // NOI18N
+        jPanel3.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         tb_resultado.setModel(modelo);
         tb_resultado.setRowHeight(25);
         jScrollPane1.setViewportView(tb_resultado);
+
+        jButton4.setFont(new java.awt.Font("Roboto", 1, 12)); // NOI18N
+        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Search_4.png"))); // NOI18N
+        jButton4.setText("Buscar");
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -354,67 +553,61 @@ public class LibroMayor extends javax.swing.JFrame {
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1161, Short.MAX_VALUE)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(txtBuscar)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton4)))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGap(46, 46, 46)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 543, Short.MAX_VALUE)
-                .addContainerGap())
+                .addContainerGap()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jButton4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txtBuscar))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 451, Short.MAX_VALUE)
+                .addGap(17, 17, 17))
         );
 
         jButton1.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        jButton1.setText("1. Cargar Libro Mayor");
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Upload to the Cloud_1.png"))); // NOI18N
+        jButton1.setText("Cargar Libro Mayor");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
 
-        jButton2.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        jButton2.setText("Cuentas Equivalentes");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        jButton5.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
+        jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Microsoft excel.png"))); // NOI18N
+        jButton5.setText("Exportar a Excel");
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                jButton5ActionPerformed(evt);
             }
         });
-
-        jButton3.setText("jButton3");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
-            }
-        });
-
-        jButton4.setText("buscar");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+            .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addContainerGap())
+                        .addComponent(jTextField1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton1))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 538, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jButton3)
-                                .addGap(18, 18, 18)
-                                .addComponent(jButton4))
-                            .addComponent(txtBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 16, Short.MAX_VALUE))))
+                        .addComponent(jButton5)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -422,18 +615,12 @@ public class LibroMayor extends javax.swing.JFrame {
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE, false)
-                        .addComponent(jTextField1)
-                        .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 37, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jButton4)
-                            .addComponent(jButton3))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton5)
                 .addContainerGap())
         );
 
@@ -453,41 +640,21 @@ public class LibroMayor extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         openFileChooser();
+        encontrarequivalencias();
+        ordenarJTableCuentas();
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jButton4ActionPerformed
+
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
         try {
-            Connection con = Conexion.getConnection();
-            Statement st = con.createStatement();
-            String sql = "SELECT * FROM LibroMayorEquivalencias";
-            ResultSet rs = st.executeQuery(sql);
-            while (rs.next()) {
-                replicarDatos(modelo, rs.getString(1), rs.getString(3), rs.getString(4));
-            }
-
-            rs.close();
-            st.close();
-            con.close();
-
-        } catch (SQLException ex) {
+            exportarAExcel(tb_resultado);
+        } catch (IOException ex) {
             Logger.getLogger(LibroMayor.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }//GEN-LAST:event_jButton2ActionPerformed
-
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        /*for (int i = 0; i < modelo.getRowCount(); i++) {
-            if (modelo.getValueAt(i, 0).equals("Cuenta: ") && !modelo.getValueAt(i, 1).equals("")) {
-                System.out.println("Fila Inicial: " + i);
-            }
-            
-            if (modelo.getValueAt(i, 3).equals("SALDO DEUDOR:  ") || modelo.getValueAt(i, 3).equals("SALDO ACREEDOR:  ")) {
-                System.out.println("Fila Final: " + i);
-            }
-        }*/
-
-        ordenarPorNumeroDeCuenta(tb_resultado);
-
-    }//GEN-LAST:event_jButton3ActionPerformed
+    }//GEN-LAST:event_jButton5ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -515,9 +682,8 @@ public class LibroMayor extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButton5;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
@@ -528,85 +694,4 @@ public class LibroMayor extends javax.swing.JFrame {
     private javax.swing.JTextField txtBuscar;
     // End of variables declaration//GEN-END:variables
 
-    public static void ordenarPorNumeroDeCuenta(JTable table) {
-        DefaultTableModel model = (DefaultTableModel) table.getModel();
-        int rowCount = model.getRowCount();
-        
-        // Lista para almacenar bloques
-        List<List<Object[]>> bloques = new ArrayList<>();
-        
-        List<Object[]> bloqueActual = new ArrayList<>();
-        
-        for (int i = 0; i < rowCount; i++) {
-            // Verificación de null para evitar NullPointerException
-            String columna0 = (model.getValueAt(i, 0) != null) ? model.getValueAt(i, 0).toString() : "";
-            String columna1 = (model.getValueAt(i, 1) != null) ? model.getValueAt(i, 1).toString() : "";
-            String columna3 = (model.getValueAt(i, 3) != null) ? model.getValueAt(i, 3).toString() : "";
-
-            // Identificar el inicio de un bloque
-            if (columna0.equals("Cuenta: ")) {
-                // Si ya hay un bloque en curso, lo añadimos a la lista
-                if (!bloqueActual.isEmpty()) {
-                    bloques.add(bloqueActual);
-                }
-                // Iniciar un nuevo bloque
-                bloqueActual = new ArrayList<>();
-            }
-
-            // Añadir la fila actual al bloque
-            bloqueActual.add(new Object[]{
-                model.getValueAt(i, 0), 
-                model.getValueAt(i, 1),
-                model.getValueAt(i, 2),
-                model.getValueAt(i, 3)
-            });
-
-            // Si es el fin de un bloque ("SALDO DEUDOR:" o "SALDO ACREEDOR:")
-            if (columna3.equals("SALDO DEUDOR: ") || columna3.equals("SALDO ACREEDOR: ")) {
-                bloques.add(bloqueActual);
-                bloqueActual = new ArrayList<>();
-            }
-        }
-
-        // Asegurarse de añadir el último bloque si existe
-        if (!bloqueActual.isEmpty()) {
-            bloques.add(bloqueActual);
-        }
-
-        // Ordenar los bloques por el número de cuenta (columna 1)
-        Collections.sort(bloques, new Comparator<List<Object[]>>() {
-            @Override
-            public int compare(List<Object[]> bloque1, List<Object[]> bloque2) {
-                // Verificar si el valor en la columna 1 es numérico
-                int cuenta1 = obtenerNumeroDeCuenta(bloque1);
-                int cuenta2 = obtenerNumeroDeCuenta(bloque2);
-                return Integer.compare(cuenta1, cuenta2);
-            }
-        });
-
-        // Limpiar la tabla antes de reinsertar los datos
-        model.setRowCount(0);
-
-        // Volver a llenar la tabla con los bloques ordenados
-        for (List<Object[]> bloque : bloques) {
-            for (Object[] fila : bloque) {
-                model.addRow(fila);
-            }
-        }
-    }
-
-    // Método auxiliar para obtener el número de cuenta, manejando valores no numéricos
-    private static int obtenerNumeroDeCuenta(List<Object[]> bloque) {
-        String valorCuenta = bloque.get(0)[1].toString(); // Valor de la columna 1 (Número de cuenta)
-        if (valorCuenta != null && !valorCuenta.isEmpty()) {
-            try {
-                return Integer.parseInt(valorCuenta); // Intentar convertir a número
-            } catch (NumberFormatException e) {
-                // Manejar el caso de valores no numéricos
-                System.err.println("Valor inválido para el número de cuenta: " + valorCuenta);
-                return Integer.MAX_VALUE; // Asignar un valor muy alto para que este bloque vaya al final
-            }
-        }
-        return Integer.MAX_VALUE; // Si está vacío o no es un número, se envía al final
-    }
 }
