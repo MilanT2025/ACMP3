@@ -41,6 +41,8 @@ public class Conexion {
         try {
             properties.load(new FileInputStream(new File("config.properties")));
             server_ip = String.valueOf(properties.get("server_ip"));
+            
+            server_ip = "localhost";
             server_port = String.valueOf(properties.get("server_port"));
             server_bd = String.valueOf(properties.get("server_bd"));
             server_user = ds(String.valueOf(properties.get("server_user")), "javax.crypto.spec.SecretKeySpec@16f33");
@@ -83,5 +85,7 @@ public class Conexion {
         }
         return null;
     }
+    
+   
     
 }
