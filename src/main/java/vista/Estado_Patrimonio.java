@@ -6,6 +6,7 @@ package vista;
 
 import Controlador.Conexion;
 import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Font;
@@ -47,6 +48,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.event.TableModelEvent;
+import main.Application;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperFillManager;
@@ -76,8 +78,9 @@ public class Estado_Patrimonio extends javax.swing.JFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                setVisible(false);
-                Principal anteriorFrame = new Principal();
+                setVisible(false); 
+                FlatMacDarkLaf.setup();
+                Application anteriorFrame = new Application();
                 anteriorFrame.setVisible(true);
             }
         });

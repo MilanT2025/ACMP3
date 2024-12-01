@@ -9,6 +9,7 @@ import Controlador.FuncionesGlobales;
 import static Controlador.FuncionesGlobales.getLastDirectory;
 import static Controlador.FuncionesGlobales.saveLastDirectory;
 import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.event.WindowAdapter;
@@ -61,6 +62,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
+import main.Application;
 import org.apache.poi.ss.usermodel.Cell;
 import static org.apache.poi.ss.usermodel.CellType.BOOLEAN;
 import static org.apache.poi.ss.usermodel.CellType.NUMERIC;
@@ -93,10 +95,9 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                // Acciones que deseas realizar antes de cerrar el JFrame
-                setVisible(false); // Oculta el JFrame actual
-                // Muestra otro JFrame anterior
-                Principal anteriorFrame = new Principal();
+                setVisible(false); 
+                FlatMacDarkLaf.setup();
+                Application anteriorFrame = new Application();
                 anteriorFrame.setVisible(true);
             }
         });

@@ -14,6 +14,43 @@
     </properties>
     
     <dependencies>
+        <dependency>
+            <groupId>com.twelvemonkeys.common</groupId>
+            <artifactId>common-image</artifactId>
+            <version>3.10.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf</artifactId>
+            <version>3.4.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf-extras</artifactId>
+            <version>3.4.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.miglayout</groupId>
+            <artifactId>miglayout-swing</artifactId>
+            <version>11.3</version>
+        </dependency>
+        <dependency>
+            <groupId>raven.swing</groupId>
+            <artifactId>swing-animation-icon</artifactId>
+            <version>1.0.0</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/library/swing-animation-icon-1.0.0.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>raven.swing</groupId>
+            <artifactId>swing-blur-background</artifactId>
+            <version>1.1.0</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/library/swing-blur-background-1.1.0.jar</systemPath>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/com.toedter/jcalendar -->
         <dependency>
             <groupId>com.toedter</groupId>
@@ -48,13 +85,6 @@
             <artifactId>poi-ooxml</artifactId>
             <version>5.2.1</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.formdev/flatlaf -->
-        <dependency>
-            <groupId>com.formdev</groupId>
-            <artifactId>flatlaf</artifactId>
-            <version>3.1.1</version>
-            <type>jar</type>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/org.bidib.org.oxbow/swingbits -->
         <dependency>
             <groupId>org.bidib.org.oxbow</groupId>
@@ -85,7 +115,7 @@
                     </descriptorRefs>           
                     <archive>
                         <manifest>
-                            <mainClass>vista.Principal</mainClass>
+                            <mainClass>main.Application</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
