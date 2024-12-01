@@ -64,6 +64,8 @@ public class CTS extends javax.swing.JFrame {
 
     private final Modelo modelo = new Modelo();
 
+    
+
     public class Modelo extends DefaultTableModel {
 
         @Override
@@ -618,6 +620,11 @@ public class CTS extends javax.swing.JFrame {
     }
     
     
+    private void guardarPrevisionMensual() {
+        
+    }
+    
+    
     // METODOS ADICIONALES ******************************************************
     public void calcularDiferencia(String fechaInicio, String fechaFin, int fila) {
         SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
@@ -1035,7 +1042,7 @@ public class CTS extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        // TODO add your handling code here:
+        guardarPrevisionMensual();
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void ExportarExcelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ExportarExcelActionPerformed
