@@ -24,8 +24,8 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+              <Component id="jPanel1" max="32767" attributes="0"/>
+              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -161,7 +161,7 @@
                   <Color blue="ff" green="ff" red="ff" type="rgb"/>
                 </Property>
                 <Property name="horizontalAlignment" type="int" value="0"/>
-                <Property name="text" type="java.lang.String" value="MODULO DE NO PROCESADOS DE OPREFA"/>
+                <Property name="text" type="java.lang.String" value="MODULO DE NO PROCESADOS - OPREFA"/>
               </Properties>
             </Component>
           </SubComponents>
@@ -195,7 +195,7 @@
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Roboto" size="13" style="1"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="Nro. Admin"/>
+            <Property name="text" type="java.lang.String" value="Nro. DNI"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JTextField" name="txtNroAdmin">
@@ -235,8 +235,8 @@
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
               <StringArray count="3">
                 <StringItem index="0" value="&lt;&lt;SELECCIONE&gt;&gt;"/>
-                <StringItem index="1" value="1 - FALTA DE LIQUIDEZ"/>
-                <StringItem index="2" value="2 - NO RECIBE SUELDO"/>
+                <StringItem index="1" value="2 - FALTA DE LIQUIDEZ"/>
+                <StringItem index="2" value="3 - NO RECIBE SUELDO"/>
               </StringArray>
             </Property>
           </Properties>

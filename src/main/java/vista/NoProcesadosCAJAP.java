@@ -35,7 +35,7 @@ public class NoProcesadosCAJAP extends javax.swing.JDialog {
 
     private void llenar_tabla() {
         modelo.addColumn("N°");
-        modelo.addColumn("Nro. Admin");
+        modelo.addColumn("DNI");
         modelo.addColumn("Descuento");
         modelo.addColumn("Observacion");
         modelo.addColumn("Eliminar");
@@ -158,7 +158,7 @@ public class NoProcesadosCAJAP extends javax.swing.JDialog {
         jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
         jLabel5.setForeground(new java.awt.Color(255, 255, 255));
         jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel5.setText("MODULO DE NO PROCESADOS DE C. DE PENSIONES");
+        jLabel5.setText("MODULO DE NO PROCESADOS - C. DE PENSIONES");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -189,7 +189,7 @@ public class NoProcesadosCAJAP extends javax.swing.JDialog {
         jScrollPane1.setViewportView(tb_resultado);
 
         jLabel1.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        jLabel1.setText("Nro. Admin");
+        jLabel1.setText("Nro. DNI:");
 
         txtNroAdmin.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
         txtNroAdmin.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -210,7 +210,7 @@ public class NoProcesadosCAJAP extends javax.swing.JDialog {
         jLabel2.setText("Observacion");
 
         cbObservacion.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
-        cbObservacion.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<<SELECCIONE>>", "1 - FALTA DE LIQUIDEZ", "2 - NO RECIBE SUELDO" }));
+        cbObservacion.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<<SELECCIONE>>", "2 - FALTA DE LIQUIDEZ", "3 - NO RECIBE SUELDO" }));
 
         btnProcesar.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
         btnProcesar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/flecha-hacia-abajo.png"))); // NOI18N
@@ -313,8 +313,8 @@ public class NoProcesadosCAJAP extends javax.swing.JDialog {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -413,6 +413,9 @@ public class NoProcesadosCAJAP extends javax.swing.JDialog {
     private void btnProcesarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProcesarActionPerformed
         if (JOptionPane.showConfirmDialog(null, "¿Estas seguro que desea GUARDAR los registros NO PROCESADOS", "Advertencia", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
             ejecutarNoProcesados();
+            
+            CargaCopere.jButton1.doClick();
+            this.dispose();
         }
 
 

@@ -158,7 +158,7 @@ public class NoProcesadosCOPERE extends javax.swing.JDialog {
         jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
         jLabel5.setForeground(new java.awt.Color(255, 255, 255));
         jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel5.setText("MODULO DE NO PROCESADOS DE COPERE");
+        jLabel5.setText("MODULO DE NO PROCESADOS - COPERE");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -413,6 +413,9 @@ public class NoProcesadosCOPERE extends javax.swing.JDialog {
     private void btnProcesarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProcesarActionPerformed
         if (JOptionPane.showConfirmDialog(null, "¿Estas seguro que desea GUARDAR los registros NO PROCESADOS", "Advertencia", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
             ejecutarNoProcesados();
+            
+            CargaCopere.jButton1.doClick();
+            this.dispose();
         }
 
 
