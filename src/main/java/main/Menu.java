@@ -5,6 +5,7 @@ import net.miginfocom.swing.MigLayout;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Point2D;
+import vista.CargaCopere;
 import vista.Estado_Patrimonio;
 import vista.Excel_AFPNet;
 import vista.Flujo_Caja;
@@ -98,7 +99,10 @@ public class Menu extends JPanel {
         });
 
         itemAsociados.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "*************** Modulo en Mantenimiento ***************", "Matenimiento", JOptionPane.INFORMATION_MESSAGE);
+            FlatLightLaf.setup();
+            CargaCopere ini = new CargaCopere();
+            ini.setVisible(true);
+            application.setVisible(false);
         });
 
         itemLibroMayor.addActionListener(e -> {

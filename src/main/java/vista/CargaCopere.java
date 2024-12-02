@@ -6,8 +6,10 @@ package vista;
 
 import Controlador.Conexion;
 import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -22,8 +24,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DateFormatSymbols;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -37,11 +41,15 @@ import javax.swing.RowFilter;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
+import main.Application;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -69,12 +77,31 @@ public class CargaCopere extends javax.swing.JFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                setVisible(false);
-                Principal anteriorFrame = new Principal();
+                setVisible(false); 
+                FlatMacDarkLaf.setup();
+                Application anteriorFrame = new Application();
                 anteriorFrame.setVisible(true);
             }
         });
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        
+        txtBuscarCopere.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                realizarBusqueda(txtBuscarCopere.getText().trim());
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                realizarBusqueda(txtBuscarCopere.getText().trim());
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                realizarBusqueda(txtBuscarCopere.getText().trim());
+            }
+        });
+        
 
         cargarEstructuraCopere();
         cargarEstructuraCajaPensiones();
@@ -83,6 +110,8 @@ public class CargaCopere extends javax.swing.JFrame {
         CargarDatosCopere();
         CargarDatosCajaPensiones();
         CargarDatosOprefa();
+        
+        cargarNombresApellidos();
     }
 
     private void mostrarDialogoProgreso(JFrame parentFrame) {
@@ -546,6 +575,36 @@ public class CargaCopere extends javax.swing.JFrame {
             }
         }
     }
+    
+    private void cargarNombresApellidos() {
+        try (Connection con = Conexion.getConnection(); PreparedStatement ps = con.prepareStatement("SELECT NroCIP, CONCAT(Nombres, ' ', A_Paterno, ' ', A_Materno) AS Empleado FROM Personal")) {
+
+            ResultSet rs = ps.executeQuery();
+
+            // Mapeamos el NroCIP a un String con los nombres completos de los empleados.
+            Map<String, String> empleadoMap = new HashMap<>();
+
+            while (rs.next()) {
+                String nroCIP = rs.getString(1).trim();
+                String empleadoNombre = rs.getString(2).trim();
+                empleadoMap.put(nroCIP, empleadoNombre);
+            }
+
+            // Iteramos sobre las filas de la tabla tbCopere y actualizamos solo aquellas que coincidan.
+            for (int i = 0; i < tbCopere.getRowCount(); i++) {
+                String nroCIP = tbCopere.getValueAt(i, 2).toString().trim();
+                if (empleadoMap.containsKey(nroCIP)) {
+                    tbCopere.setValueAt(empleadoMap.get(nroCIP), i, 9);
+                }
+            }
+
+            rs.close();
+            
+            packColumns(tbCopere);
+        } catch (SQLException ex) {
+            Logger.getLogger(CargaCopere.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
     private void cargarEstructuraCopere() {
         String[] columnNames = new String[]{
@@ -558,7 +617,9 @@ public class CargaCopere extends javax.swing.JFrame {
             "NRO CUOTA",
             "TOTAL CUOTAS",
             "NUM_CHEQUE",
-            "TOTAL APORTE"
+            "NOMBRES Y APELLIDOS",
+            "TOTAL APORTE",
+            "TOTAL DEUDA",
         };
 
         modeloCopere.setColumnIdentifiers(columnNames);
@@ -635,7 +696,73 @@ public class CargaCopere extends javax.swing.JFrame {
         }
 
     }
+    
+    private void packColumns(JTable table) {
+        TableColumnModel columnModel = table.getColumnModel();
+        for (int columnIndex = 0; columnIndex < columnModel.getColumnCount(); columnIndex++) {
+            TableColumn column = columnModel.getColumn(columnIndex);
 
+            // Obtenemos el título de la columna
+            TableCellRenderer headerRenderer = table.getTableHeader().getDefaultRenderer();
+            Object headerValue = column.getHeaderValue();
+            Component headerComponent = headerRenderer.getTableCellRendererComponent(table, headerValue, false, false, -1, columnIndex);
+            int headerWidth = headerComponent.getPreferredSize().width;
+
+            // Iteramos sobre cada fila para determinar el ancho mínimo
+            int maxCellWidth = headerWidth;
+            for (int rowIndex = 0; rowIndex < table.getRowCount(); rowIndex++) {
+                TableCellRenderer cellRenderer = table.getCellRenderer(rowIndex, columnIndex);
+                Component cellComponent = table.prepareRenderer(cellRenderer, rowIndex, columnIndex);
+                int cellWidth = cellComponent.getPreferredSize().width;
+                maxCellWidth = Math.max(maxCellWidth, cellWidth);
+            }
+
+            // Establecemos el ancho mínimo de la columna
+            column.setMinWidth(maxCellWidth);
+        }
+    }
+    
+    
+    private void realizarBusqueda(String textoBusqueda) {
+        // Si el texto de búsqueda está vacío, restablecemos la selección
+        if (textoBusqueda.isEmpty()) {
+            tbCopere.clearSelection();
+            return;
+        }
+
+        // Iteramos por todas las filas de la tabla para encontrar coincidencias
+        boolean encontrado = false;
+        for (int i = 0; i < tbCopere.getRowCount(); i++) {
+            // Obtener el valor de la columna 9
+            Object valorColumna9 = tbCopere.getValueAt(i, 9);
+
+            // Verificar si el valor es null
+            if (valorColumna9 == null) {
+                continue; // Si es null, no hacemos nada y pasamos a la siguiente fila
+            }
+
+            // Convertir el valor a String y hacer la búsqueda
+            String valorColumna9String = valorColumna9.toString().toLowerCase();
+
+            // Si la búsqueda coincide con la columna 9, seleccionamos esa fila
+            if (valorColumna9String.contains(textoBusqueda.toLowerCase())) {
+                // Seleccionar la fila que coincide
+                tbCopere.setRowSelectionInterval(i, i);
+                encontrado = true;
+
+                // Desplazar la vista para que la fila seleccionada sea visible
+                Rectangle rect = tbCopere.getCellRect(i, 0, true);
+                tbCopere.scrollRectToVisible(rect);
+
+                break; // Detenemos la búsqueda después de encontrar la primera coincidencia
+            }
+        }
+
+        // Si no se encuentra ninguna coincidencia, deseleccionamos todas las filas
+        if (!encontrado) {
+            tbCopere.clearSelection();
+        }
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -666,7 +793,6 @@ public class CargaCopere extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         tbCopere = new javax.swing.JTable();
         txtBuscarCopere = new javax.swing.JTextField();
-        btnBuscarCopere = new javax.swing.JButton();
         btnExportarCopere = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
@@ -783,7 +909,7 @@ public class CargaCopere extends javax.swing.JFrame {
                     .addComponent(txt_razonsocial1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel16, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(txt_ruc1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jdc_mes, javax.swing.GroupLayout.PREFERRED_SIZE, 29, Short.MAX_VALUE)
+                    .addComponent(jdc_mes, javax.swing.GroupLayout.DEFAULT_SIZE, 29, Short.MAX_VALUE)
                     .addComponent(jdc_año, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -843,15 +969,6 @@ public class CargaCopere extends javax.swing.JFrame {
             tbCopere.getColumnModel().getColumn(5).setResizable(false);
         }
 
-        btnBuscarCopere.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnBuscarCopere.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/buscar.png"))); // NOI18N
-        btnBuscarCopere.setText("Buscar");
-        btnBuscarCopere.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnBuscarCopereActionPerformed(evt);
-            }
-        });
-
         btnExportarCopere.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnExportarCopere.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/sobresalir.png"))); // NOI18N
         btnExportarCopere.setText("Guardar y Exportar EXCEL");
@@ -863,7 +980,7 @@ public class CargaCopere extends javax.swing.JFrame {
         });
 
         jLabel1.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        jLabel1.setText("Apellidos y Nombres:");
+        jLabel1.setText("Nombres y Apellidos:");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -876,9 +993,7 @@ public class CargaCopere extends javax.swing.JFrame {
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtBuscarCopere)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnBuscarCopere, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(txtBuscarCopere))
                     .addComponent(btnExportarCopere, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -886,9 +1001,7 @@ public class CargaCopere extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(txtBuscarCopere, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(btnBuscarCopere))
+                    .addComponent(txtBuscarCopere, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
@@ -1229,16 +1342,6 @@ public class CargaCopere extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnBuscarCopereActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarCopereActionPerformed
-        TableRowSorter<DefaultTableModel> rowSorter = new TableRowSorter<>(modeloCopere);
-        tbCopere.setRowSorter(rowSorter);
-        if (!txtBuscarCopere.getText().isEmpty()) {
-            RowFilter<DefaultTableModel, Object> filter = RowFilter.regexFilter(txtBuscarCopere.getText());
-            rowSorter.setRowFilter(filter);
-            txtBuscarCopere.setText("");
-        }
-    }//GEN-LAST:event_btnBuscarCopereActionPerformed
-
     private void btnAfiliadoCopereActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAfiliadoCopereActionPerformed
         RegistroAfiliadoCopere ini = new RegistroAfiliadoCopere(this, true);
         ini.setVisible(true);
@@ -1324,6 +1427,8 @@ public class CargaCopere extends javax.swing.JFrame {
         CargarDatosOprefa();
         CargarDatosCajaPensiones();
         CargarDatosCopere();
+
+        cargarNombresApellidos();
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void MenuRegistrarEmpleadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuRegistrarEmpleadoActionPerformed
@@ -1439,7 +1544,6 @@ public class CargaCopere extends javax.swing.JFrame {
     private javax.swing.JButton btnAfiliadoCopere;
     private javax.swing.JButton btnAfiliadoOprefa;
     private javax.swing.JButton btnBuscarCaja;
-    private javax.swing.JButton btnBuscarCopere;
     private javax.swing.JButton btnBuscarOprefa;
     private javax.swing.JButton btnExportarCaja;
     private javax.swing.JButton btnExportarCopere;
