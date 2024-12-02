@@ -5,7 +5,9 @@ import net.miginfocom.swing.MigLayout;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Point2D;
+import vista.CTS;
 import vista.CargaCopere;
+import vista.Depreciacion;
 import vista.Estado_Patrimonio;
 import vista.Excel_AFPNet;
 import vista.Flujo_Caja;
@@ -118,11 +120,17 @@ public class Menu extends JPanel {
         });
 
         itemDepreciacion.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "*************** Modulo en Mantenimiento ***************", "Matenimiento", JOptionPane.INFORMATION_MESSAGE);
+            FlatLightLaf.setup();
+            Depreciacion ini = new Depreciacion();
+            ini.setVisible(true);
+            application.setVisible(false);
         });
 
         itemCTS.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "*************** Modulo en Mantenimiento ***************", "Matenimiento", JOptionPane.INFORMATION_MESSAGE);
+            FlatLightLaf.setup();
+            CTS ini = new CTS();
+            ini.setVisible(true);
+            application.setVisible(false);
         });
 
         itemGratificacion.addActionListener(e -> {

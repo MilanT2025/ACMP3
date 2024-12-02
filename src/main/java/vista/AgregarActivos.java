@@ -74,27 +74,27 @@ public class AgregarActivos extends javax.swing.JDialog {
     }
 
     public class Modelo extends DefaultTableModel {
-        
+
         @Override
         public boolean isCellEditable(int row, int column) {
-            if (column == 0) { 
+            if (column == 0) {
                 return true;
             }
-           
+
             return column == 1 || column == 3 || column == 5 || column == 7 || column == 8 || column == 9 || column == 13 || column == 16;
         }
 
         @Override
         public Class<?> getColumnClass(int columnIndex) {
             if (columnIndex == 0) {
-                return Boolean.class; 
+                return Boolean.class;
             }
             return super.getColumnClass(columnIndex);
         }
-        
+
         @Override
         public void setValueAt(Object aValue, int row, int column) {
-            if (column == 1 || column == 7 || column == 8  || column == 9 || column == 16) {
+            if (column == 1 || column == 7 || column == 8 || column == 9 || column == 16) {
                 try {
                     if (aValue == null || aValue.toString().trim().isEmpty()) {
                         super.setValueAt(null, row, column);
@@ -113,13 +113,13 @@ public class AgregarActivos extends javax.swing.JDialog {
                 super.setValueAt(aValue, row, column);
             }
         }
-        
+
     }
 
     public void cargarDatos(int año, int mes) {
         modelo.setRowCount(0);
         modelo.setColumnCount(0);
-        
+
         JTableHeader header = tb_data.getTableHeader();
         header.setPreferredSize(new java.awt.Dimension(header.getWidth(), 40));
         header.setBackground(new java.awt.Color(0, 102, 153));
@@ -129,7 +129,7 @@ public class AgregarActivos extends javax.swing.JDialog {
         try {
             Connection con = Conexion.getConnection();
             Statement st = con.createStatement();
-            String sql = "SELECT "
+            String sql = "SELECT DISTINCT"
                     + "	'' AS Item, "
                     + "	FORMAT(DATEFROMPARTS(año, mes, 1), 'MMM-yy') AS Periodo, "
                     + "	'' AS Ubicacion, "
@@ -155,26 +155,26 @@ public class AgregarActivos extends javax.swing.JDialog {
             ResultSet rs = st.executeQuery(sql);
 
             ResultSetMetaData metaData = rs.getMetaData();
-            
+
             int columnCount = metaData.getColumnCount();
-            
+
             modelo.addColumn("Seleccionar");
-            
+
             for (int i = 1; i <= columnCount; i++) {
                 modelo.addColumn(metaData.getColumnName(i));
             }
 
             while (rs.next()) {
-                Object[] row = new Object[columnCount+1];
+                Object[] row = new Object[columnCount + 1];
                 row[0] = false;
                 for (int i = 1; i <= columnCount; i++) {
                     row[i] = rs.getObject(i);
                 }
                 modelo.addRow(row);
             }
-            
+
             tb_data.getColumnModel().getColumn(0).setCellRenderer(new AlternateRowCheckBoxRenderer());
-            
+
             TableColumn column = tb_data.getColumnModel().getColumn(0);
             column.setHeaderRenderer(new CheckBoxHeaderRenderer(tb_data));
 
@@ -190,7 +190,7 @@ public class AgregarActivos extends javax.swing.JDialog {
         }
 
     }
-    
+
     static class AlternateRowCheckBoxRenderer extends JCheckBox implements TableCellRenderer {
 
         public AlternateRowCheckBoxRenderer() {
@@ -215,7 +215,7 @@ public class AgregarActivos extends javax.swing.JDialog {
             return this;
         }
     }
-    
+
     static class CheckBoxHeaderRenderer extends JCheckBox implements TableCellRenderer {
 
         private final JTable table;
@@ -261,9 +261,8 @@ public class AgregarActivos extends javax.swing.JDialog {
             column.setMinWidth(maxCellWidth);
         }
     }
-    
-    
-    private void agregarActivos(){
+
+    private void agregarActivos() {
         for (int i = 0; i < tb_data.getRowCount(); i++) {
             if (Boolean.parseBoolean(tb_data.getValueAt(i, 0).toString()) == true) {
                 try {
@@ -290,7 +289,7 @@ public class AgregarActivos extends javax.swing.JDialog {
                     if (tb_data.isEditing()) {
                         tb_data.getCellEditor().stopCellEditing();
                     }
-                    
+
                     Connection cn = Conexion.getConnection();
                     String sql = "INSERT INTO [dbo].[Activos] "
                             + "([Item], [Periodo], [Ubicacion], [Comprobante], [FechaActivacion], [Marca], "
@@ -329,10 +328,10 @@ public class AgregarActivos extends javax.swing.JDialog {
                     pstmt.setInt(16, Integer.parseInt(tb_data.getValueAt(i, 16).toString()));
 
                     pstmt.executeUpdate();
-                    
+
                     JOptionPane.showMessageDialog(this, "Se ha insertado los Activos correctamente!", "Información", JOptionPane.INFORMATION_MESSAGE);
                     this.dispose();
-                    
+
                     Depreciacion.jButton2.doClick();
 
                 } catch (SQLException ex) {
@@ -340,7 +339,7 @@ public class AgregarActivos extends javax.swing.JDialog {
                 }
             }
         }
-    
+
     }
 
     /**
@@ -524,7 +523,7 @@ public class AgregarActivos extends javax.swing.JDialog {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-         cargarDatos(jdc_año.getYear(), (jdc_mes.getMonth() + 1));
+        cargarDatos(jdc_año.getYear(), (jdc_mes.getMonth() + 1));
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed

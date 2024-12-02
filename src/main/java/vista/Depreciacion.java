@@ -6,14 +6,17 @@ package vista;
 
 import Controlador.Conexion;
 import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -40,7 +43,10 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import main.Application;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -53,6 +59,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 public class Depreciacion extends javax.swing.JFrame {
 
     private final Modelo modelo = new Modelo();
+
+   
 
     public class Modelo extends DefaultTableModel {
 
@@ -67,6 +75,7 @@ public class Depreciacion extends javax.swing.JFrame {
      */
     public Depreciacion() {
         initComponents();
+        UIManager.getLookAndFeelDefaults().put("Table.alternateRowColor", new Color(254, 238, 184));
         Locale.setDefault(new Locale("es", "ES"));
         this.setIconImage(new ImageIcon(System.getProperty("user.dir") + "/logoACMP.png").getImage());
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -74,7 +83,8 @@ public class Depreciacion extends javax.swing.JFrame {
             @Override
             public void windowClosing(WindowEvent e) {
                 setVisible(false);
-                Principal anteriorFrame = new Principal();
+                FlatMacDarkLaf.setup();
+                Application anteriorFrame = new Application();
                 anteriorFrame.setVisible(true);
             }
         });
@@ -84,6 +94,13 @@ public class Depreciacion extends javax.swing.JFrame {
     }
 
     private void llenar_tabla() {
+        
+        if ((jdc_mes.getMonth() + 1) == 12) {
+            jButton3.setEnabled(true);
+        } else {
+            jButton3.setEnabled(false);
+        }
+        
         modelo.setRowCount(0);
         modelo.setColumnCount(0);
 
@@ -97,13 +114,13 @@ public class Depreciacion extends javax.swing.JFrame {
         modelo.addColumn("idActivo");
         modelo.addColumn("Item");
         modelo.addColumn("Periodo");
-        modelo.addColumn("Ubicacion"); // DE DONDE PROVIENE
+        modelo.addColumn("Ubicacion");
         modelo.addColumn("Comprobante");
-        modelo.addColumn("Fecha de Activación"); // VERIFICAR SI ES LA FECHA DE REGISTRO O OTRA
+        modelo.addColumn("Fecha de Activación"); 
         modelo.addColumn("Marca");
-        modelo.addColumn("Cuenta de Gasto Nueva"); // DE DONDE PROVIENE
+        modelo.addColumn("Cuenta de Gasto Nueva");
         modelo.addColumn("Cta Depre Nueva");
-        modelo.addColumn("Cta Contab Nueva"); // DE DONDE PROVIENE
+        modelo.addColumn("Cta Contab Nueva");
         modelo.addColumn("Descripcion");
         modelo.addColumn("Mon.");
         modelo.addColumn("Cantidad");
@@ -153,13 +170,12 @@ public class Depreciacion extends javax.swing.JFrame {
                 });
             }
         }
-        
+
         ocultarColumnaAncho(tb_resultado, 0);
         ocultarColumnaAncho(tb_resultado, 17);
         ocultarColumnaAncho(tb_resultado, 18);
 
         cargarActivos();
-
     }
 
     private void cargarActivos() {
@@ -168,7 +184,7 @@ public class Depreciacion extends javax.swing.JFrame {
             Connection con = Conexion.getConnection();
             Statement st = con.createStatement();
 
-            String query = "SELECT A.idActivo, [Item] "
+            String query = "SELECT DISTINCT A.idActivo, [Item] "
                     + "      ,[Periodo] "
                     + "      ,[Ubicacion] "
                     + "      ,[Comprobante] "
@@ -226,11 +242,11 @@ public class Depreciacion extends javax.swing.JFrame {
                     long diasDiferencia = ChronoUnit.DAYS.between(fechaActivacion, fechaColumna);
                     double total = Double.parseDouble(tb_resultado.getValueAt(i, 15).toString());
                     double vidaUtil = Double.parseDouble(tb_resultado.getValueAt(i, 16).toString());
-                    
+
                     int ultimoDiaMes = YearMonth.of(fechaColumna.getYear(), fechaColumna.getMonth()).lengthOfMonth();
 
                     primerDato = (total / vidaUtil) * (diasDiferencia + 1) / ultimoDiaMes;
-                    
+
                     if (fechaActivacion.getMonthValue() == fechaColumna.getMonthValue()) {
                         tb_resultado.setValueAt(primerDato, i, j);
                     }
@@ -311,13 +327,82 @@ public class Depreciacion extends javax.swing.JFrame {
             column.setMinWidth(maxCellWidth);
         }
     }
-    
+
     public void ocultarColumnaAncho(JTable tabla, int columnaIndex) {
         tabla.getColumnModel().getColumn(columnaIndex).setMinWidth(0);
         tabla.getColumnModel().getColumn(columnaIndex).setMaxWidth(0);
         tabla.getColumnModel().getColumn(columnaIndex).setWidth(0);
     }
     
+    private void guardarDepreciacion() {
+        this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+        jButton3.setEnabled(false);
+        Connection cn = null;
+        try {
+            String deleteSQL = "DELETE FROM ActivoHistorico WHERE Año = ?";
+            String insertSQL = "INSERT INTO ActivoHistorico (idActivo, Año, MontoDiciembre, MontoAcumulado) VALUES (?, ?, ?, ?)";
+            cn = Conexion.getConnection();
+            // Iniciar una transacción
+            cn.setAutoCommit(false);
+
+            // Eliminar registros existentes para el año seleccionado
+            try (PreparedStatement deleteStmt = cn.prepareStatement(deleteSQL)) {
+                deleteStmt.setInt(1, jdc_año.getYear());
+                deleteStmt.executeUpdate();
+            }
+
+            // Insertar nuevos registros en lotes
+            try (PreparedStatement insertStmt = cn.prepareStatement(insertSQL)) {
+                for (int i = 0; i < tb_resultado.getRowCount(); i++) {
+                    Object valor30 = tb_resultado.getValueAt(i, 30);
+                    Object valor31 = tb_resultado.getValueAt(i, 31);
+
+                    // Validar que los valores no sean nulos y que no sean infinitos o NaN
+                    if (valor30 != null && valor31 != null) {
+                        double montoDiciembre = Double.parseDouble(valor30.toString());
+                        double montoAcumulado = Double.parseDouble(valor31.toString());
+
+                        if (!Double.isInfinite(montoDiciembre) && !Double.isNaN(montoDiciembre)
+                                && !Double.isInfinite(montoAcumulado) && !Double.isNaN(montoAcumulado)
+                                && montoAcumulado != 0.00) {
+
+                            insertStmt.setInt(1, Integer.parseInt(tb_resultado.getValueAt(i, 0).toString()));
+                            insertStmt.setInt(2, jdc_año.getYear());
+                            insertStmt.setDouble(3, montoDiciembre);
+                            insertStmt.setDouble(4, montoAcumulado);
+                            insertStmt.addBatch(); // Agregar al lote
+                        }
+                    }
+                }
+                insertStmt.executeBatch(); // Ejecutar el lote
+            }
+
+            // Confirmar la transacción
+            cn.commit();
+            JOptionPane.showMessageDialog(this, "Depreciación guardada exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+        } catch (SQLException ex) {
+            Logger.getLogger(Depreciacion.class.getName()).log(Level.SEVERE, "Error al guardar depreciación", ex);
+            try {
+                // Intentar deshacer la transacción en caso de error
+                if (cn != null && !cn.isClosed()) {
+                    cn.rollback();
+                }
+            } catch (SQLException rollbackEx) {
+                Logger.getLogger(Depreciacion.class.getName()).log(Level.SEVERE, "Error al realizar rollback", rollbackEx);
+            }
+        } finally {
+            jButton3.setEnabled(true);
+            this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            try {
+                if (cn != null && !cn.isClosed()) {
+                    cn.close(); // Cerrar la conexión
+                }
+            } catch (SQLException closeEx) {
+                Logger.getLogger(Depreciacion.class.getName()).log(Level.SEVERE, "Error al cerrar la conexión", closeEx);
+            }
+        }
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -424,6 +509,7 @@ public class Depreciacion extends javax.swing.JFrame {
         jButton3.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
         jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Save.png"))); // NOI18N
         jButton3.setText("Guardar Depreciación Anual");
+        jButton3.setEnabled(false);
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton3ActionPerformed(evt);
@@ -526,48 +612,76 @@ public class Depreciacion extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         llenar_tabla();
+        
     }//GEN-LAST:event_jButton1ActionPerformed
     // Método para exportar archivos en XLSX
     public static void exportarArchivoExcel(DefaultTableModel model) {
-    JFileChooser jFileChooser = new JFileChooser();
-    jFileChooser.setDialogTitle("Guardar archivo Excel");
-    jFileChooser.setFileFilter(new FileNameExtensionFilter("Archivos XLSX", "xlsx"));
+        JFileChooser jFileChooser = new JFileChooser();
+        jFileChooser.setDialogTitle("Guardar archivo Excel");
+        jFileChooser.setFileFilter(new FileNameExtensionFilter("Archivos XLSX", "xlsx"));
 
-    int result = jFileChooser.showSaveDialog(null);
-    if (result == JFileChooser.APPROVE_OPTION) {
-        File selectedFile = jFileChooser.getSelectedFile();
-        if (!selectedFile.getName().endsWith(".xlsx")) {
-            selectedFile = new File(selectedFile.getAbsolutePath() + ".xlsx");
-        }
-        try (Workbook workbook = new XSSFWorkbook(); FileOutputStream fos = new FileOutputStream(selectedFile)) {
-            Sheet sheet = workbook.createSheet("Datos");
-
-            // Crear encabezados
-            Row headerRow = sheet.createRow(0);
-            for (int i = 0; i < model.getColumnCount(); i++) {
-                Cell cell = headerRow.createCell(i);
-                cell.setCellValue(model.getColumnName(i));
+        int result = jFileChooser.showSaveDialog(null);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = jFileChooser.getSelectedFile();
+            if (!selectedFile.getName().endsWith(".xlsx")) {
+                selectedFile = new File(selectedFile.getAbsolutePath() + ".xlsx");
             }
+            try (Workbook workbook = new XSSFWorkbook(); FileOutputStream fos = new FileOutputStream(selectedFile)) {
+                Sheet sheet = workbook.createSheet("Datos");
 
-            // Crear datos
-            for (int i = 0; i < model.getRowCount(); i++) {
-                Row row = sheet.createRow(i + 1);
-                for (int j = 0; j < model.getColumnCount(); j++) {
-                    Cell cell = row.createCell(j);
-                    Object value = model.getValueAt(i, j);
-                    String cellValue = (value != null) ? value.toString() : "";
-                    cell.setCellValue(cellValue);
+                // Crear estilos
+                CellStyle headerStyle = workbook.createCellStyle();
+                Font headerFont = workbook.createFont();
+                headerFont.setBold(true);
+                headerStyle.setFont(headerFont);
+
+                CellStyle integerStyle = workbook.createCellStyle();
+                integerStyle.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat("0"));
+
+                CellStyle decimalStyle = workbook.createCellStyle();
+                decimalStyle.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat("0.00"));
+
+                // Crear encabezados
+                Row headerRow = sheet.createRow(0);
+                for (int i = 1; i < model.getColumnCount(); i++) { // Comenzar desde la segunda columna para ocultar la primera
+                    Cell cell = headerRow.createCell(i - 1); // Ajustar índice
+                    cell.setCellValue(model.getColumnName(i));
+                    cell.setCellStyle(headerStyle);
                 }
-            }
 
-            workbook.write(fos);
-            JOptionPane.showMessageDialog(null, "Archivo exportado exitosamente.");
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(null, "Error al exportar el archivo: " + e.getMessage());
+                // Crear datos
+                for (int i = 0; i < model.getRowCount(); i++) {
+                    Row row = sheet.createRow(i + 1);
+                    for (int j = 1; j < model.getColumnCount(); j++) { // Comenzar desde la segunda columna
+                        Cell cell = row.createCell(j - 1); // Ajustar índice
+                        Object value = model.getValueAt(i, j);
+
+                        if (value instanceof Integer) {
+                            cell.setCellValue((Integer) value);
+                            cell.setCellStyle(integerStyle);
+                        } else if (value instanceof Double) {
+                            cell.setCellValue((Double) value);
+                            cell.setCellStyle(decimalStyle);
+                        } else {
+                            String cellValue = (value != null) ? value.toString() : "";
+                            cell.setCellValue(cellValue);
+                        }
+                    }
+                }
+
+                // Autoajustar columnas
+                for (int i = 0; i < model.getColumnCount() - 1; i++) {
+                    sheet.autoSizeColumn(i);
+                }
+
+                workbook.write(fos);
+                JOptionPane.showMessageDialog(null, "Archivo exportado exitosamente.");
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(null, "Error al exportar el archivo: " + e.getMessage());
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Exportación cancelada.");
         }
-    } else {
-        JOptionPane.showMessageDialog(null, "Exportación cancelada.");
-    }
     }
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
         AgregarActivos ini = new AgregarActivos(this, true);
@@ -587,11 +701,22 @@ public class Depreciacion extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        // TODO add your handling code here:
+        int opcion = JOptionPane.showConfirmDialog(
+                this,
+                "¿Desea guardar la depreciación anual del año " + jdc_año.getYear() + "?",
+                "Confirmación",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (opcion == JOptionPane.YES_OPTION) {
+            guardarDepreciacion();
+            
+        }
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void ExportarExcelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ExportarExcelActionPerformed
-       DefaultTableModel modelo = (DefaultTableModel) tb_resultado.getModel();
+        DefaultTableModel modelo = (DefaultTableModel) tb_resultado.getModel();
 
         if (modelo.getRowCount() == 0) {
             JOptionPane.showMessageDialog(null, "No hay datos para exportar.");
@@ -624,7 +749,7 @@ public class Depreciacion extends javax.swing.JFrame {
             /* Create and display the form */
             java.awt.EventQueue.invokeLater(new Runnable() {
                 public void run() {
-                    UIManager.getLookAndFeelDefaults().put("Table.alternateRowColor", new Color(254, 238, 184));
+                    
                     new Depreciacion().setVisible(true);
                 }
             });

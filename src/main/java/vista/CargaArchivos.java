@@ -46,25 +46,24 @@ public class CargaArchivos extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         this.setLocationRelativeTo(null);
-        
+
         LocalDate fechaActual = LocalDate.now();
         LocalDate fechaMesAnterior = fechaActual.minusMonths(1);
         mes.setMonth(fechaMesAnterior.getMonthValue() - 1);
         año.setYear(fechaMesAnterior.getYear());
     }
-    
-    private void limpiarCampos(){
+
+    private void limpiarCampos() {
         cb_tipo.setSelectedIndex(0);
         txt_ruta.setText("");
         jProgressBar1.setValue(0);
     }
-    
-    
-    private void limpiarCampos2(){
+
+    private void limpiarCampos2() {
         cb_tipo2.setSelectedIndex(0);
         jProgressBar2.setValue(0);
     }
-    
+
     private void cargarIngreso(String filePath) {
         FileInputStream fis = null;
         try {
@@ -74,11 +73,11 @@ public class CargaArchivos extends javax.swing.JDialog {
 
                 Workbook workbook = new XSSFWorkbook(fis);
 
-                Sheet sheet = workbook.getSheetAt(0); 
+                Sheet sheet = workbook.getSheetAt(0);
                 int rowCount = sheet.getLastRowNum();
 
-                int year = año.getYear(); 
-                int month = (mes.getMonth() + 1); 
+                int year = año.getYear();
+                int month = (mes.getMonth() + 1);
 
                 Connection con = Conexion.getConnection();
 
@@ -92,9 +91,9 @@ public class CargaArchivos extends javax.swing.JDialog {
 
                 pstm = con.prepareStatement(sql);
 
-                for (int i = 1; i <= rowCount; i++) { 
+                for (int i = 1; i <= rowCount; i++) {
                     Row row = sheet.getRow(i);
-                    Cell firstCell = row.getCell(0); 
+                    Cell firstCell = row.getCell(0);
 
                     if (firstCell != null && firstCell.getCellType() == CellType.STRING && "INGRESO".equalsIgnoreCase(firstCell.getStringCellValue())) {
                         pstm.setInt(1, year);
@@ -120,7 +119,6 @@ public class CargaArchivos extends javax.swing.JDialog {
                         pstm.addBatch();
                     }
 
-                    
                 }
                 pstm.executeBatch();
 
@@ -133,9 +131,7 @@ public class CargaArchivos extends javax.swing.JDialog {
                 pstm.close();
                 con.close();
 
-
             }
-            
 
         } catch (FileNotFoundException ex) {
             Logger.getLogger(CargaArchivos.class.getName()).log(Level.SEVERE, null, ex);
@@ -150,7 +146,7 @@ public class CargaArchivos extends javax.swing.JDialog {
         }
 
     }
-    
+
     private void cargarEgresos(String filePath) {
         FileInputStream fis = null;
         try {
@@ -160,11 +156,11 @@ public class CargaArchivos extends javax.swing.JDialog {
 
                 Workbook workbook = new XSSFWorkbook(fis);
 
-                Sheet sheet = workbook.getSheetAt(0); 
+                Sheet sheet = workbook.getSheetAt(0);
                 int rowCount = sheet.getLastRowNum();
 
-                int year = año.getYear(); 
-                int month = (mes.getMonth() + 1); 
+                int year = año.getYear();
+                int month = (mes.getMonth() + 1);
 
                 Connection con = Conexion.getConnection();
 
@@ -180,7 +176,7 @@ public class CargaArchivos extends javax.swing.JDialog {
 
                 for (int i = 1; i <= rowCount; i++) {
                     Row row = sheet.getRow(i);
-                    Cell firstCell = row.getCell(0); 
+                    Cell firstCell = row.getCell(0);
 
                     if (firstCell != null && firstCell.getCellType() == CellType.STRING && "EGRESO".equalsIgnoreCase(firstCell.getStringCellValue())) {
                         pstm.setInt(1, year);
@@ -237,7 +233,7 @@ public class CargaArchivos extends javax.swing.JDialog {
         }
 
     }
-    
+
     private void cargarCuenta33(String filePath) {
         FileInputStream fis = null;
         try {
@@ -247,11 +243,11 @@ public class CargaArchivos extends javax.swing.JDialog {
 
                 Workbook workbook = new XSSFWorkbook(fis);
 
-                Sheet sheet = workbook.getSheetAt(0); 
+                Sheet sheet = workbook.getSheetAt(0);
                 int rowCount = sheet.getLastRowNum();
 
-                int year = año.getYear(); 
-                int month = (mes.getMonth() + 1); 
+                int year = año.getYear();
+                int month = (mes.getMonth() + 1);
 
                 Connection con = Conexion.getConnection();
 
@@ -265,7 +261,7 @@ public class CargaArchivos extends javax.swing.JDialog {
 
                 pstm = con.prepareStatement(sql);
 
-                for (int i = 1; i <= rowCount; i++) { 
+                for (int i = 1; i <= rowCount; i++) {
                     Row row = sheet.getRow(i);
                     pstm.setInt(1, year);
                     pstm.setInt(2, month);
@@ -321,7 +317,7 @@ public class CargaArchivos extends javax.swing.JDialog {
         }
 
     }
-    
+
     private void cargarHojaBalance(String filePath) {
         FileInputStream fis = null;
         try {
@@ -334,8 +330,8 @@ public class CargaArchivos extends javax.swing.JDialog {
                 Sheet sheet = workbook.getSheetAt(0);
                 int rowCount = sheet.getLastRowNum();
 
-                int year = año.getYear(); 
-                int month = (mes.getMonth() + 1); 
+                int year = año.getYear();
+                int month = (mes.getMonth() + 1);
 
                 Connection con = Conexion.getConnection();
 
@@ -349,7 +345,7 @@ public class CargaArchivos extends javax.swing.JDialog {
 
                 pstm = con.prepareStatement(sql);
 
-                for (int i = 1; i <= rowCount; i++) { 
+                for (int i = 1; i <= rowCount; i++) {
                     Row row = sheet.getRow(i);
                     pstm.setInt(1, year);
                     pstm.setInt(2, month);
@@ -405,7 +401,7 @@ public class CargaArchivos extends javax.swing.JDialog {
         }
 
     }
-    
+
     private void cargarGlosaEgresos(String filePath) {
         FileInputStream fis = null;
         try {
@@ -414,10 +410,10 @@ public class CargaArchivos extends javax.swing.JDialog {
 
                 Workbook workbook = new XSSFWorkbook(fis);
 
-                Sheet sheet = workbook.getSheetAt(0); 
+                Sheet sheet = workbook.getSheetAt(0);
                 int rowCount = sheet.getLastRowNum();
 
-                int year = año.getYear(); 
+                int year = año.getYear();
                 int month = (mes.getMonth() + 1);
 
                 Connection con = Conexion.getConnection();
@@ -432,11 +428,11 @@ public class CargaArchivos extends javax.swing.JDialog {
 
                 pstm = con.prepareStatement(sql);
 
-                for (int i = 1; i <= rowCount; i++) { 
+                for (int i = 1; i <= rowCount; i++) {
                     Row row = sheet.getRow(i);
                     pstm.setInt(1, year);
                     pstm.setInt(2, month);
-                    
+
                     int[] columnas = {1, 11};
 
                     for (int k = 0; k < columnas.length; k++) {
@@ -491,7 +487,7 @@ public class CargaArchivos extends javax.swing.JDialog {
         }
 
     }
-    
+
     private void eliminararchivo(String archivo) {
         try {
             int year = año2.getYear();
@@ -517,7 +513,7 @@ public class CargaArchivos extends javax.swing.JDialog {
         }
 
     }
-    
+
     private void setComponentsEnabled(boolean enabled) {
         btn_seleccionar.setEnabled(enabled);
         btn_subir.setEnabled(enabled);
@@ -525,14 +521,13 @@ public class CargaArchivos extends javax.swing.JDialog {
         año.setEnabled(enabled);
         mes.setEnabled(enabled);
     }
-    
+
     private void setComponentsEnabled_delete(boolean enabled) {
         btn_eliminar.setEnabled(enabled);
         cb_tipo2.setEnabled(enabled);
         año2.setEnabled(enabled);
         mes2.setEnabled(enabled);
     }
-
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -917,21 +912,19 @@ public class CargaArchivos extends javax.swing.JDialog {
             cb_tipo.showPopup();
             return;
         }
-        
+
         if (txt_ruta.getText().isEmpty()) {
             JOptionPane.showMessageDialog(this, "Seleccione un Archivo", "Mensaje", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        
-        
+
         setComponentsEnabled(false);
         setCursor(new Cursor(Cursor.WAIT_CURSOR));
 
         SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
-                
-                
+
                 String tipoSeleccionado = cb_tipo.getSelectedItem().toString();
                 String ruta = txt_ruta.getText();
 
@@ -1008,7 +1001,7 @@ public class CargaArchivos extends javax.swing.JDialog {
                 limpiarCampos();
             }
         };
-        
+
         worker.execute();
     }//GEN-LAST:event_btn_eliminarActionPerformed
 

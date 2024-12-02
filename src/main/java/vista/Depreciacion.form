@@ -323,6 +323,7 @@
                   <Image iconType="3" name="/images/Save.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Guardar Depreciaci&#xf3;n Anual"/>
+                <Property name="enabled" type="boolean" value="false"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton3ActionPerformed"/>
