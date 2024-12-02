@@ -311,12 +311,13 @@
                           <Font name="Roboto" size="13" style="0"/>
                         </Property>
                         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                          <StringArray count="5">
+                          <StringArray count="6">
                             <StringItem index="0" value="&lt;&lt;Seleccionar&gt;&gt;"/>
                             <StringItem index="1" value="Balance de Comprobacion (Hoja de Balance)"/>
                             <StringItem index="2" value="Comprobante de Compra 33 (Cuenta 33)"/>
                             <StringItem index="3" value="Movimientos de Ingresos y Egresos"/>
                             <StringItem index="4" value="Movimientos de Egresos con Glosa"/>
+                            <StringItem index="5" value="Planilla de Sueldo"/>
                           </StringArray>
                         </Property>
                       </Properties>

@@ -1,9 +1,1 @@
-<<<<<<< HEAD
 C:\Users\Farmacia-Ingeniero\Desktop
-=======
-<<<<<<< HEAD
-C:\Users\ejmg3\Desktop\PROYECTO 2 ACMP
-=======
-C:\Users\Farmacia-Ingeniero\Desktop
->>>>>>> origin/master
->>>>>>> origin/master

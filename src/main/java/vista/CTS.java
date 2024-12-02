@@ -6,8 +6,10 @@ package vista;
 
 import Controlador.Conexion;
 import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -43,11 +45,17 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import main.Application;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import static vista.Depreciacion.jdc_año;
 
 /**
  *
@@ -72,6 +80,7 @@ public class CTS extends javax.swing.JFrame {
      */
     public CTS() {
         initComponents();
+        UIManager.getLookAndFeelDefaults().put("Table.alternateRowColor", new Color(254, 238, 184));
         Locale.setDefault(new Locale("es", "ES"));
         this.setIconImage(new ImageIcon(System.getProperty("user.dir") + "/logoACMP.png").getImage());
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -79,7 +88,8 @@ public class CTS extends javax.swing.JFrame {
             @Override
             public void windowClosing(WindowEvent e) {
                 setVisible(false);
-                Principal anteriorFrame = new Principal();
+                FlatMacDarkLaf.setup();
+                Application anteriorFrame = new Application();
                 anteriorFrame.setVisible(true);
             }
         });
@@ -519,7 +529,7 @@ public class CTS extends javax.swing.JFrame {
     
     private void calculaProvision(){
         for (int i = 0; i < tb_resultado.getRowCount(); i++) {
-            if (tb_resultado.getValueAt(i, 10) == null || tb_resultado.getValueAt(i, 10).toString().equals("0.00")) {
+            if (tb_resultado.getValueAt(i, 10) == null || tb_resultado.getValueAt(i, 10).toString().equals("0.0")) {
                 tb_resultado.setValueAt("0.00", i, 24);
             }else{
                 double computable = Double.parseDouble(tb_resultado.getValueAt(i, 13).toString());
@@ -535,7 +545,7 @@ public class CTS extends javax.swing.JFrame {
                 double mes6 = tb_resultado.getValueAt(i, 21) != null ? Double.parseDouble(tb_resultado.getValueAt(i, 21).toString()) : 0.0;
                 double ajustedias = tb_resultado.getValueAt(i, 22) != null ? Double.parseDouble(tb_resultado.getValueAt(i, 22).toString()) : 0.0;
                 
-                double segundaparteformula = computable / 360 * (prevision + mes1 + mes2 + mes3 + mes4 + mes5 + mes6 + ajustedias);
+                double segundaparteformula = computable / 360 * (prevision - mes1 - mes2 - mes3 - mes4 - mes5 - mes6 - ajustedias);
                 
                 double unirformula = primeraparteformula + segundaparteformula;
                 
@@ -614,7 +624,75 @@ public class CTS extends javax.swing.JFrame {
     
     
     private void guardarPrevisionMensual() {
-        
+        this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+        jButton3.setEnabled(false);
+        Connection cn = null;
+        try {
+            String deleteSQL = "DELETE FROM ProvisionHistorial WHERE Año = ? AND Mes = ?";
+            String insertSQL = "INSERT INTO ProvisionHistorial (Año, Mes, NroDocumento, Provision) VALUES (?, ?, ?, ?)";
+            cn = Conexion.getConnection();
+            // Iniciar una transacción
+            cn.setAutoCommit(false);
+
+            // Eliminar registros existentes para el año seleccionado
+            try (PreparedStatement deleteStmt = cn.prepareStatement(deleteSQL)) {
+                deleteStmt.setInt(1, jdc_año.getYear());
+                deleteStmt.setInt(2, (jdc_mes.getMonth() + 1));
+                deleteStmt.executeUpdate();
+            }
+
+            // Insertar nuevos registros en lotes
+            try (PreparedStatement insertStmt = cn.prepareStatement(insertSQL)) {
+                for (int i = 0; i < tb_resultado.getRowCount(); i++) {
+                    // Obtener valores de las columnas
+                    Object nroDocumentoObj = tb_resultado.getValueAt(i, 1);
+                    Object valor25Obj = tb_resultado.getValueAt(i, 25);
+                    Object valor26Obj = tb_resultado.getValueAt(i, 26);
+
+                    // Manejar valores nulos o vacíos
+                    int nroDocumento = (nroDocumentoObj != null) ? Integer.parseInt(nroDocumentoObj.toString()) : 0;
+                    double valor25 = (valor25Obj != null && !valor25Obj.toString().trim().isEmpty()) ? Double.parseDouble(valor25Obj.toString()) : 0.0;
+                    double valor26 = (valor26Obj != null && !valor26Obj.toString().trim().isEmpty()) ? Double.parseDouble(valor26Obj.toString()) : 0.0;
+
+                    // Calcular el valor de provision
+                    double provision = valor25 + valor26;
+
+                    // Configurar parámetros para el insert
+                    insertStmt.setInt(1, jdc_año.getYear());
+                    insertStmt.setInt(2, (jdc_mes.getMonth() + 1));
+                    insertStmt.setInt(3, nroDocumento);
+                    insertStmt.setDouble(4, provision);
+
+                    // Añadir al batch
+                    insertStmt.addBatch();
+                }
+                insertStmt.executeBatch(); // Ejecutar el lote
+            }
+
+            // Confirmar la transacción
+            cn.commit();
+            JOptionPane.showMessageDialog(this, "Prevision Mensual Guardada Exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+        } catch (SQLException ex) {
+            Logger.getLogger(Depreciacion.class.getName()).log(Level.SEVERE, "Error al guardar prevision", ex);
+            try {
+                // Intentar deshacer la transacción en caso de error
+                if (cn != null && !cn.isClosed()) {
+                    cn.rollback();
+                }
+            } catch (SQLException rollbackEx) {
+                Logger.getLogger(Depreciacion.class.getName()).log(Level.SEVERE, "Error al realizar rollback", rollbackEx);
+            }
+        } finally {
+            jButton3.setEnabled(true);
+            this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            try {
+                if (cn != null && !cn.isClosed()) {
+                    cn.close(); // Cerrar la conexión
+                }
+            } catch (SQLException closeEx) {
+                Logger.getLogger(Depreciacion.class.getName()).log(Level.SEVERE, "Error al cerrar la conexión", closeEx);
+            }
+        }
     }
     
     
@@ -654,7 +732,7 @@ public class CTS extends javax.swing.JFrame {
             // Devolver la diferencia en formato Años, Meses, Días
             int numeroLimite = obtenerPosicion((jdc_mes.getMonth() + 1));
 
-            if (anios > 0 || meses > 6) {
+            if (anios > 0 || meses >= numeroLimite) {
                 tb_resultado.setValueAt(numeroLimite, fila, 14);
                 tb_resultado.setValueAt(0, fila, 15);
             } else {
@@ -747,8 +825,8 @@ public class CTS extends javax.swing.JFrame {
         jPanel15 = new javax.swing.JPanel();
         jButton3 = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
-        jMenuItem1 = new javax.swing.JMenuItem();
+        jMenu3 = new javax.swing.JMenu();
+        jMenuItem3 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
         ExportarExcel = new javax.swing.JMenuItem();
@@ -917,21 +995,21 @@ public class CTS extends javax.swing.JFrame {
                 .addGap(16, 16, 16))
         );
 
-        jMenu1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/ajustes.png"))); // NOI18N
-        jMenu1.setText("Opciones");
-        jMenu1.setFont(new java.awt.Font("Roboto", 1, 12)); // NOI18N
+        jMenu3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Upload To FTP.png"))); // NOI18N
+        jMenu3.setText("Subir");
+        jMenu3.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
 
-        jMenuItem1.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
-        jMenuItem1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8_add_32px.png"))); // NOI18N
-        jMenuItem1.setText("Añadir Activos");
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+        jMenuItem3.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
+        jMenuItem3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/sobresalir.png"))); // NOI18N
+        jMenuItem3.setText("Archivo Excel");
+        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem1ActionPerformed(evt);
+                jMenuItem3ActionPerformed(evt);
             }
         });
-        jMenu1.add(jMenuItem1);
+        jMenu3.add(jMenuItem3);
 
-        jMenuBar1.add(jMenu1);
+        jMenuBar1.add(jMenu3);
 
         jMenu2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/flecha-hacia-abajo.png"))); // NOI18N
         jMenu2.setText("Exportar");
@@ -976,6 +1054,7 @@ public class CTS extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
     // Método para exportar archivos en XLSX
 
+
     public static void exportarArchivoExcel(DefaultTableModel model) {
         JFileChooser jFileChooser = new JFileChooser();
         jFileChooser.setDialogTitle("Guardar archivo Excel");
@@ -990,11 +1069,40 @@ public class CTS extends javax.swing.JFrame {
             try (Workbook workbook = new XSSFWorkbook(); FileOutputStream fos = new FileOutputStream(selectedFile)) {
                 Sheet sheet = workbook.createSheet("Datos");
 
+                // Estilo para cabeceras
+                CellStyle headerStyle = workbook.createCellStyle();
+                Font headerFont = workbook.createFont();
+                headerFont.setFontName("Bahnschrift");
+                headerFont.setFontHeightInPoints((short) 10);
+                headerFont.setBold(true);
+                headerStyle.setFont(headerFont);
+                headerStyle.setAlignment(HorizontalAlignment.CENTER);
+                headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+                headerStyle.setWrapText(true);
+
+                // Estilo para datos
+                CellStyle dataStyle = workbook.createCellStyle();
+                Font dataFont = workbook.createFont();
+                dataFont.setFontName("Calibri");
+                dataFont.setFontHeightInPoints((short) 10);
+                dataStyle.setFont(dataFont);
+                dataStyle.setAlignment(HorizontalAlignment.LEFT);
+                dataStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+
+                // Estilo para datos numéricos
+                CellStyle numericStyle = workbook.createCellStyle();
+                numericStyle.setFont(dataFont);
+                numericStyle.setAlignment(HorizontalAlignment.RIGHT);
+                numericStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+                numericStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
                 // Crear encabezados
                 Row headerRow = sheet.createRow(0);
+                headerRow.setHeightInPoints(66);
                 for (int i = 0; i < model.getColumnCount(); i++) {
                     Cell cell = headerRow.createCell(i);
                     cell.setCellValue(model.getColumnName(i));
+                    cell.setCellStyle(headerStyle);
                 }
 
                 // Crear datos
@@ -1003,10 +1111,30 @@ public class CTS extends javax.swing.JFrame {
                     for (int j = 0; j < model.getColumnCount(); j++) {
                         Cell cell = row.createCell(j);
                         Object value = model.getValueAt(i, j);
-                        String cellValue = (value != null) ? value.toString() : "";
-                        cell.setCellValue(cellValue);
+
+                        if (value instanceof Number) {
+                            cell.setCellValue(((Number) value).doubleValue());
+                            cell.setCellStyle(numericStyle);
+                        } else {
+                            String cellValue = (value != null) ? value.toString() : "";
+                            cell.setCellValue(cellValue);
+                            cell.setCellStyle(dataStyle);
+                        }
                     }
                 }
+
+                // Ajustar el tamaño de las columnas
+                for (int i = 0; i < model.getColumnCount(); i++) {
+                    // Ajustar al tamaño de los títulos
+                    sheet.autoSizeColumn(i);
+                    int currentWidth = sheet.getColumnWidth(i);
+                    sheet.autoSizeColumn(i);
+                    int adjustedWidth = Math.max(sheet.getColumnWidth(i), currentWidth);
+                    sheet.setColumnWidth(i, adjustedWidth);
+                }
+
+                // Inmovilizar fila 1
+                sheet.createFreezePane(0, 1);
 
                 workbook.write(fos);
                 JOptionPane.showMessageDialog(null, "Archivo exportado exitosamente.");
@@ -1017,25 +1145,19 @@ public class CTS extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Exportación cancelada.");
         }
     }
-    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-        AgregarActivos ini = new AgregarActivos(this, true);
-        int maxValue = Integer.MIN_VALUE;
-        for (int i = 0; i < tb_resultado.getRowCount(); i++) {
-            Object value = tb_resultado.getValueAt(i, 1);
-            if (value instanceof Number) {
-                int num = ((Number) value).intValue();
-                if (num > maxValue) {
-                    maxValue = num;
-                }
-            }
-        }
-        ini.ultimoItem.setText(String.valueOf(maxValue));
-        ini.toFront();
-        ini.setVisible(true);
-    }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        guardarPrevisionMensual();
+                int opcion = JOptionPane.showConfirmDialog(
+                this,
+                "¿Desea guardar la prevision mensual del mes seleccionado?",
+                "Confirmación",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (opcion == JOptionPane.YES_OPTION) {
+            guardarPrevisionMensual();
+        }
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void ExportarExcelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ExportarExcelActionPerformed
@@ -1074,6 +1196,12 @@ public class CTS extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_jRadioButton2ItemStateChanged
 
+    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+        CargaArchivos ini = new CargaArchivos(this, true);
+        ini.toFront();
+        ini.setVisible(true);
+    }//GEN-LAST:event_jMenuItem3ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -1109,11 +1237,11 @@ public class CTS extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel16;
-    private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenu jMenu3;
     private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel15;

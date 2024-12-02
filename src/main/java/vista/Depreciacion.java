@@ -683,23 +683,6 @@ public class Depreciacion extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Exportación cancelada.");
         }
     }
-    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-        AgregarActivos ini = new AgregarActivos(this, true);
-        int maxValue = Integer.MIN_VALUE;
-        for (int i = 0; i < tb_resultado.getRowCount(); i++) {
-            Object value = tb_resultado.getValueAt(i, 1);
-            if (value instanceof Number) {
-                int num = ((Number) value).intValue();
-                if (num > maxValue) {
-                    maxValue = num;
-                }
-            }
-        }
-        ini.ultimoItem.setText(String.valueOf(maxValue));
-        ini.toFront();
-        ini.setVisible(true);
-    }//GEN-LAST:event_jMenuItem1ActionPerformed
-
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         int opcion = JOptionPane.showConfirmDialog(
                 this,
@@ -732,6 +715,23 @@ public class Depreciacion extends javax.swing.JFrame {
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         llenar_tabla();
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        AgregarActivos ini = new AgregarActivos(this, true);
+        int maxValue = Integer.MIN_VALUE;
+        for (int i = 0; i < tb_resultado.getRowCount(); i++) {
+            Object value = tb_resultado.getValueAt(i, 1);
+            if (value instanceof Number) {
+                int num = ((Number) value).intValue();
+                if (num > maxValue) {
+                    maxValue = num;
+                }
+            }
+        }
+        ini.ultimoItem.setText(String.valueOf(maxValue));
+        ini.toFront();
+        ini.setVisible(true);
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     /**
      * @param args the command line arguments
