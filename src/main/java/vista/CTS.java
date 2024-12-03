@@ -46,16 +46,21 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import main.Application;
+import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormat;
+import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.IndexedColorMap;
+import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import static vista.Depreciacion.jdc_año;
 
 /**
  *
@@ -95,7 +100,8 @@ public class CTS extends javax.swing.JFrame {
         });
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-        //llenar_tabla();
+        jdc_mes.setMonth((Calendar.getInstance().get(Calendar.MONTH))-1);
+        llenar_tabla();
     }
 
     private void llenar_tabla() {
@@ -650,7 +656,7 @@ public class CTS extends javax.swing.JFrame {
                     Object valor26Obj = tb_resultado.getValueAt(i, 26);
 
                     // Manejar valores nulos o vacíos
-                    int nroDocumento = (nroDocumentoObj != null) ? Integer.parseInt(nroDocumentoObj.toString()) : 0;
+                    String nroDocumento = (nroDocumentoObj != null) ? nroDocumentoObj.toString() : null;
                     double valor25 = (valor25Obj != null && !valor25Obj.toString().trim().isEmpty()) ? Double.parseDouble(valor25Obj.toString()) : 0.0;
                     double valor26 = (valor26Obj != null && !valor26Obj.toString().trim().isEmpty()) ? Double.parseDouble(valor26Obj.toString()) : 0.0;
 
@@ -660,7 +666,7 @@ public class CTS extends javax.swing.JFrame {
                     // Configurar parámetros para el insert
                     insertStmt.setInt(1, jdc_año.getYear());
                     insertStmt.setInt(2, (jdc_mes.getMonth() + 1));
-                    insertStmt.setInt(3, nroDocumento);
+                    insertStmt.setString(3, nroDocumento);
                     insertStmt.setDouble(4, provision);
 
                     // Añadir al batch
@@ -899,6 +905,11 @@ public class CTS extends javax.swing.JFrame {
         jComboBox1.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "CTS Mayo", "CTS Noviembre" }));
         jComboBox1.setEnabled(false);
+        jComboBox1.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                jComboBox1ItemStateChanged(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel14Layout = new javax.swing.GroupLayout(jPanel14);
         jPanel14.setLayout(jPanel14Layout);
@@ -1023,6 +1034,11 @@ public class CTS extends javax.swing.JFrame {
         jMenuItem2.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
         jMenuItem2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Terms and Conditions.png"))); // NOI18N
         jMenuItem2.setText("Asiento Contable");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
         jMenu2.add(jMenuItem2);
 
         ExportarExcel.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
@@ -1186,6 +1202,11 @@ public class CTS extends javax.swing.JFrame {
         if (jRadioButton1.isSelected()) {
             jComboBox1.setEnabled(true);
             jdc_mes.setEnabled(false);
+            if (jComboBox1.getSelectedItem().equals("CTS Mayo")) {
+                jdc_mes.setMonth(3);
+            } else if (jComboBox1.getSelectedItem().equals("CTS Noviembre")) {
+                jdc_mes.setMonth(9);
+            }
         }
     }//GEN-LAST:event_jRadioButton1ItemStateChanged
 
@@ -1202,6 +1223,190 @@ public class CTS extends javax.swing.JFrame {
         ini.setVisible(true);
     }//GEN-LAST:event_jMenuItem3ActionPerformed
 
+    private void jComboBox1ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jComboBox1ItemStateChanged
+        if (jComboBox1.getSelectedItem().equals("CTS Mayo")) {
+            jdc_mes.setMonth(3);
+        } else if (jComboBox1.getSelectedItem().equals("CTS Noviembre")) {
+            jdc_mes.setMonth(9);
+        }
+    }//GEN-LAST:event_jComboBox1ItemStateChanged
+
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+        DefaultTableModel model = new DefaultTableModel();
+        
+        model.addColumn("Cuenta");	
+        model.addColumn("Descripcion");	
+        model.addColumn("Moneda");	
+        model.addColumn("TipoCambio");	
+        model.addColumn("DebeSoles");	
+        model.addColumn("HaberSoles");	
+        model.addColumn("Glosa");	
+        model.addColumn("TipoAnexo");	
+        model.addColumn("CodigoAnexo");	
+        model.addColumn("NroDocumento");	
+        model.addColumn("FechaEmisionDoc");	
+        model.addColumn("FechaVencimientoDoc");
+
+        
+        int año = jdc_año.getYear();
+        
+        String[] meses = {
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        };
+
+        int mesSeleccionado = jdc_mes.getMonth();
+        
+        String cTS = null, fInicio = null, fFin = null;
+        
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.YEAR, año);
+
+        calendar.set(Calendar.MONTH, mesSeleccionado);
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        
+        int ultimoDia = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+
+        if (mesSeleccionado >= 4 && mesSeleccionado <= 9) {
+            cTS = "CTS " + meses[4].substring(0, 3).toUpperCase() + " " + String.valueOf(año).substring(2, 4) + " - " 
+                    + meses[9].substring(0, 3).toUpperCase() + " " + String.valueOf(año).substring(2, 4);
+            fInicio = "01/05/" + año;
+            fFin = ultimoDia + "/10/" + año;  
+        } else if (mesSeleccionado >= 10) {
+            cTS = "CTS " + meses[10].substring(0, 3).toUpperCase() + " " + String.valueOf(año).substring(2, 4) + " - " 
+                    + meses[3].substring(0, 3).toUpperCase() + " " + String.valueOf(año + 1).substring(2, 4);
+            fInicio = "01/11/" + año;
+            fFin = ultimoDia + "/04/" + (año + 1); 
+        } else if (mesSeleccionado <= 3) {
+            cTS = "CTS " + meses[10].substring(0, 3).toUpperCase() + " " + String.valueOf(año - 1).substring(2, 4) + " - " 
+                    + meses[3].substring(0, 3).toUpperCase() + " " + String.valueOf(año).substring(2, 4);
+            fInicio = "01/11/" + (año - 1);
+            fFin = ultimoDia + "/04/" + año;  
+        }
+        
+        Object data[] = new Object[12];
+        
+        for (int i = 0; i < tb_resultado.getRowCount(); i++) {
+            if (Double.parseDouble(tb_resultado.getValueAt(i, 26).toString()) > 0) {
+                data[0] = 415110;
+                data[1] = "A";
+                data[2] = "SOLES";
+                data[3] = "3.722";
+                data[4] = "-";
+                data[5] = tb_resultado.getValueAt(i, 26);
+                data[6] = "PROVISION DE CTS MES DE " + meses[mesSeleccionado].toUpperCase() + " " + jdc_año.getYear();
+                data[7] = "TRABAJADOR";
+                data[8] = tb_resultado.getValueAt(i, 1);
+                data[9] = cTS;
+                data[10] = fInicio;
+                data[11] = fFin;
+            }
+            
+            model.addRow(data);
+        }
+        
+        exportarAExcel(model, meses[mesSeleccionado].substring(0, 3).toUpperCase() + " " + String.valueOf(año).substring(2, 4));
+        
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
+
+    // Método para exportar los datos de la tabla a Excel
+    public static void exportarAExcel(DefaultTableModel model, String mesannio) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Guardar archivo Excel");
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Archivos Excel", "xlsx"));
+        fileChooser.setSelectedFile(new File("Carga Asiento CTS - " + mesannio + ".xlsx"));
+
+        // Mostrar el diálogo para guardar archivo
+        int resultado = fileChooser.showSaveDialog(null);
+        if (resultado == JFileChooser.APPROVE_OPTION) {
+            File archivoSeleccionado = fileChooser.getSelectedFile();
+            String rutaArchivo = archivoSeleccionado.getAbsolutePath();
+            if (!rutaArchivo.endsWith(".xlsx")) {
+                archivoSeleccionado = new File(rutaArchivo + ".xlsx");
+            }
+
+            try (Workbook workbook = new XSSFWorkbook()) {
+                Sheet sheet = workbook.createSheet("Voucher");
+                Font fuenteGeneral = workbook.createFont();
+                fuenteGeneral.setFontName("Bahnschrift");
+                fuenteGeneral.setFontHeightInPoints((short) 10);
+
+                // Estilo general para las celdas
+                CellStyle estiloGeneral = workbook.createCellStyle();
+                estiloGeneral.setFont(fuenteGeneral);
+
+                // Estilo para el encabezado
+                CellStyle headerStyle = workbook.createCellStyle();
+                headerStyle.setFont(fuenteGeneral);
+                headerStyle.setFillForegroundColor(IndexedColors.PALE_BLUE.getIndex());
+                headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+                headerStyle.setBorderBottom(BorderStyle.THIN);
+                headerStyle.setBorderTop(BorderStyle.THIN);
+
+                // Crear la fila de encabezados
+                Row headerRow = sheet.createRow(0);
+                for (int col = 0; col < model.getColumnCount(); col++) {
+                    Cell cell = headerRow.createCell(col);
+                    cell.setCellValue(model.getColumnName(col));
+                    cell.setCellStyle(headerStyle);
+                }
+
+                // Crear las filas de datos
+                for (int row = 0; row < model.getRowCount(); row++) {
+                    Row dataRow = sheet.createRow(row + 1);
+                    for (int col = 0; col < model.getColumnCount(); col++) {
+                        Cell cell = dataRow.createCell(col);
+                        Object value = model.getValueAt(row, col);
+
+                        // Formatear y establecer el valor en la celda
+                        if (value instanceof Number) {
+                            cell.setCellValue(((Number) value).doubleValue());
+                            CellStyle numberStyle = workbook.createCellStyle();
+                            numberStyle.cloneStyleFrom(estiloGeneral);
+
+                            // Formato con 2 decimales si es decimal
+                            DataFormat format = workbook.createDataFormat();
+                            numberStyle.setDataFormat(format.getFormat("#.##"));
+                            cell.setCellStyle(numberStyle);
+                        } else if (value instanceof String && value.toString().matches("\\d{4}-\\d{2}-\\d{2}")) {
+                            cell.setCellValue(value.toString());
+                            CellStyle dateStyle = workbook.createCellStyle();
+                            dateStyle.cloneStyleFrom(estiloGeneral);
+                            DataFormat format = workbook.createDataFormat();
+                            dateStyle.setDataFormat(format.getFormat("yyyy-mm-dd"));
+                            cell.setCellStyle(dateStyle);
+                        } else {
+                            cell.setCellValue(value.toString());
+                            cell.setCellStyle(estiloGeneral);
+                        }
+
+                        // Aplicar bordes verticales
+                        CellStyle borderStyle = workbook.createCellStyle();
+                        borderStyle.cloneStyleFrom(estiloGeneral);
+                        borderStyle.setBorderLeft(BorderStyle.THIN);
+                        borderStyle.setBorderRight(BorderStyle.THIN);
+                        cell.setCellStyle(borderStyle);
+                    }
+                }
+
+                // Ajustar el tamaño de las columnas automáticamente
+                for (int col = 0; col < model.getColumnCount(); col++) {
+                    sheet.autoSizeColumn(col);
+                }
+
+                // Guardar el archivo Excel
+                try (FileOutputStream fileOut = new FileOutputStream(archivoSeleccionado)) {
+                    workbook.write(fileOut);
+                    System.out.println("Los datos han sido exportados a Excel exitosamente.");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    
     /**
      * @param args the command line arguments
      */

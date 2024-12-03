@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.text.DateFormatSymbols;
 import java.time.LocalDate;
 import java.util.logging.Level;
@@ -28,6 +29,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import static org.apache.poi.ss.usermodel.CellType.NUMERIC;
 import static org.apache.poi.ss.usermodel.CellType.STRING;
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -487,89 +489,201 @@ public class CargaArchivos extends javax.swing.JDialog {
         }
 
     }
-    
-    private void cargarPlanillaSueldo(String filePath) {
-        FileInputStream fis = null;
+
+    public void cargarPlanillaSueldo(String excelFilePath) {
+
         try {
 
-            fis = new FileInputStream(new File(filePath));
-            {
+            Connection con = Conexion.getConnection();
+            
 
-                Workbook workbook = new XSSFWorkbook(fis);
+            int year = año.getYear();
+            int month = (mes.getMonth() + 1);
+
+            String sql = "delete from PlanillaSueldo where año = ? and mes = ?";
+            PreparedStatement pstm = con.prepareStatement(sql);
+            pstm.setInt(1, year);
+            pstm.setInt(2, month);
+            pstm.executeUpdate();
+
+            sql = "INSERT INTO [dbo].[PlanillaSueldo] "
+                    + "           ([Año] "
+                    + "           ,[Mes] "
+                    + "           ,[Nº] "
+                    + "           ,[Nro Doc# Ident#] "
+                    + "           ,[Trabajador] "
+                    + "           ,[Rem# Base] "
+                    + "           ,[Rem# Bruta] "
+                    + "           ,[F# Ingreso] "
+                    + "           ,[F# Cese] "
+                    + "           ,[Regimen Pensionario] "
+                    + "           ,[Comision] "
+                    + "           ,[Cargo] "
+                    + "           ,[Centro Costo] "
+                    + "           ,[Sub Nivel] "
+                    + "           ,[D# Trab#] "
+                    + "           ,[T# Trab#] "
+                    + "           ,[T# Tard#] "
+                    + "           ,[T# No Trab#] "
+                    + "           ,[HE# 25 %] "
+                    + "           ,[HE# 35%] "
+                    + "           ,[HE# 100%] "
+                    + "           ,[Feriado] "
+                    + "           ,[Vac# Fis#] "
+                    + "           ,[Vac# Pag#] "
+                    + "           ,[Vac# Comp#] "
+                    + "           ,[Falta] "
+                    + "           ,[Sub# Mat#] "
+                    + "           ,[Sub# Enf#] "
+                    + "           ,[Lic# Pat#] "
+                    + "           ,[Des# Med#] "
+                    + "           ,[Lic# Fall#] "
+                    + "           ,[Lic# C/Goce] "
+                    + "           ,[Lic# S/Goce] "
+                    + "           ,[D# Susp] "
+                    + "           ,[Basico] "
+                    + "           ,[Asig# Fam#] "
+                    + "           ,[Feriado1] "
+                    + "           ,[Rem# Vac#] "
+                    + "           ,[Prom# Vac#] "
+                    + "           ,[Comp# Vac#] "
+                    + "           ,[HE# 25%] "
+                    + "           ,[HE# 35%1] "
+                    + "           ,[HE# 100%1] "
+                    + "           ,[Reint# Afec#] "
+                    + "           ,[Reint# Inafec#] "
+                    + "           ,[Sub# Mat#1] "
+                    + "           ,[Sub# Enf#1] "
+                    + "           ,[Des# Med#1] "
+                    + "           ,[Lic# Pat#1] "
+                    + "           ,[Lic# Fall#1] "
+                    + "           ,[Lic# C/Goce1] "
+                    + "           ,[Comision1] "
+                    + "           ,[Cond# Trab#] "
+                    + "           ,[Movilidad] "
+                    + "           ,[Movilidad Adic#] "
+                    + "           ,[Bonif# Prod#] "
+                    + "           ,[Bonif# Extr#] "
+                    + "           ,[Aguinaldo] "
+                    + "           ,[Total Ingreso] "
+                    + "           ,[Afecto SNP/SPP] "
+                    + "           ,[Aporte ONP] "
+                    + "           ,[Aporte AFP] "
+                    + "           ,[Prima Seguro] "
+                    + "           ,[Com# Mixta] "
+                    + "           ,[Com# Flujo] "
+                    + "           ,[EsSalud Vida] "
+                    + "           ,[Afecto 5ta Cat#] "
+                    + "           ,[5ta Cat#] "
+                    + "           ,[Total Aporte Trab#] "
+                    + "           ,[Ade# Quin#] "
+                    + "           ,[Ade# Vac#] "
+                    + "           ,[Ade# Com#] "
+                    + "           ,[Ade# Bonif# Prod#] "
+                    + "           ,[Ade# Cond# Trab#] "
+                    + "           ,[Otro Ade#] "
+                    + "           ,[T# No Trab#1] "
+                    + "           ,[Tardanza] "
+                    + "           ,[No Asist#] "
+                    + "           ,[Ret# Jud#] "
+                    + "           ,[Prest#] "
+                    + "           ,[Otr# Fact#] "
+                    + "           ,[Seguro] "
+                    + "           ,[EPS] "
+                    + "           ,[Comedor] "
+                    + "           ,[Leasigng] "
+                    + "           ,[Estudio] "
+                    + "           ,[Uniforme] "
+                    + "           ,[Otro Seg#] "
+                    + "           ,[Otro Dscto#] "
+                    + "           ,[Dscto Afecto] "
+                    + "           ,[Total Dscto#] "
+                    + "           ,[Neto Pagar] "
+                    + "           ,[Afecto EsSalud] "
+                    + "           ,[EsSalud] "
+                    + "           ,[Afecto Senati] "
+                    + "           ,[Senati] "
+                    + "           ,[Total Aporte Emp#]) "
+                    + "     VALUES "
+                    + "           (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
+
+            pstm = con.prepareStatement(sql);
+
+            try (FileInputStream fis = new FileInputStream(excelFilePath); Workbook workbook = new XSSFWorkbook(fis); Connection connection = Conexion.getConnection()) {
 
                 Sheet sheet = workbook.getSheetAt(0);
+
                 int rowCount = sheet.getLastRowNum();
-
-                int year = año.getYear();
-                int month = (mes.getMonth() + 1);
-
-                Connection con = Conexion.getConnection();
-
-                String sql = "delete from PlanillaSueldo where año = ? and mes = ?";
-                PreparedStatement pstm = con.prepareStatement(sql);
-                pstm.setInt(1, year);
-                pstm.setInt(2, month);
-                pstm.executeUpdate();
-
-                sql = "INSERT INTO [dbo].[PlanillaSueldo] ([Año],[Mes],[Nº],[Nro Doc# Ident#],[Trabajador],[Rem# Base],[Rem# Bruta],[F# Ingreso],[F# Cese],[Regimen Pensionario],[Comision],[Cargo],[Centro Costo],[Sub Nivel],[D# Trab#],[T# Trab#],[T# Tard#],[T# No Trab#],[HE# 25 %],[HE# 35%],[HE# 100%],[Feriado],[Vac# Fis#],[Vac# Pag#],[Vac# Comp#],[Falta],[Sub# Mat#],[Sub# Enf#],[Lic# Pat#],[Des# Med#],[Lic# Fall#],[Lic# C/Goce],[Lic# S/Goce],[D# Susp],[Basico],[Asig# Fam#],[Feriado1],[Rem# Vac#],[Prom# Vac#],[Comp# Vac#],[HE# 25%],[HE# 35%1],[HE# 100%1],[Reint# Afec#],[Reint# Inafec#],[Sub# Mat#1],[Sub# Enf#1],[Des# Med#1],[Lic# Pat#1],[Lic# Fall#1],[Lic# C/Goce1],[Comision1],[Cond# Trab#],[Movilidad],[Movilidad Adic#],[Bonif# Prod#],[Bonif# Extr#],[Aguinaldo],[Total Ingreso],[Afecto SNP/SPP],[Aporte ONP],[Aporte AFP],[Prima Seguro],[Com# Mixta],[Com# Flujo],[EsSalud Vida],[Afecto 5ta Cat#],[5ta Cat#],[Total Aporte Trab#],[Ade# Quin#],[Ade# Vac#],[Ade# Com#],[Ade# Bonif# Prod#],[Ade# Cond# Trab#],[Otro Ade#],[T# No Trab#1],[Tardanza],[No Asist#],[Ret# Jud#],[Prest#],[Otr# Fact#],[Seguro],[EPS],[Comedor],[Leasigng],[Estudio],[Uniforme],[Otro Seg#],[Otro Dscto#],[Dscto Afecto],[Total Dscto#],[Neto Pagar],[Afecto EsSalud],[EsSalud],[Afecto Senati],[Senati],[Total Aporte Emp#]) \n" +
-"VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-                pstm = con.prepareStatement(sql);
-
-                for (int i = 1; i <= rowCount; i++) {
+                
+                for (int i = 1; i < sheet.getLastRowNum(); i++) {
                     Row row = sheet.getRow(i);
-                    pstm.setInt(1, year);
-                    pstm.setInt(2, month);
 
-                    for (int j = 0; j < 96; j++) {
-                        Cell cell = row.getCell(j);
-                        if (cell != null) {
-                            switch (cell.getCellType()) {
-                                case NUMERIC:
-                                    pstm.setDouble(j + 3, cell.getNumericCellValue());
-                                    break;
-                                case STRING:
-                                    pstm.setString(j + 3, cell.getStringCellValue());
-                                    break;
-                                default:
-                                    pstm.setString(j + 3, null);
+                    if (row != null) {
+                        pstm.setInt(1, year);  // Columna [Año]
+                        pstm.setInt(2, month); // Columna [Mes]
+
+                        for (int j = 0; j < 95; j++) { // Máximo 92 columnas
+                            Cell cell = row.getCell(j);
+
+                            if (cell != null) {
+                                switch (cell.getCellType()) {
+                                    case STRING:
+                                        String strValue = cell.getStringCellValue();
+                                        pstm.setString(j + 3, strValue);
+                                        break;
+
+                                    case NUMERIC:
+                                        // Verificar si es una fecha
+                                        if (DateUtil.isCellDateFormatted(cell)) {
+                                            java.sql.Date sqlDate = new java.sql.Date(cell.getDateCellValue().getTime());
+                                            pstm.setDate(j + 3, sqlDate);
+                                        } else {
+                                            // Verificar que el valor sea numérico antes de intentar insertarlo como float
+                                            double numericValue = cell.getNumericCellValue();
+                                            pstm.setDouble(j + 3, numericValue);
+                                        }
+                                        break;
+
+                                    case BOOLEAN:
+                                        boolean boolValue = cell.getBooleanCellValue();
+                                        pstm.setBoolean(j + 3, boolValue);
+                                        break;
+
+                                    case BLANK:
+                                        pstm.setNull(j + 3, java.sql.Types.NULL);
+                                        break;
+
+                                    default:
+                                        String defaultValue = cell.toString();
+                                        pstm.setString(j + 3, defaultValue);
+                                        break;
+                                }
+                            } else {
+                                pstm.setNull(j + 3, java.sql.Types.NULL);
                             }
-                        } else {
-                            pstm.setString(j + 3, null);
                         }
 
+                        pstm.addBatch(); // Agregar el batch
                     }
-                    pstm.addBatch();
-
-                    int progress = (int) ((double) i / rowCount * 100);
+                    
+                    int progress = (int) ((double) (i+1) / rowCount * 100);
                     SwingUtilities.invokeLater(() -> jProgressBar1.setValue(progress));
                 }
+
                 pstm.executeBatch();
-
-                sql = "delete from PlanillaSueldo where año = ? and mes = ? AND Trabajador IS NULL";
-                pstm = con.prepareStatement(sql);
-                pstm.setInt(1, year);
-                pstm.setInt(2, month);
-                pstm.executeUpdate();
-
                 pstm.close();
                 con.close();
-
+                
                 JOptionPane.showMessageDialog(this, "El EXCEL DE " + cb_tipo.getSelectedItem().toString().toUpperCase() + " ha sido cargado correctamente.", "Exito", JOptionPane.INFORMATION_MESSAGE);
 
+            } catch (IOException e) {
+                System.err.println("Error al leer el archivo Excel: " + e.getMessage());
+            } catch (Exception e) {
+                System.err.println("Error en la conexión o inserción: " + e.getMessage());
             }
-
-        } catch (FileNotFoundException ex) {
+        } catch (SQLException ex) {
             Logger.getLogger(CargaArchivos.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException | SQLException ex) {
-            Logger.getLogger(CargaArchivos.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            try {
-                fis.close();
-            } catch (IOException ex) {
-                Logger.getLogger(CargaArchivos.class.getName()).log(Level.SEVERE, null, ex);
-            }
         }
-
     }
 
     private void eliminararchivo(String archivo) {
@@ -844,7 +958,7 @@ public class CargaArchivos extends javax.swing.JDialog {
         jLabel9.setText("Tipo de Archivo a Borrar:");
 
         cb_tipo2.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
-        cb_tipo2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<<Seleccionar>>", "Balance de Comprobacion (Hoja de Balance)", "Comprobante de Compra 33 (Cuenta 33)", "Movimientos de Ingresos y Egresos", "Movimientos de Egresos con Glosa" }));
+        cb_tipo2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<<Seleccionar>>", "Balance de Comprobacion (Hoja de Balance)", "Comprobante de Compra 33 (Cuenta 33)", "Movimientos de Ingresos y Egresos", "Movimientos de Egresos con Glosa", "Planilla de Sueldo" }));
 
         jProgressBar2.setStringPainted(true);
 
@@ -1075,6 +1189,9 @@ public class CargaArchivos extends javax.swing.JDialog {
                             break;
                         case "Balance de Comprobacion (Hoja de Balance)":
                             eliminararchivo("patrimonio");
+                            break;
+                        case "Planilla de Sueldo":
+                            eliminararchivo("PlanillaSueldo");
                             break;
                     }
                 }
