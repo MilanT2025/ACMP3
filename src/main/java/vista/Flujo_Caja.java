@@ -47,6 +47,7 @@ import java.awt.Rectangle;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.DateFormatSymbols;
+import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -81,12 +82,24 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 public class Flujo_Caja extends javax.swing.JFrame {
 
     private final Modelo modelo = new Modelo();
+    
+    Locale locale;
+    DecimalFormatSymbols symbols;
 
     /**
      * Creates new form LibrosE_SIRE
      */
     public Flujo_Caja() {
         initComponents();
+        
+        locale = new Locale("es", "PE");
+        Locale.setDefault(locale);
+
+        symbols = new DecimalFormatSymbols(locale);
+        symbols.setGroupingSeparator(','); 
+        symbols.setDecimalSeparator('.');
+        
+        
         this.setIconImage(new ImageIcon(System.getProperty("user.dir") + "/logoACMP.png").getImage());
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -128,10 +141,10 @@ public class Flujo_Caja extends javax.swing.JFrame {
             modelo.addColumn("");
 
             for (int month = 1; month <= 12; month++) {
-                String monthYear = new SimpleDateFormat("MMMM-yyyy", new Locale("es", "ES")).format(new Date(currentYear - 1900, month - 1, 1));
+                String monthYear = new SimpleDateFormat("MMMM-yyyy", locale).format(new Date(currentYear - 1900, month - 1, 1));
                 modelo.addColumn(monthYear);
             }
-
+ 
             modelo.addColumn("Total");
 
             Connection con = Conexion.getConnection();
@@ -172,7 +185,7 @@ public class Flujo_Caja extends javax.swing.JFrame {
                 modelo.addColumn("");
 
                 for (int month = 1; month <= 12; month++) {
-                    String monthYear = new SimpleDateFormat("MMMM-yyyy", new Locale("es", "ES")).format(new Date(selectedYear - 1900, month - 1, 1));
+                    String monthYear = new SimpleDateFormat("MMMM-yyyy", locale).format(new Date(selectedYear - 1900, month - 1, 1));
                     modelo.addColumn(monthYear);
                 }
 
@@ -372,7 +385,7 @@ public class Flujo_Caja extends javax.swing.JFrame {
 
             model.setRowCount(0);
 
-            DecimalFormat df = new DecimalFormat("###,###,##0.00");
+            DecimalFormat df = new DecimalFormat("###,###,##0.00", symbols);
 
             for (Map.Entry<String, Double> entry : groupedData.entrySet()) {
                 String[] keys = entry.getKey().split("\\|");
@@ -522,7 +535,7 @@ public class Flujo_Caja extends javax.swing.JFrame {
             model.setRowCount(0);
 
             // Crear un formato para mostrar solo los decimales cuando sea necesario
-            DecimalFormat df = new DecimalFormat("###,###,##0.00");
+            DecimalFormat df = new DecimalFormat("###,###,##0.00", symbols);
 
             // Agregar los datos agrupados al modelo de tabla
             for (Map.Entry<String, Double> entry : groupedData.entrySet()) {
@@ -585,7 +598,7 @@ public class Flujo_Caja extends javax.swing.JFrame {
 
     private void datos_sumafilastotales() {
         try {
-            DecimalFormat df = new DecimalFormat("###,###,##0.00");
+            DecimalFormat df = new DecimalFormat("###,###,##0.00", symbols);
 
             Connection con = Conexion.getConnection();
             Statement st = con.createStatement();
@@ -633,7 +646,7 @@ public class Flujo_Caja extends javax.swing.JFrame {
 
     private void datos_sumartotalacumulado() {
         try {
-            DecimalFormat df = new DecimalFormat("###,###,##0.00");
+            DecimalFormat df = new DecimalFormat("###,###,##0.00", symbols);
 
             Connection con = Conexion.getConnection();
             Statement st = con.createStatement();
@@ -664,7 +677,7 @@ public class Flujo_Caja extends javax.swing.JFrame {
 
     private void datos_saldoacumulado() {
         try {
-            DecimalFormat df = new DecimalFormat("###,###,##0.00");
+            DecimalFormat df = new DecimalFormat("###,###,##0.00", symbols);
 
             Connection con = Conexion.getConnection();
             Statement st = con.createStatement();
@@ -675,7 +688,7 @@ public class Flujo_Caja extends javax.swing.JFrame {
             int currentMonth = calendar.get(Calendar.MONTH);
             int currentYear = calendar.get(Calendar.YEAR);
 
-            SimpleDateFormat sdf = new SimpleDateFormat("MMMM-yyyy", Locale.getDefault());
+            SimpleDateFormat sdf = new SimpleDateFormat("MMMM-yyyy", locale);
 
             int limitColumn = -1;
             for (int j = 1; j < tb_resultado.getColumnCount() - 1; j++) {
@@ -790,12 +803,12 @@ public class Flujo_Caja extends javax.swing.JFrame {
             try {
                 String dateString = tb_resultado.getColumnName(j);
 
-                SimpleDateFormat inputFormat = new SimpleDateFormat("MMMM-yyyy", new Locale("es", "ES"));
+                SimpleDateFormat inputFormat = new SimpleDateFormat("MMMM-yyyy", locale);
 
                 Date date = inputFormat.parse(dateString);
 
-                SimpleDateFormat monthFormat = new SimpleDateFormat("MM");
-                SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
+                SimpleDateFormat monthFormat = new SimpleDateFormat("MM", locale);
+                SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy", locale);
 
                 String month = monthFormat.format(date);
                 String year = yearFormat.format(date);
@@ -1421,7 +1434,7 @@ public class Flujo_Caja extends javax.swing.JFrame {
                 int month = fecha.getMonthValue();
                 int year = fecha.getYear();
 
-                DecimalFormat df = new DecimalFormat("###,###,##0.00");
+                DecimalFormat df = new DecimalFormat("###,###,##0.00", symbols);
 
                 con = Conexion.getConnection();
                 st = con.createStatement();

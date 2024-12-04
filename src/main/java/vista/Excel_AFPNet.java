@@ -43,8 +43,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 public class Excel_AFPNet extends javax.swing.JFrame {
 
     private final Modelo modelo1 = new Modelo();
+    
     Map<String, String> tipoDocumento, excepcionAportar, relacionLaboral, tipoTrabajo;
-
     TableRowSorter trsfiltro;
     /**
      * Creates new form JGUIForm

@@ -5,6 +5,7 @@
 package vista;
 
 import Controlador.Conexion;
+import Controlador.FuncionesGlobales;
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import java.awt.BorderLayout;
@@ -64,6 +65,8 @@ import org.apache.poi.ss.usermodel.Workbook;
  * @author ejmg3
  */
 public class CargaCopere extends javax.swing.JFrame {
+    private boolean isInitialized = false; 
+    
     //ESTADOS -> 1 ES PROCESADO  -- 2 FALTA DE LIQUIDEZ Y 3 NO RECIBE SUELDO
 
     private final Modelo modeloCopere = new Modelo();
@@ -158,12 +161,16 @@ public class CargaCopere extends javax.swing.JFrame {
         cargarEstructuraCopere();
         cargarEstructuraCajaPensiones();
         cargarEstructuraOprefa();
-
-        CargarDatosCopere();
-        CargarDatosCajaPensiones();
-        CargarDatosOprefa();
         
+        CargarDatosOprefa();
+        CargarDatosCajaPensiones();
+        CargarDatosCopere();
+
         cargarDatosComplementarios();
+        
+        FuncionesGlobales.colocarnombremesannio(jdc_año, jdc_mes, txt_razonsocial2);
+        
+        isInitialized = true; 
     }
 
     private void mostrarDialogoProgreso(JFrame parentFrame) {
@@ -995,6 +1002,16 @@ public class CargaCopere extends javax.swing.JFrame {
             jtable.clearSelection();
         }
     }
+    
+    private void cargarDatos(){
+        CargarDatosOprefa();
+        CargarDatosCajaPensiones();
+        CargarDatosCopere();
+
+        cargarDatosComplementarios();
+        
+        FuncionesGlobales.colocarnombremesannio(jdc_año, jdc_mes, txt_razonsocial2);
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -1004,6 +1021,7 @@ public class CargaCopere extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jButton1 = new javax.swing.JButton();
         jPanel16 = new javax.swing.JPanel();
         jLabel19 = new javax.swing.JLabel();
         jPanel14 = new javax.swing.JPanel();
@@ -1015,7 +1033,6 @@ public class CargaCopere extends javax.swing.JFrame {
         txt_ruc1 = new javax.swing.JLabel();
         jLabel17 = new javax.swing.JLabel();
         txt_razonsocial1 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel3 = new javax.swing.JPanel();
@@ -1045,9 +1062,17 @@ public class CargaCopere extends javax.swing.JFrame {
         btnExportarOprefa = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
         btnNoProcesadosOprefa = new javax.swing.JButton();
+        txt_razonsocial2 = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         MenuRegistrarEmpleado = new javax.swing.JMenuItem();
+
+        jButton1.setText("jButton1");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Control de Universo de Asociados");
@@ -1077,12 +1102,23 @@ public class CargaCopere extends javax.swing.JFrame {
         jLabel12.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
         jLabel12.setText("Año:");
 
+        jdc_año.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                jdc_añoPropertyChange(evt);
+            }
+        });
+
         jLabel14.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
         jLabel14.setText("Mes");
 
         jdc_mes.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jdc_mes.setForeground(new java.awt.Color(255, 0, 0));
         jdc_mes.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
+        jdc_mes.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                jdc_mesPropertyChange(evt);
+            }
+        });
 
         jLabel16.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
         jLabel16.setText("Razón Social:");
@@ -1099,14 +1135,6 @@ public class CargaCopere extends javax.swing.JFrame {
         txt_razonsocial1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         txt_razonsocial1.setText("ASOCIACION CIRCULO MILITAR DEL PERU");
 
-        jButton1.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        jButton1.setText("Cargar Datos");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout jPanel14Layout = new javax.swing.GroupLayout(jPanel14);
         jPanel14.setLayout(jPanel14Layout);
         jPanel14Layout.setHorizontalGroup(
@@ -1120,8 +1148,6 @@ public class CargaCopere extends javax.swing.JFrame {
                 .addComponent(jLabel14)
                 .addGap(12, 12, 12)
                 .addComponent(jdc_mes, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jButton1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jLabel17)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1144,7 +1170,6 @@ public class CargaCopere extends javax.swing.JFrame {
                     .addComponent(jdc_año, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel17, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -1235,7 +1260,7 @@ public class CargaCopere extends javax.swing.JFrame {
                     .addComponent(txtBuscarCopere, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)
                 .addGap(9, 9, 9)
                 .addComponent(btnExportarCopere, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -1339,7 +1364,7 @@ public class CargaCopere extends javax.swing.JFrame {
                     .addComponent(txtBuscarCaja, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)
                 .addGap(9, 9, 9)
                 .addComponent(btnExportarCaja, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -1452,7 +1477,7 @@ public class CargaCopere extends javax.swing.JFrame {
                     .addComponent(txtBuscarOprefa, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)
                 .addGap(9, 9, 9)
                 .addComponent(btnExportarOprefa, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -1510,6 +1535,11 @@ public class CargaCopere extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
+        txt_razonsocial2.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
+        txt_razonsocial2.setForeground(new java.awt.Color(255, 0, 0));
+        txt_razonsocial2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        txt_razonsocial2.setText("-");
+
         jMenu1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/ajustes.png"))); // NOI18N
         jMenu1.setText("Opciones");
 
@@ -1536,7 +1566,9 @@ public class CargaCopere extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(txt_razonsocial2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addContainerGap())))
         );
         layout.setVerticalGroup(
@@ -1545,6 +1577,8 @@ public class CargaCopere extends javax.swing.JFrame {
                 .addComponent(jPanel16, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel14, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txt_razonsocial2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
@@ -1566,7 +1600,7 @@ public class CargaCopere extends javax.swing.JFrame {
     private void btnExportarCopereActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExportarCopereActionPerformed
         if (JOptionPane.showConfirmDialog(null, "Esta seguro que desea GUARDAR/REEMPLAZAR la informacion COPERE?", "Confirmación", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
             mostrarDialogoProgreso(this);
-            jButton1.doClick();
+            cargarDatos();
         }
 
         if (JOptionPane.showConfirmDialog(null, "Desea EXPORTAR el archivo XLS COPERE", "Confirmación", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
@@ -1597,7 +1631,7 @@ public class CargaCopere extends javax.swing.JFrame {
     private void btnExportarCajaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExportarCajaActionPerformed
         if (JOptionPane.showConfirmDialog(null, "Esta seguro que desea GUARDAR/REEMPLAZAR la informacion CAJA DE PENSIONES?", "Confirmación", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
             mostrarDialogoProgresoCajaPensiones(this);
-            jButton1.doClick();
+            cargarDatos();
         }
 
         if (JOptionPane.showConfirmDialog(null, "Desea EXPORTAR el archivo TXT CAJA DE PENSIONES", "Confirmación", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
@@ -1620,7 +1654,7 @@ public class CargaCopere extends javax.swing.JFrame {
     private void btnExportarOprefaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExportarOprefaActionPerformed
         if (JOptionPane.showConfirmDialog(null, "Esta seguro que desea GUARDAR/REEMPLAZAR la informacion OPREFA?", "Confirmación", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
             mostrarDialogoProgresoOprefa(this);
-            jButton1.doClick();
+            cargarDatos();
         }
 
         if (JOptionPane.showConfirmDialog(null, "Desea EXPORTAR el archivo EXCEL OPREFA?", "Confirmación", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
@@ -1628,15 +1662,7 @@ public class CargaCopere extends javax.swing.JFrame {
         }
 
     }//GEN-LAST:event_btnExportarOprefaActionPerformed
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        CargarDatosOprefa();
-        CargarDatosCajaPensiones();
-        CargarDatosCopere();
-
-        cargarDatosComplementarios();
-    }//GEN-LAST:event_jButton1ActionPerformed
-
+    
     private void MenuRegistrarEmpleadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuRegistrarEmpleadoActionPerformed
         RegistrarEmpleado dialog = new RegistrarEmpleado(CargaCopere.this);
         dialog.setVisible(true); // Mostrar el JDialog
@@ -1651,6 +1677,22 @@ public class CargaCopere extends javax.swing.JFrame {
         NoProcesadosOPREFA ini = new NoProcesadosOPREFA(this, true);
         ini.setVisible(true);
     }//GEN-LAST:event_btnNoProcesadosOprefaActionPerformed
+
+    private void jdc_añoPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_jdc_añoPropertyChange
+        if (isInitialized && "year".equals(evt.getPropertyName())) {
+            cargarDatos();
+        }
+    }//GEN-LAST:event_jdc_añoPropertyChange
+
+    private void jdc_mesPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_jdc_mesPropertyChange
+        if (isInitialized && "month".equals(evt.getPropertyName())) {
+            cargarDatos();
+        }
+    }//GEN-LAST:event_jdc_mesPropertyChange
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        cargarDatos();
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     public static void saveTableToFile(JTable table, int year, int month) {
         // Formato del nombre de archivo
@@ -1788,6 +1830,7 @@ public class CargaCopere extends javax.swing.JFrame {
     private javax.swing.JTextField txtBuscarCopere;
     private javax.swing.JTextField txtBuscarOprefa;
     private javax.swing.JLabel txt_razonsocial1;
+    private javax.swing.JLabel txt_razonsocial2;
     private javax.swing.JLabel txt_ruc1;
     // End of variables declaration//GEN-END:variables
 }

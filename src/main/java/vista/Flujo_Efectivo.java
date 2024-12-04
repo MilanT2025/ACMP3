@@ -46,6 +46,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.sql.PreparedStatement;
 import java.text.DateFormatSymbols;
+import java.text.DecimalFormatSymbols;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
@@ -75,12 +76,22 @@ public class Flujo_Efectivo extends javax.swing.JFrame {
 
     private final Modelo modelo = new Modelo();
     Map<String, Double> resultados = new HashMap<>();
-
+    
+    Locale locale;
+    DecimalFormatSymbols symbols;
     /**
      * Creates new form LibrosE_SIRE
      */
     public Flujo_Efectivo() {
         initComponents();
+        
+        locale = new Locale("es", "PE");
+        Locale.setDefault(locale);
+
+        symbols = new DecimalFormatSymbols(locale);
+        symbols.setGroupingSeparator(','); 
+        symbols.setDecimalSeparator('.');
+        
         this.setIconImage(new ImageIcon(System.getProperty("user.dir") + "/logoACMP.png").getImage());
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -123,7 +134,7 @@ public class Flujo_Efectivo extends javax.swing.JFrame {
             modelo.addColumn("En soles");
 
             for (int month = 1; month <= 12; month++) {
-                String monthYear = new SimpleDateFormat("MMMM-yyyy", new Locale("es", "ES")).format(new Date(currentYear - 1900, month - 1, 1));
+                String monthYear = new SimpleDateFormat("MMMM-yyyy", locale).format(new Date(currentYear - 1900, month - 1, 1));
                 modelo.addColumn(monthYear);
             }
 
@@ -167,7 +178,7 @@ public class Flujo_Efectivo extends javax.swing.JFrame {
                 modelo.addColumn("En soles");
                 
                 for (int month = 1; month <= 12; month++) {
-                    String monthYear = new SimpleDateFormat("MMMM-yyyy", new Locale("es", "ES")).format(new Date(selectedYear - 1900, month - 1, 1));
+                    String monthYear = new SimpleDateFormat("MMMM-yyyy", locale).format(new Date(selectedYear - 1900, month - 1, 1));
                     modelo.addColumn(monthYear);
                 }
                 
@@ -367,7 +378,7 @@ public class Flujo_Efectivo extends javax.swing.JFrame {
 
             model.setRowCount(0);
 
-            DecimalFormat df = new DecimalFormat("###,###,##0.00");
+            DecimalFormat df = new DecimalFormat("###,###,##0.00", symbols);
 
             for (Map.Entry<String, Double> entry : groupedData.entrySet()) {
                 String[] keys = entry.getKey().split("\\|");
@@ -459,7 +470,7 @@ public class Flujo_Efectivo extends javax.swing.JFrame {
 
             model.setRowCount(0);
 
-            DecimalFormat df = new DecimalFormat("###,###,##0.00");
+            DecimalFormat df = new DecimalFormat("###,###,##0.00", symbols);
 
             for (Map.Entry<String, Double> entry : groupedData.entrySet()) {
                 String[] keys = entry.getKey().split("\\|");
@@ -551,7 +562,7 @@ public class Flujo_Efectivo extends javax.swing.JFrame {
 
             model.setRowCount(0);
 
-            DecimalFormat df = new DecimalFormat("###,###,##0.00");
+            DecimalFormat df = new DecimalFormat("###,###,##0.00", symbols);
 
             for (Map.Entry<String, Double> entry : groupedData.entrySet()) {
                 String[] keys = entry.getKey().split("\\|");
@@ -595,7 +606,11 @@ public class Flujo_Efectivo extends javax.swing.JFrame {
                     if (tb_resultado.getValueAt(i, 0).equals(rs.getString(1)) && rs.getBoolean(2) == true) {
                         for (int j = 1; j < tb_resultado.getColumnCount() - 1; j++) {
                             if (!tb_resultado.getValueAt(i, j).equals("")) {
-                                tb_resultado.setValueAt(String.valueOf(Double.parseDouble(tb_resultado.getValueAt(i, j).toString().replaceAll(",", "")) * -1), i, j);
+                                //tb_resultado.setValueAt(String.valueOf(Double.parseDouble(tb_resultado.getValueAt(i, j).toString().replaceAll(",", "")) * -1), i, j);
+                                DecimalFormat df = new DecimalFormat("###,###,##0.00", symbols);
+                                double valor = Double.parseDouble(tb_resultado.getValueAt(i, j).toString().replaceAll(",", "")) * -1;
+                                String valorFormateado = df.format(valor);
+                                tb_resultado.setValueAt(valorFormateado, i, j);
                             }
                         }
                     }
@@ -619,7 +634,7 @@ public class Flujo_Efectivo extends javax.swing.JFrame {
         PreparedStatement pstm = null;
 
         try {
-            DecimalFormat df = new DecimalFormat("###,###,##0.00");
+            DecimalFormat df = new DecimalFormat("###,###,##0.00", symbols);
             con = Conexion.getConnection();
             st = con.createStatement();
             String sql = "SELECT Posicion, Query_BD FROM EstructuraFlujoEfectivo WHERE Query_BD IS NOT NULL ORDER BY posicion ASC";
@@ -683,7 +698,7 @@ public class Flujo_Efectivo extends javax.swing.JFrame {
 
     private void datos_sumafila() {
         try {
-            DecimalFormat df = new DecimalFormat("###,###,##0.00");
+            DecimalFormat df = new DecimalFormat("###,###,##0.00", symbols);
             Connection con = Conexion.getConnection();
             Statement st = con.createStatement();
             String sql = "SELECT Posicion, Suma_Fila FROM EstructuraFlujoEfectivo WHERE Suma_Fila IS NOT NULL";
@@ -736,7 +751,7 @@ public class Flujo_Efectivo extends javax.swing.JFrame {
 
     private void datos_sumafilastotales() {
         try {
-            DecimalFormat df = new DecimalFormat("###,###,##0.00");
+            DecimalFormat df = new DecimalFormat("###,###,##0.00", symbols);
 
             Connection con = Conexion.getConnection();
             Statement st = con.createStatement();
@@ -784,7 +799,7 @@ public class Flujo_Efectivo extends javax.swing.JFrame {
 
     private void datos_sumartotalacumulado() {
         try {
-            DecimalFormat df = new DecimalFormat("###,###,##0.00");
+            DecimalFormat df = new DecimalFormat("###,###,##0.00", symbols);
 
             Connection con = Conexion.getConnection();
             Statement st = con.createStatement();
@@ -820,12 +835,12 @@ public class Flujo_Efectivo extends javax.swing.JFrame {
             try {
                 String dateString = tb_resultado.getColumnName(j);
 
-                SimpleDateFormat inputFormat = new SimpleDateFormat("MMMM-yyyy", new Locale("es", "ES"));
+                SimpleDateFormat inputFormat = new SimpleDateFormat("MMMM-yyyy", locale);
 
                 Date date = inputFormat.parse(dateString);
 
-                SimpleDateFormat monthFormat = new SimpleDateFormat("MM");
-                SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
+                SimpleDateFormat monthFormat = new SimpleDateFormat("MM", locale);
+                SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy", locale);
 
                 String month = monthFormat.format(date);
                 String year = yearFormat.format(date);
@@ -1364,7 +1379,7 @@ public class Flujo_Efectivo extends javax.swing.JFrame {
         calendar.set(Calendar.MONTH, month);
         calendar.set(Calendar.YEAR, year);
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM-yyyy", new Locale("es", "ES"));
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM-yyyy", locale);
         String formattedDate = dateFormat.format(calendar.getTime());
 
         for (int j = 0; j < tb_resultado.getColumnCount(); j++) {
@@ -1412,7 +1427,7 @@ public class Flujo_Efectivo extends javax.swing.JFrame {
             parameters.put("fechaFin", resultado);
             parameters.put("fechaAñoMes", tb_resultado.getColumnName(valorColumna));
 
-            DecimalFormat df = new DecimalFormat("###,###,##0.00");
+            DecimalFormat df = new DecimalFormat("###,###,##0.00", symbols);
 
             List<Map<String, ?>> data = new ArrayList<>();
 
@@ -1505,7 +1520,7 @@ public class Flujo_Efectivo extends javax.swing.JFrame {
         calendar.set(Calendar.MONTH, month);
         calendar.set(Calendar.YEAR, year);
         calendar.set(Calendar.DAY_OF_MONTH, 1);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM-yyyy", new Locale("es", "ES"));
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM-yyyy", locale);
         String formattedDate = dateFormat.format(calendar.getTime());
         for (int j = 1; j < tb_resultado.getColumnCount() - 1; j++) {
             if (tb_resultado.getColumnName(j).equals(formattedDate)) {
@@ -1716,7 +1731,7 @@ public class Flujo_Efectivo extends javax.swing.JFrame {
                 int month = fecha.getMonthValue();
                 int year = fecha.getYear();
 
-                DecimalFormat df = new DecimalFormat("###,###,##0.00");
+                DecimalFormat df = new DecimalFormat("###,###,##0.00",symbols);
 
                 con = Conexion.getConnection();
                 st = con.createStatement();

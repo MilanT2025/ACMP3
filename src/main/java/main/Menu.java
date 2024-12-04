@@ -5,6 +5,9 @@ import net.miginfocom.swing.MigLayout;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Point2D;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import vista.Backup;
 import vista.CTS;
 import vista.CargaCopere;
 import vista.Depreciacion;
@@ -14,6 +17,7 @@ import vista.Flujo_Caja;
 import vista.Flujo_Efectivo;
 import vista.LibroMayor;
 import vista.LibrosE_SIRE;
+import vista.Mercaderia;
 import vista.Txt_Plame;
 
 public class Menu extends JPanel {
@@ -56,6 +60,9 @@ public class Menu extends JPanel {
         Item itemCTS = new Item("<html><center>Calculo Mensual de<br>CTS</html>", "raven/icons/time-is-money-svgrepo-com.svg");
         Item itemGratificacion = new Item("<html><center>Calculo Mensual de<br>Gratificacion y Bonificaciones</html>", "raven/icons/medal-gold-winner-2-svgrepo-com.svg");
         Item itemVacaciones = new Item("<html><center>Calculo Mensual de<br>Vacaciones</html>", "raven/icons/airplane-filled-fly-svgrepo-com.svg");
+        
+        Item itemBackup = new Item("<html><center>Copia de Seguridad<br>de Base de Datos</html>", "raven/menu/setting.svg");
+        
 
         itemAFPNet.addActionListener(e -> {
             FlatLightLaf.setup();
@@ -116,7 +123,10 @@ public class Menu extends JPanel {
         });
 
         itemMercaderias.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "*************** Modulo en Mantenimiento ***************", "Matenimiento", JOptionPane.INFORMATION_MESSAGE);
+            FlatLightLaf.setup();
+            Mercaderia ini = new Mercaderia();
+            ini.setVisible(true);
+            application.setVisible(false);
         });
 
         itemDepreciacion.addActionListener(e -> {
@@ -140,6 +150,17 @@ public class Menu extends JPanel {
         itemVacaciones.addActionListener(e -> {
             JOptionPane.showMessageDialog(this, "*************** Modulo en Mantenimiento ***************", "Matenimiento", JOptionPane.INFORMATION_MESSAGE);
         });
+        
+        itemBackup.addActionListener(e -> {
+            try {
+                FlatLightLaf.setup();
+                Backup ini = new Backup();
+                ini.setVisible(true);
+                application.setVisible(false);
+            } catch (UnsupportedLookAndFeelException ex) {
+                Logger.getLogger(Menu.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
 
         blurChild.add(itemAFPNet);
         blurChild.add(itemPDTPlame);
@@ -154,6 +175,7 @@ public class Menu extends JPanel {
         blurChild.add(itemCTS);
         blurChild.add(itemGratificacion);
         blurChild.add(itemVacaciones);
+        blurChild.add(itemBackup);
     }
 
     private Style getStyle() {

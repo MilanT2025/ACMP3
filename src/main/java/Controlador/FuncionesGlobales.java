@@ -4,6 +4,8 @@
  */
 package Controlador;
 
+import com.toedter.calendar.JMonthChooser;
+import com.toedter.calendar.JYearChooser;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
@@ -17,10 +19,16 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter;
 import javax.swing.SwingConstants;
@@ -42,8 +50,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  * @author Farmacia-Ingeniero
  */
 public class FuncionesGlobales {
-    
-     public static boolean Writer_XLSX(JTable jTable1, String Location, String hoja) throws FileNotFoundException, IOException {
+
+    public static boolean Writer_XLSX(JTable jTable1, String Location, String hoja) throws FileNotFoundException, IOException {
         boolean correcto = false;
         XSSFWorkbook fWorkbook = new XSSFWorkbook();
         XSSFSheet fSheet = fWorkbook.createSheet(hoja);
@@ -77,7 +85,7 @@ public class FuncionesGlobales {
                 XSSFCell cell = fRow.createCell(j);
                 Object value = model.getValueAt(modelRow, j);
                 cell.setCellValue(value != null ? value.toString() : "");
-               // cell.setCellStyle(cellStyle);
+                // cell.setCellStyle(cellStyle);
             }
         }
 
@@ -96,9 +104,7 @@ public class FuncionesGlobales {
 
         correcto = true;
         return correcto;
-}
-
-    
+    }
 
     public static void seleccionarFilas(JTable origen, JTable destino, int columnaOrigen, int columnaDestino) {
         ListSelectionModel seleccionOrigen = origen.getSelectionModel();
@@ -142,7 +148,7 @@ public class FuncionesGlobales {
             }
         }
     }
-    
+
     public static void saveLastDirectory(File directory) {
         try (PrintWriter writer = new PrintWriter(new FileWriter("directorio.txt"))) {
             writer.println(directory.getAbsolutePath());
@@ -150,7 +156,7 @@ public class FuncionesGlobales {
             e.printStackTrace();
         }
     }
-    
+
     public static File getLastDirectory() {
         File lastDirectory = null;
         try (BufferedReader reader = new BufferedReader(new FileReader("directorio.txt"))) {
@@ -163,9 +169,9 @@ public class FuncionesGlobales {
         }
         return lastDirectory;
     }
-    
+
     public static void setBoldAndColorRows(JTable table, List<Integer> rowIndexes) {
-       // Verificar si los índices de fila son válidos
+        // Verificar si los índices de fila son válidos
         for (int rowIndex : rowIndexes) {
             if (rowIndex < 0 || rowIndex >= table.getRowCount()) {
                 throw new IllegalArgumentException("Índice de fila no válido: " + rowIndex);
@@ -193,39 +199,74 @@ public class FuncionesGlobales {
         // Actualizar la tabla para reflejar los cambios en el renderizador de celdas
         table.repaint();
     }
-    
-    public static void centerColumnWithStyle(JTable table, int column) {
-    // Obtener el renderizador actual de la columna
-    TableCellRenderer headerRenderer = table.getTableHeader().getDefaultRenderer();
-    TableCellRenderer currentRenderer = table.getColumnModel().getColumn(column).getCellRenderer();
 
-    // Crear un nuevo renderizador personalizado que centre el contenido
-    DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer() {
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            label.setHorizontalAlignment(SwingConstants.CENTER);
-            return label;
+    public static void centerColumnWithStyle(JTable table, int column) {
+        // Obtener el renderizador actual de la columna
+        TableCellRenderer headerRenderer = table.getTableHeader().getDefaultRenderer();
+        TableCellRenderer currentRenderer = table.getColumnModel().getColumn(column).getCellRenderer();
+
+        // Crear un nuevo renderizador personalizado que centre el contenido
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                label.setHorizontalAlignment(SwingConstants.CENTER);
+                return label;
+            }
+        };
+
+        // Establecer el nuevo renderizador solo si no hay un renderizador personalizado
+        if (currentRenderer == null || currentRenderer instanceof DefaultTableCellRenderer) {
+            table.getColumnModel().getColumn(column).setCellRenderer(centerRenderer);
+        } else {
+            // Si hay un renderizador personalizado, combinarlo con el centrado
+            Component originalComponent = currentRenderer.getTableCellRendererComponent(table, null, false, false, 0, column);
+            if (originalComponent instanceof JLabel) {
+                JLabel originalLabel = (JLabel) originalComponent;
+                centerRenderer.setForeground(originalLabel.getForeground());
+                centerRenderer.setBackground(originalLabel.getBackground());
+                centerRenderer.setFont(originalLabel.getFont());
+            }
+            table.getColumnModel().getColumn(column).setCellRenderer(centerRenderer);
         }
-    };
-    
-    // Establecer el nuevo renderizador solo si no hay un renderizador personalizado
-    if (currentRenderer == null || currentRenderer instanceof DefaultTableCellRenderer) {
-        table.getColumnModel().getColumn(column).setCellRenderer(centerRenderer);
-    } else {
-        // Si hay un renderizador personalizado, combinarlo con el centrado
-        Component originalComponent = currentRenderer.getTableCellRendererComponent(table, null, false, false, 0, column);
-        if (originalComponent instanceof JLabel) {
-            JLabel originalLabel = (JLabel) originalComponent;
-            centerRenderer.setForeground(originalLabel.getForeground());
-            centerRenderer.setBackground(originalLabel.getBackground());
-            centerRenderer.setFont(originalLabel.getFont());
-        }
-        table.getColumnModel().getColumn(column).setCellRenderer(centerRenderer);
+
+        // Mantener el renderizador del encabezado
+        table.getTableHeader().setDefaultRenderer(headerRenderer);
     }
     
-    // Mantener el renderizador del encabezado
-    table.getTableHeader().setDefaultRenderer(headerRenderer);
-}
+    public static void cargarOpcionesDesdeArchivoYOrdenar(JComboBox<String> comboBox, String filePath) {
+        ArrayList<String> opciones = new ArrayList<>();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String linea;
+            while ((linea = reader.readLine()) != null) {
+                opciones.add(linea);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al leer el archivo: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+        // Ordenar alfabéticamente las opciones
+        Collections.sort(opciones);
+
+        // Agregar las opciones al JComboBox
+        for (String opcion : opciones) {
+            comboBox.addItem(opcion);
+        }
+    }
     
+     public static void colocarnombremesannio(JYearChooser annio, JMonthChooser mes, JLabel campo) {
+        int mesSeleccionado = mes.getMonth();
+
+        Date fecha = new Date();
+        fecha.setMonth(mesSeleccionado);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("MMMM");
+        String nombreMes = sdf.format(fecha);
+        
+        campo.setText(nombreMes.toUpperCase() + " - " + annio.getYear());
+    }
+
 }

@@ -41,7 +41,6 @@ import java.awt.Rectangle;
 import java.text.DateFormatSymbols;
 import java.time.YearMonth;
 import java.time.format.TextStyle;
-import java.util.Date;
 import java.util.HashMap;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -55,7 +54,6 @@ import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.view.JasperViewer;
-import static vista.Flujo_Caja.btn_cargar;
 
 /**
  *
@@ -97,6 +95,9 @@ public class Estado_Patrimonio extends javax.swing.JFrame {
         btn_cargar.doClick();
         
         mes.addPropertyChangeListener("month", (java.beans.PropertyChangeEvent evt) -> {
+            btn_cargar.doClick();
+        });
+        año.addPropertyChangeListener("year", (java.beans.PropertyChangeEvent evt) -> {
             btn_cargar.doClick();
         });
     }
