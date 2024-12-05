@@ -5,6 +5,7 @@
 package vista;
 
 import Controlador.Conexion;
+import Controlador.FuncionesGlobales;
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import java.awt.Color;
@@ -61,7 +62,6 @@ public class Depreciacion extends javax.swing.JFrame {
     private final Modelo modelo = new Modelo();
 
    
-
     public class Modelo extends DefaultTableModel {
 
         @Override
@@ -91,6 +91,17 @@ public class Depreciacion extends javax.swing.JFrame {
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         llenar_tabla();
+        FuncionesGlobales.colocarnombremesannio(jdc_año, jdc_mes, txt_razonsocial2);
+        
+        
+        jdc_mes.addPropertyChangeListener("month", (java.beans.PropertyChangeEvent evt) -> {
+            llenar_tabla();
+            FuncionesGlobales.colocarnombremesannio(jdc_año, jdc_mes, txt_razonsocial2);
+        });
+        jdc_año.addPropertyChangeListener("year", (java.beans.PropertyChangeEvent evt) -> {
+            llenar_tabla();
+            FuncionesGlobales.colocarnombremesannio(jdc_año, jdc_mes, txt_razonsocial2);
+        });
     }
 
     private void llenar_tabla() {
@@ -420,9 +431,9 @@ public class Depreciacion extends javax.swing.JFrame {
         jdc_año = new com.toedter.calendar.JYearChooser();
         jLabel14 = new javax.swing.JLabel();
         jdc_mes = new com.toedter.calendar.JMonthChooser();
-        jButton1 = new javax.swing.JButton();
         jPanel15 = new javax.swing.JPanel();
         jButton3 = new javax.swing.JButton();
+        txt_razonsocial2 = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
@@ -462,15 +473,6 @@ public class Depreciacion extends javax.swing.JFrame {
         jdc_mes.setForeground(new java.awt.Color(255, 0, 0));
         jdc_mes.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
 
-        jButton1.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Search_4.png"))); // NOI18N
-        jButton1.setText("Cargar Datos");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout jPanel14Layout = new javax.swing.GroupLayout(jPanel14);
         jPanel14.setLayout(jPanel14Layout);
         jPanel14Layout.setHorizontalGroup(
@@ -484,22 +486,17 @@ public class Depreciacion extends javax.swing.JFrame {
                 .addComponent(jLabel14)
                 .addGap(12, 12, 12)
                 .addComponent(jdc_mes, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 740, Short.MAX_VALUE)
-                .addComponent(jButton1)
-                .addContainerGap())
+                .addContainerGap(880, Short.MAX_VALUE))
         );
         jPanel14Layout.setVerticalGroup(
             jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel14Layout.createSequentialGroup()
-                .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(jPanel14Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jdc_mes, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
-                            .addComponent(jdc_año, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                .addContainerGap()
+                .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jdc_mes, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
+                    .addComponent(jdc_año, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -533,6 +530,11 @@ public class Depreciacion extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
+        txt_razonsocial2.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
+        txt_razonsocial2.setForeground(new java.awt.Color(255, 0, 0));
+        txt_razonsocial2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        txt_razonsocial2.setText("-");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -540,9 +542,10 @@ public class Depreciacion extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1248, Short.MAX_VALUE)
                     .addComponent(jPanel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel15, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jPanel15, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txt_razonsocial2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -551,7 +554,9 @@ public class Depreciacion extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jPanel14, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE)
+                .addComponent(txt_razonsocial2)
+                .addGap(7, 7, 7)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel15, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(16, 16, 16))
@@ -609,11 +614,6 @@ public class Depreciacion extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        llenar_tabla();
-        
-    }//GEN-LAST:event_jButton1ActionPerformed
     // Método para exportar archivos en XLSX
     public static void exportarArchivoExcel(DefaultTableModel model) {
         JFileChooser jFileChooser = new JFileChooser();
@@ -714,6 +714,7 @@ public class Depreciacion extends javax.swing.JFrame {
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         llenar_tabla();
+        FuncionesGlobales.colocarnombremesannio(jdc_año, jdc_mes, txt_razonsocial2);
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
@@ -760,7 +761,6 @@ public class Depreciacion extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem ExportarExcel;
-    private javax.swing.JButton jButton1;
     public static final javax.swing.JButton jButton2 = new javax.swing.JButton();
     private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel12;
@@ -776,5 +776,6 @@ public class Depreciacion extends javax.swing.JFrame {
     public static com.toedter.calendar.JYearChooser jdc_año;
     public static com.toedter.calendar.JMonthChooser jdc_mes;
     private javax.swing.JTable tb_resultado;
+    private javax.swing.JLabel txt_razonsocial2;
     // End of variables declaration//GEN-END:variables
 }

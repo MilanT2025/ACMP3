@@ -61,6 +61,7 @@ public class Menu extends JPanel {
         Item itemGratificacion = new Item("<html><center>Calculo Mensual de<br>Gratificacion y Bonificaciones</html>", "raven/icons/medal-gold-winner-2-svgrepo-com.svg");
         Item itemVacaciones = new Item("<html><center>Calculo Mensual de<br>Vacaciones</html>", "raven/icons/airplane-filled-fly-svgrepo-com.svg");
         
+        Item itemTesoreria = new Item("<html><center>Cuentas por Pagar<br>(Tesoreria)</html>", "raven/menu/user.svg");
         Item itemBackup = new Item("<html><center>Copia de Seguridad<br>de Base de Datos</html>", "raven/menu/setting.svg");
         
 
@@ -151,6 +152,10 @@ public class Menu extends JPanel {
             JOptionPane.showMessageDialog(this, "*************** Modulo en Mantenimiento ***************", "Matenimiento", JOptionPane.INFORMATION_MESSAGE);
         });
         
+        itemTesoreria.addActionListener(e -> {
+            JOptionPane.showMessageDialog(this, "*************** Modulo en Mantenimiento ***************", "Matenimiento", JOptionPane.INFORMATION_MESSAGE);
+        });
+        
         itemBackup.addActionListener(e -> {
             try {
                 FlatLightLaf.setup();
@@ -175,6 +180,7 @@ public class Menu extends JPanel {
         blurChild.add(itemCTS);
         blurChild.add(itemGratificacion);
         blurChild.add(itemVacaciones);
+        blurChild.add(itemTesoreria);
         blurChild.add(itemBackup);
     }
 

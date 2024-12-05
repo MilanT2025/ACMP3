@@ -215,9 +215,10 @@ public class Mercaderia extends javax.swing.JFrame {
                     + "    SA.Mes = @Mes "
                     + "ORDER BY SA.Producto; "
                     + "SELECT "
-                    + "    Tipo,	Sede,	T1.Codigo,	Cuenta,	Producto,	[U/M],	[Cant# Stock],	[Precio Sin IGV],	[Cant# Stock] * [Precio Sin IGV] AS [Total Precio de Venta],	(([Cant# Stock] * [Precio Sin IGV]) * 0.18) AS [IGV],	([Cant# Stock] * [Precio Sin IGV]) + ((([Cant# Stock] * [Precio Sin IGV]) * 0.18)) AS [Total Valor de Venta] "
+                    + "    Tipo,	Sede,	T2.Codigo,	Cuenta,	Producto,	[U/M],	[Cant# Stock],	ISNULL([Precio Sin IGV], PM.Precio) AS [Precio Sin IGV],	[Cant# Stock] * ISNULL([Precio Sin IGV], PM.Precio) AS [Total Precio de Venta], 	(([Cant# Stock] * ISNULL([Precio Sin IGV], PM.Precio)) * 0.18) AS [IGV],	([Cant# Stock] * ISNULL([Precio Sin IGV], PM.Precio)) + ((([Cant# Stock] * ISNULL([Precio Sin IGV], PM.Precio)) * 0.18)) AS [Total Valor de Venta] "
                     + "FROM #Temp2 T2 "
                     + "LEFT JOIN #Temp1 T1 ON T2.Codigo = T1.Codigo "
+                    + "LEFT JOIN PrecioTempMercaderia PM ON T2.Codigo = PM.Codigo "
                     + "ORDER BY T2.Producto; "
                     + "IF OBJECT_ID('tempdb..#Temp1') IS NOT NULL "
                     + "    DROP TABLE #Temp1; "
@@ -377,8 +378,9 @@ public class Mercaderia extends javax.swing.JFrame {
         jMenu2 = new javax.swing.JMenu();
         ExportarExcel = new javax.swing.JMenuItem();
         jMenu1 = new javax.swing.JMenu();
-        MenuRegistrarEmpleado1 = new javax.swing.JMenuItem();
+        MenuRegistrarEmpleado2 = new javax.swing.JMenuItem();
         MenuRegistrarEmpleado = new javax.swing.JMenuItem();
+        MenuRegistrarEmpleado1 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Valorizacion de Mercaderias y Existencias");
@@ -611,15 +613,15 @@ public class Mercaderia extends javax.swing.JFrame {
         jMenu1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/ajustes.png"))); // NOI18N
         jMenu1.setText("Opciones");
 
-        MenuRegistrarEmpleado1.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
-        MenuRegistrarEmpleado1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Upload to the Cloud_1.png"))); // NOI18N
-        MenuRegistrarEmpleado1.setText("Verificacion de Carga");
-        MenuRegistrarEmpleado1.addActionListener(new java.awt.event.ActionListener() {
+        MenuRegistrarEmpleado2.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
+        MenuRegistrarEmpleado2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Profit.png"))); // NOI18N
+        MenuRegistrarEmpleado2.setText("Agregar Precio");
+        MenuRegistrarEmpleado2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuRegistrarEmpleado1ActionPerformed(evt);
+                MenuRegistrarEmpleado2ActionPerformed(evt);
             }
         });
-        jMenu1.add(MenuRegistrarEmpleado1);
+        jMenu1.add(MenuRegistrarEmpleado2);
 
         MenuRegistrarEmpleado.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
         MenuRegistrarEmpleado.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/flecha-derecha.png"))); // NOI18N
@@ -630,6 +632,16 @@ public class Mercaderia extends javax.swing.JFrame {
             }
         });
         jMenu1.add(MenuRegistrarEmpleado);
+
+        MenuRegistrarEmpleado1.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
+        MenuRegistrarEmpleado1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Upload to the Cloud_1.png"))); // NOI18N
+        MenuRegistrarEmpleado1.setText("Verificacion de Carga");
+        MenuRegistrarEmpleado1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuRegistrarEmpleado1ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(MenuRegistrarEmpleado1);
 
         jMenuBar1.add(jMenu1);
 
@@ -781,6 +793,11 @@ public class Mercaderia extends javax.swing.JFrame {
        ini.setVisible(true);
     }//GEN-LAST:event_MenuRegistrarEmpleado1ActionPerformed
 
+    private void MenuRegistrarEmpleado2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuRegistrarEmpleado2ActionPerformed
+        AgregarPrecioMercaderia ini = new AgregarPrecioMercaderia(this, true);
+       ini.setVisible(true);
+    }//GEN-LAST:event_MenuRegistrarEmpleado2ActionPerformed
+
     // Método para exportar los datos de la tabla a Excel
     public static void exportarAExcel(DefaultTableModel model, String mesannio) {
         JFileChooser fileChooser = new JFileChooser();
@@ -908,6 +925,7 @@ public class Mercaderia extends javax.swing.JFrame {
     private javax.swing.JMenuItem ExportarExcel;
     private javax.swing.JMenuItem MenuRegistrarEmpleado;
     private javax.swing.JMenuItem MenuRegistrarEmpleado1;
+    private javax.swing.JMenuItem MenuRegistrarEmpleado2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel16;
