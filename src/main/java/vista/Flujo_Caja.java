@@ -92,7 +92,7 @@ public class Flujo_Caja extends javax.swing.JFrame {
     public Flujo_Caja() {
         initComponents();
         
-        locale = new Locale("es", "PE");
+        locale = new Locale("es", "ES");
         Locale.setDefault(locale);
 
         symbols = new DecimalFormatSymbols(locale);

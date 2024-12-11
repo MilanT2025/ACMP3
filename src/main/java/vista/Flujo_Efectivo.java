@@ -85,7 +85,7 @@ public class Flujo_Efectivo extends javax.swing.JFrame {
     public Flujo_Efectivo() {
         initComponents();
         
-        locale = new Locale("es", "PE");
+        locale = new Locale("es", "ES");
         Locale.setDefault(locale);
 
         symbols = new DecimalFormatSymbols(locale);
