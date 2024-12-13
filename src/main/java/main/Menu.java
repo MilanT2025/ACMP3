@@ -15,6 +15,7 @@ import vista.Estado_Patrimonio;
 import vista.Excel_AFPNet;
 import vista.Flujo_Caja;
 import vista.Flujo_Efectivo;
+import vista.Gratificacion;
 import vista.LibroMayor;
 import vista.LibrosE_SIRE;
 import vista.Mercaderia;
@@ -145,7 +146,10 @@ public class Menu extends JPanel {
         });
 
         itemGratificacion.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "*************** Modulo en Mantenimiento ***************", "Matenimiento", JOptionPane.INFORMATION_MESSAGE);
+            FlatLightLaf.setup();
+            Gratificacion ini = new Gratificacion();
+            ini.setVisible(true);
+            application.setVisible(false);
         });
 
         itemVacaciones.addActionListener(e -> {
