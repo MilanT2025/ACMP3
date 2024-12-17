@@ -20,6 +20,7 @@ import vista.LibroMayor;
 import vista.LibrosE_SIRE;
 import vista.Mercaderia;
 import vista.Txt_Plame;
+import vista.Vacaciones;
 
 public class Menu extends JPanel {
 
@@ -153,7 +154,10 @@ public class Menu extends JPanel {
         });
 
         itemVacaciones.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "*************** Modulo en Mantenimiento ***************", "Matenimiento", JOptionPane.INFORMATION_MESSAGE);
+            FlatLightLaf.setup();
+            Vacaciones ini = new Vacaciones();
+            ini.setVisible(true);
+            application.setVisible(false);
         });
         
         itemTesoreria.addActionListener(e -> {

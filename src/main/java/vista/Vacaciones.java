@@ -69,6 +69,30 @@ public class Vacaciones extends javax.swing.JFrame {
 
     private final Modelo modelo = new Modelo();
 
+    private void agregarColumnasDiasGanados(int annio) {
+        String[] meses = {
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto",
+            "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        };
+
+        for (int i = 0; i < 12; i++) {
+            modelo.addColumn("Dias Ganados [" + meses[i] + " " + String.valueOf((annio-1)).substring(2, 4) + "]");
+        }
+        
+        for (int i = 0; i < 12; i++) {
+            modelo.addColumn("Dias Ganados [" + meses[i] + " " + String.valueOf((annio)).substring(2, 4) + "]");
+        }
+        
+        for (int i = 0; i < 12; i++) {
+            modelo.addColumn("Dias Gozados [" + meses[i] + " " + String.valueOf((annio-1)).substring(2, 4) + "]");
+        }
+        
+        for (int i = 0; i < 12; i++) {
+            modelo.addColumn("Dias Gozados [" + meses[i] + " " + String.valueOf((annio)).substring(2, 4) + "]");
+        }
+
+    }
+
     
 
     public class Modelo extends DefaultTableModel {
@@ -126,6 +150,8 @@ public class Vacaciones extends javax.swing.JFrame {
         header.setPreferredSize(new java.awt.Dimension(header.getWidth(), 50));
         header.setBackground(new java.awt.Color(255, 217, 102));
         tb_resultado.getTableHeader().setFont(new java.awt.Font("Roboto", java.awt.Font.BOLD, 12));
+        
+        int annio = jdc_año.getYear();
 
         modelo.addColumn("Nº");
         modelo.addColumn("Nro Doc. Ident.");
@@ -138,19 +164,21 @@ public class Vacaciones extends javax.swing.JFrame {
         modelo.addColumn("Asig. Fam.");
         
         modelo.addColumn("Comisiones / Solo Bonf Prod");
-        modelo.addColumn("Computable [Año Anterior]");
+        modelo.addColumn("Computable " + (annio -1));
         modelo.addColumn("Neto Pagar");
-        modelo.addColumn("Computable [Año Anterior - 1]");
+        modelo.addColumn("Computable " + (annio - 2));
         modelo.addColumn("Total dias pendientes");
+        modelo.addColumn("Saldo Inicial");
         
+        agregarColumnasDiasGanados(annio);
 
-        agregarColumnasPorMes(jdc_mes.getMonth() + 1);
-        
-        modelo.addColumn("Diferencia Grati");
-        modelo.addColumn("Provision 9% - [" + meses[jdc_mes.getMonth()] + " " + jdc_año.getYear() + "]");
-        modelo.addColumn("Diferencia 9% - [" + meses[jdc_mes.getMonth()-1] + " " + jdc_año.getYear() + "]");
-        modelo.addColumn("Diferencia 9%");
+        modelo.addColumn("Total dias pendientes");
+        modelo.addColumn("Saldo");
+        modelo.addColumn("Provision [" + meses[jdc_mes.getMonth()-1] + " " + jdc_año.getYear() + "]");
+        modelo.addColumn("Dif");
         modelo.addColumn("Situacion");
+        modelo.addColumn("VERIFICACION DE VACACIONES");
+        modelo.addColumn("COMPROBANTE");
 
         TableColumnModel columnModel = tb_resultado.getColumnModel();
         for (int col = 0; col < tb_resultado.getColumnCount(); col++) {
@@ -164,7 +192,7 @@ public class Vacaciones extends javax.swing.JFrame {
 
         int columnCount = tb_resultado.getColumnCount();
         for (int i = 0; i < columnCount; i++) {
-            if (i == 4 || i == 9 || i == 10 || i == 11 || i == 12 || i == 22 || i == 23 || i == 24 || i == 25 || i == 26 || i == 27) {
+            if (i == 4 || (i >= 8 && i <= 38) || (i >= 63 && i <= 66)) {
                 tb_resultado.getColumnModel().getColumn(i).setCellRenderer(new DefaultTableCellRenderer() {
                     @Override
                     public void setValue(Object value) {
@@ -208,29 +236,7 @@ public class Vacaciones extends javax.swing.JFrame {
             
             
             
-            queryComision = "SELECT "
-                    + "    [Nro Doc# Ident#], "
-                    + "    CONVERT(DECIMAL(20,2), "
-                    + "	(( "
-                    + "	SUM(CASE WHEN Mes = 1 THEN [Bonif# Prod#] ELSE 0 END) + "
-                    + "    SUM(CASE WHEN Mes = 2 THEN [Bonif# Prod#] ELSE 0 END) + "
-                    + "    SUM(CASE WHEN Mes = 3 THEN [Bonif# Prod#] ELSE 0 END) + "
-                    + "    SUM(CASE WHEN Mes = 4 THEN [Bonif# Prod#] ELSE 0 END) + "
-                    + "    SUM(CASE WHEN Mes = 5 THEN [Bonif# Prod#] ELSE 0 END) + "
-                    + "    SUM(CASE WHEN Mes = 6 THEN [Bonif# Prod#] ELSE 0 END)) "
-                    + "	/6)) AS Comision "
-                    + "FROM PlanillaSueldo "
-                    + "WHERE "
-                    + "    Año = " + jdc_año.getYear() + " AND Mes IN (" + valorMeses.substring(0, valorMeses.length() - 1) + ") "
-                    + "GROUP BY "
-                    + "    [Nro Doc# Ident#] "
-                    + "HAVING "
-                    + "    (CASE WHEN SUM(CASE WHEN Mes = 1 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
-                    + "     CASE WHEN SUM(CASE WHEN Mes = 2 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
-                    + "     CASE WHEN SUM(CASE WHEN Mes = 3 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
-                    + "     CASE WHEN SUM(CASE WHEN Mes = 4 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
-                    + "     CASE WHEN SUM(CASE WHEN Mes = 5 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
-                    + "     CASE WHEN SUM(CASE WHEN Mes = 6 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END) >= 3";
+            
             
             queryDescuento = 
                "SELECT "
@@ -299,7 +305,7 @@ public class Vacaciones extends javax.swing.JFrame {
     private void cargaEmpleados() {
         try {
             int c = 1;
-            Object data[] = new Object[9];
+            Object data[] = new Object[8];
             Connection con = Conexion.getConnection();
             Statement st = con.createStatement();
             String sql = "SELECT "
@@ -320,12 +326,11 @@ public class Vacaciones extends javax.swing.JFrame {
                 data[0] = String.valueOf(c);
                 data[1] = rs.getObject(1);
                 data[2] = rs.getObject(2);
-                data[3] = inicioCTS;
+                data[3] = rs.getObject(4);
                 data[4] = rs.getObject(3);
-                data[5] = rs.getObject(4);
-                data[6] = rs.getObject(5);
-                data[7] = rs.getObject(6);
-                data[8] = rs.getObject(7);
+                data[5] = rs.getObject(5);
+                data[6] = rs.getObject(6);
+                data[7] = rs.getObject(7);
                 modelo.addRow(data);
                 c++;
             }
@@ -338,8 +343,8 @@ public class Vacaciones extends javax.swing.JFrame {
         }
         
         
-
-        cargaAsigNetoGrati();
+        
+       cargaAsigNetoGrati();
     }
 
     private void cargaAsigNetoGrati() {
@@ -366,8 +371,8 @@ public class Vacaciones extends javax.swing.JFrame {
                 for (int i = 0; i < tb_resultado.getRowCount(); i++) {
                     if (tb_resultado.getValueAt(i, 1) != null
                             && tb_resultado.getValueAt(i, 1).toString().trim().equals(nroDocIdent.trim())) {
-                        tb_resultado.setValueAt(asigFam, i, 9);
-                        tb_resultado.setValueAt(netoapagar, i, 10);
+                        tb_resultado.setValueAt(asigFam, i, 8);
+                        tb_resultado.setValueAt(netoapagar, i, 11);
                     }
                 }
             }
@@ -390,6 +395,42 @@ public class Vacaciones extends javax.swing.JFrame {
     }
 
     private void cargaComisiones() {
+        queryComision = "SELECT "
+                    + "    [Nro Doc# Ident#], "
+                    + "    CONVERT(DECIMAL(20,2), "
+                    + "	(( "
+                    + "	SUM(CASE WHEN Mes = 1 THEN [Bonif# Prod#] ELSE 0 END) + "
+                    + "    SUM(CASE WHEN Mes = 2 THEN [Bonif# Prod#] ELSE 0 END) + "
+                    + "    SUM(CASE WHEN Mes = 3 THEN [Bonif# Prod#] ELSE 0 END) + "
+                    + "    SUM(CASE WHEN Mes = 4 THEN [Bonif# Prod#] ELSE 0 END) + "
+                    + "    SUM(CASE WHEN Mes = 5 THEN [Bonif# Prod#] ELSE 0 END) + "
+                    + "    SUM(CASE WHEN Mes = 6 THEN [Bonif# Prod#] ELSE 0 END) + "
+                    + "    SUM(CASE WHEN Mes = 7 THEN [Bonif# Prod#] ELSE 0 END) + "
+                    + "    SUM(CASE WHEN Mes = 8 THEN [Bonif# Prod#] ELSE 0 END) + "
+                    + "    SUM(CASE WHEN Mes = 9 THEN [Bonif# Prod#] ELSE 0 END) + "
+                    + "    SUM(CASE WHEN Mes = 10 THEN [Bonif# Prod#] ELSE 0 END) + "
+                    + "    SUM(CASE WHEN Mes = 11 THEN [Bonif# Prod#] ELSE 0 END) + "
+                    + "    SUM(CASE WHEN Mes = 12 THEN [Bonif# Prod#] ELSE 0 END)) "
+                    + "	/6)) AS Comision "
+                    + "FROM PlanillaSueldo "
+                    + "WHERE "
+                    + "    Año = " + jdc_año.getYear() + " AND Mes IN (" + (jdc_mes.getMonth()+1) + ") "
+                    + "GROUP BY "
+                    + "    [Nro Doc# Ident#] "
+                    + "HAVING "
+                    + "    (CASE WHEN SUM(CASE WHEN Mes = 1 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
+                    + "     CASE WHEN SUM(CASE WHEN Mes = 2 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
+                    + "     CASE WHEN SUM(CASE WHEN Mes = 3 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
+                    + "     CASE WHEN SUM(CASE WHEN Mes = 4 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
+                    + "     CASE WHEN SUM(CASE WHEN Mes = 5 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
+                    + "     CASE WHEN SUM(CASE WHEN Mes = 6 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
+                    + "     CASE WHEN SUM(CASE WHEN Mes = 7 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
+                    + "     CASE WHEN SUM(CASE WHEN Mes = 8 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
+                    + "     CASE WHEN SUM(CASE WHEN Mes = 9 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
+                    + "     CASE WHEN SUM(CASE WHEN Mes = 10 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
+                    + "     CASE WHEN SUM(CASE WHEN Mes = 11 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
+                    + "     CASE WHEN SUM(CASE WHEN Mes = 12 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END) >= 1";
+        
         if (queryComision != null) {
             try {
                 Connection con = Conexion.getConnection();
@@ -404,7 +445,7 @@ public class Vacaciones extends javax.swing.JFrame {
                     for (int i = 0; i < tb_resultado.getRowCount(); i++) {
                         if (tb_resultado.getValueAt(i, 1) != null
                                 && tb_resultado.getValueAt(i, 1).toString().trim().equals(nroDocIdent.trim())) {
-                            tb_resultado.setValueAt(comision, i, 11);
+                            tb_resultado.setValueAt(comision, i, 9);
                         }
                     }
                 }
@@ -425,59 +466,37 @@ public class Vacaciones extends javax.swing.JFrame {
     private void cargaComputable() {
         for (int i = 0; i < tb_resultado.getRowCount(); i++) {
             double rembase = tb_resultado.getValueAt(i, 4) != null ? Double.parseDouble(tb_resultado.getValueAt(i, 4).toString()) : 0.0;
-            double asigfam = tb_resultado.getValueAt(i, 9) != null ? Double.parseDouble(tb_resultado.getValueAt(i, 9).toString()) : 0.0;
-            double comisiones = tb_resultado.getValueAt(i, 11) != null ? Double.parseDouble(tb_resultado.getValueAt(i, 11).toString()) : 0.0;
+            double asigfam = tb_resultado.getValueAt(i, 8) != null ? Double.parseDouble(tb_resultado.getValueAt(i, 8).toString()) : 0.0;
+            double comisiones = tb_resultado.getValueAt(i, 9) != null ? Double.parseDouble(tb_resultado.getValueAt(i, 9).toString()) : 0.0;
 
             double computable = rembase + asigfam + comisiones;
+            tb_resultado.setValueAt(computable, i, 10);
             tb_resultado.setValueAt(computable, i, 12);
         }
 
        
-        calculadiasProvision();
+       
+       cargarDiasPendientes();
+       
+        //calculadiasProvision();
     }
-
-    private void calculadiasProvision() {
-        for (int i = 0; i < tb_resultado.getRowCount(); i++) {
-            calcularDiferencia(tb_resultado.getValueAt(i, 5).toString(), tb_resultado.getColumnName(13), i);
-        }
-        calculaMesesFaltas();
-    }
-
-    private void calculaMesesFaltas() {
-        if (queryDescuento != null) {
+    
+    private void cargarDiasPendientes() {
+        String query = "SELECT * FROM VacDiasPendientes WHERE Año = " + (jdc_año.getYear()-2);
+        if (query != null) {
             try {
                 Connection con = Conexion.getConnection();
                 Statement st = con.createStatement();
-                String sql = queryDescuento;
+                String sql = query;
                 ResultSet rs = st.executeQuery(sql);
 
                 while (rs.next()) {
-                    String anniomes = rs.getString(1);
                     String nroDocIdent = rs.getString(2);
-                    int faltas = rs.getInt(3);
+                    double diaspendientes = rs.getDouble(3);
 
-                    // Recorremos las filas de tb_resultado
                     for (int i = 0; i < tb_resultado.getRowCount(); i++) {
-                        // Recorremos las columnas de tb_resultado
-                        for (int j = 0; j < tb_resultado.getColumnCount(); j++) {
-                            // Solo consideramos las columnas entre 16 y 21
-                            if (j >= 15 && j <= 20) {
-                                // Obtener el nombre de la columna
-                                String columnName = tb_resultado.getColumnName(j).toLowerCase();
-
-                                // Usar matcher para extraer el contenido entre []
-                                Matcher matcher = Pattern.compile("\\[(.*?)\\]").matcher(columnName);
-                                if (matcher.find()) {
-                                    // Comparar el contenido extraído con anniomes
-                                    if (matcher.group(1).equals(anniomes)) {
-                                        // Comparar nroDocIdent con el valor en la tabla
-                                        if (tb_resultado.getValueAt(i, 1) != null && tb_resultado.getValueAt(i, 1).equals(nroDocIdent)) {
-                                            // Actualizar la celda con el valor de faltas
-                                            tb_resultado.setValueAt(faltas, i, j);
-                                        }
-                                    }
-                                }
-                            }
+                        if (nroDocIdent.equals(tb_resultado.getValueAt(i, 1))) {
+                            tb_resultado.setValueAt(diaspendientes, i, 13);
                         }
                     }
                 }
@@ -491,44 +510,240 @@ public class Vacaciones extends javax.swing.JFrame {
             }
         }
         
-        
-        calculaProvision();
+       
+        calcularDiasGanados();
     }
     
-    private void calculaProvision(){
-        for (int i = 0; i < tb_resultado.getRowCount(); i++) {
-            if (tb_resultado.getValueAt(i, 10) == null || tb_resultado.getValueAt(i, 10).toString().equals("0.0")) {
-                tb_resultado.setValueAt("0.00", i, 22);
-            }else{
-                double computable = Double.parseDouble(tb_resultado.getValueAt(i, 12).toString());
-                double mesevalua = Double.parseDouble(tb_resultado.getValueAt(i, 13).toString());
-                double primeraparteformula = computable / 6 * mesevalua;
+    private void calcularDiasGanados(){
+        int selectedYear = jdc_año.getYear();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM yy");
+
+        for (int i = 0; i < modelo.getRowCount(); i++) {
+            try {
+                String fechaStr = (String) modelo.getValueAt(i, 3); // Columna 4: Fecha de inicio
+                Date fecha = sdf.parse(fechaStr);
+                int fechaYear = fecha.getYear() + 1900; // Obtener el año de la fecha (ajustado)
                 
-                double prevision = Double.parseDouble(tb_resultado.getValueAt(i, 14).toString());
-                double mes1 = tb_resultado.getValueAt(i, 15) != null ? Double.parseDouble(tb_resultado.getValueAt(i, 15).toString()) : 0.0;
-                double mes2 = tb_resultado.getValueAt(i, 16) != null ? Double.parseDouble(tb_resultado.getValueAt(i, 16).toString()) : 0.0;
-                double mes3 = tb_resultado.getValueAt(i, 17) != null ? Double.parseDouble(tb_resultado.getValueAt(i, 17).toString()) : 0.0;
-                double mes4 = tb_resultado.getValueAt(i, 18) != null ? Double.parseDouble(tb_resultado.getValueAt(i, 18).toString()) : 0.0;
-                double mes5 = tb_resultado.getValueAt(i, 19) != null ? Double.parseDouble(tb_resultado.getValueAt(i, 19).toString()) : 0.0;
-                double mes6 = tb_resultado.getValueAt(i, 20) != null ? Double.parseDouble(tb_resultado.getValueAt(i, 20).toString()) : 0.0;
-                double ajustedias = tb_resultado.getValueAt(i, 21) != null ? Double.parseDouble(tb_resultado.getValueAt(i, 21).toString()) : 0.0;
+                int selectedMonth = jdc_mes.getMonth(); // El valor va de 0 a 11
+
+                int reversePosition = 11 - selectedMonth;
                 
-                double segundaparteformula = computable / 180 * (prevision - mes1 - mes2 - mes3 - mes4 - mes5 - mes6 + ajustedias);
-                
-                double unirformula = primeraparteformula + segundaparteformula;
-                
-                tb_resultado.setValueAt(unirformula, i, 22);
+                // Verificar si la fecha es menor a 2 años con respecto al año seleccionado
+                if (selectedYear - fechaYear > 2) {
+                    for (int j = 15; j <= 38- reversePosition; j++) {
+                        tb_resultado.setValueAt(2.50, i, j);
+                    }
+                } else {
+                    String searchValue = dateFormat.format(fecha);
+                    int columnIndex = obtenerPosicionColumnaPorValor(tb_resultado, searchValue);
+
+                    if (columnIndex != -1) {
+                        for (int j = columnIndex; j <= 38 - reversePosition; j++) {
+                            tb_resultado.setValueAt(2.50, i, j);
+                        }
+                    } 
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
-        
-        
     
+        cargarDiasGozados();
+         
+    }
+    
+    private void cargarDiasGozados() {
+        
+        try {
+             Connection con = Conexion.getConnection();
+             
+            String query = "SELECT "
+                    + "[Nro Doc# Ident#], "
+                    + "	SUM(CASE WHEN Mes = 1 THEN [Vac# Fis#] ELSE 0 END) AS [1], "
+                    + "	SUM(CASE WHEN Mes = 2 THEN [Vac# Fis#] ELSE 0 END) AS [2], "
+                    + "	SUM(CASE WHEN Mes = 3 THEN [Vac# Fis#] ELSE 0 END) AS [3], "
+                    + "	SUM(CASE WHEN Mes = 4 THEN [Vac# Fis#] ELSE 0 END) AS [4], "
+                    + "	SUM(CASE WHEN Mes = 5 THEN [Vac# Fis#] ELSE 0 END) AS [5], "
+                    + "	SUM(CASE WHEN Mes = 6 THEN [Vac# Fis#] ELSE 0 END) AS [6], "
+                    + "	SUM(CASE WHEN Mes = 7 THEN [Vac# Fis#] ELSE 0 END) AS [7], "
+                    + "	SUM(CASE WHEN Mes = 8 THEN [Vac# Fis#] ELSE 0 END) AS [8], "
+                    + "	SUM(CASE WHEN Mes = 9 THEN [Vac# Fis#] ELSE 0 END) AS [9], "
+                    + "	SUM(CASE WHEN Mes = 10 THEN [Vac# Fis#] ELSE 0 END) AS [10], "
+                    + "	SUM(CASE WHEN Mes = 11 THEN [Vac# Fis#] ELSE 0 END) AS [11], "
+                    + "	SUM(CASE WHEN Mes = 12 THEN [Vac# Fis#] ELSE 0 END) AS [12] "
+                    + "FROM PlanillaSueldo PS "
+                    + "WHERE "
+                    + "Año = " + (jdc_año.getYear() - 1) + " "
+                    + "GROUP BY [Nro Doc# Ident#]";
+           
+            Statement st = con.createStatement();
+            String sql = query;
+            ResultSet rs = st.executeQuery(sql);
+            
+            while (rs.next()) {
+                String nroDocIdent = rs.getString(1);
+                
+                for (int i = 0; i < tb_resultado.getRowCount(); i++) {
+                    if (nroDocIdent.equals(tb_resultado.getValueAt(i, 1))) {
+                        int c = 2;
+                        for (int j = 39; j <= 50; j++) {
+                            if (rs.getInt(c) == 0) {
+                                tb_resultado.setValueAt("", i, j);
+                            }else{
+                                tb_resultado.setValueAt(rs.getInt(c), i, j);
+                            }
+                            
+                            c++;
+                        }
+                    }
+                }
+            }
+            
+            query = "SELECT "
+                    + "[Nro Doc# Ident#], "
+                    + "	SUM(CASE WHEN Mes = 1 THEN [Vac# Fis#] ELSE 0 END) AS [1], "
+                    + "	SUM(CASE WHEN Mes = 2 THEN [Vac# Fis#] ELSE 0 END) AS [2], "
+                    + "	SUM(CASE WHEN Mes = 3 THEN [Vac# Fis#] ELSE 0 END) AS [3], "
+                    + "	SUM(CASE WHEN Mes = 4 THEN [Vac# Fis#] ELSE 0 END) AS [4], "
+                    + "	SUM(CASE WHEN Mes = 5 THEN [Vac# Fis#] ELSE 0 END) AS [5], "
+                    + "	SUM(CASE WHEN Mes = 6 THEN [Vac# Fis#] ELSE 0 END) AS [6], "
+                    + "	SUM(CASE WHEN Mes = 7 THEN [Vac# Fis#] ELSE 0 END) AS [7], "
+                    + "	SUM(CASE WHEN Mes = 8 THEN [Vac# Fis#] ELSE 0 END) AS [8], "
+                    + "	SUM(CASE WHEN Mes = 9 THEN [Vac# Fis#] ELSE 0 END) AS [9], "
+                    + "	SUM(CASE WHEN Mes = 10 THEN [Vac# Fis#] ELSE 0 END) AS [10], "
+                    + "	SUM(CASE WHEN Mes = 11 THEN [Vac# Fis#] ELSE 0 END) AS [11], "
+                    + "	SUM(CASE WHEN Mes = 12 THEN [Vac# Fis#] ELSE 0 END) AS [12] "
+                    + "FROM PlanillaSueldo PS "
+                    + "WHERE "
+                    + "Año = " + (jdc_año.getYear()) + " "
+                    + "GROUP BY [Nro Doc# Ident#]";
+            
+            st = con.createStatement();
+            rs = st.executeQuery(query);
+            
+            int selectedMonth = jdc_mes.getMonth(); // El valor va de 0 a 11
+
+           int reversePosition = 11 - selectedMonth;
+            
+            while (rs.next()) {
+                String nroDocIdent = rs.getString(1);
+                
+                for (int i = 0; i < tb_resultado.getRowCount(); i++) {
+                    if (nroDocIdent.equals(tb_resultado.getValueAt(i, 1))) {
+                        int c = 2;
+                        for (int j = 51; j <= 62 - reversePosition; j++) {
+                            if (rs.getInt(c) == 0) {
+                                tb_resultado.setValueAt("", i, j);
+                            }else{
+                                tb_resultado.setValueAt(rs.getInt(c), i, j);
+                            }
+                            c++;
+                        }
+                    }
+                }
+            }
+            
+            rs.close();
+            st.close();
+            con.close();
+            
+            cargarTotalDiasPendiente();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(Vacaciones.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    private void cargarTotalDiasPendiente() {
+
+        // Recorremos todas las filas de la tabla
+        for (int i = 0; i < tb_resultado.getRowCount(); i++) {
+            double total1 = 0;
+            double total2 = 0;
+            // Sumar de la columna 15 a la 38
+            for (int j = 15; j <= 38; j++) {
+                Object value = tb_resultado.getValueAt(i, j); // Obtener el valor de la celda
+                if (value == null || value.toString().trim().isEmpty()) {
+                    // Si el valor es null o está vacío, lo tratamos como 0
+                    total1 += 0;
+                } else if (value instanceof Number) {
+                    total1 += ((Number) value).doubleValue(); // Sumar el valor numérico de la celda
+                }
+            }
+
+            // Sumar de la columna 39 a la 50
+            for (int j = 39; j <= 62; j++) {
+                Object value = tb_resultado.getValueAt(i, j); // Obtener el valor de la celda
+                if (value == null || value.toString().trim().isEmpty()) {
+                    // Si el valor es null o está vacío, lo tratamos como 0
+                    total2 += 0;
+                } else if (value instanceof Number) {
+                    total2 += ((Number) value).doubleValue(); // Sumar el valor numérico de la celda
+                }
+            }
+            double totalpendientes = 0.0;  // Valor predeterminado
+
+            Object value = tb_resultado.getValueAt(i, 13); // Obtener el valor de la celda
+
+// Verificar si el valor es null o vacío
+            if (value != null && !value.toString().trim().isEmpty()) {
+                // Si no es null ni vacío, convertir el valor a double
+                totalpendientes = Double.parseDouble(value.toString());
+            } else {
+                // Si es null o vacío, asignar 0
+                totalpendientes = 0.0;
+            }
+
+            double resultadoFinal = totalpendientes + total1 - total2;
+            tb_resultado.setValueAt(resultadoFinal, i, 63);
+        }
+        
+        cargarSaldo();
+    }
+    
+    
+    private void cargarSaldo() {
+        for (int i = 0; i < tb_resultado.getRowCount(); i++) {
+            double computable = Double.parseDouble(tb_resultado.getValueAt(i, 10).toString());
+            double totaldiaspendientes = Double.parseDouble(tb_resultado.getValueAt(i, 63).toString());
+            
+            tb_resultado.setValueAt(computable / 30 * totaldiaspendientes, i, 64);
+        }
+        
         cargarProvisionHistorial();
     }
     
+    public static int obtenerPosicionColumnaPorValor(JTable table, String searchValue) {
+        // Recorremos todas las columnas para buscar el valor dentro de los corchetes
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            String headerText = table.getColumnName(i).toLowerCase(); // Obtener el nombre de la columna
+            String extractedValue = extractValueInsideBrackets(headerText); // Extraer el valor dentro de los corchetes
+
+            if (extractedValue != null && extractedValue.equals(searchValue)) {
+                return i; // Si encontramos el valor, devolvemos el índice de la columna
+            }
+        }
+        return -1; // Si no encontramos el valor, devolvemos -1
+    }
+
+    // Método para extraer el valor dentro de los corchetes
+    public static String extractValueInsideBrackets(String text) {
+        Pattern pattern = Pattern.compile("\\[(.*?)\\]"); // Expresión regular para encontrar texto entre corchetes
+        Matcher matcher = pattern.matcher(text);
+
+        if (matcher.find()) {
+            return matcher.group(1); // Retorna el valor dentro de los corchetes
+        } else {
+            return null; // Si no se encuentra ningún valor dentro de los corchetes
+        }
+    }
+    
+    
+    
     private void cargarProvisionHistorial(){
         try {
-            String columnName = tb_resultado.getColumnName(23).toLowerCase();
+            String columnName = tb_resultado.getColumnName(65).toLowerCase();
             int year = 0;
             String formattedMonth = null;
 
@@ -553,13 +768,12 @@ public class Vacaciones extends javax.swing.JFrame {
             
             Connection con = Conexion.getConnection();
             Statement st = con.createStatement();
-            String sql = "SELECT NroDocumento, Provision, Provision9 FROM ProvisionGratiHistorial WHERE Año = " + year + " AND Mes = " + formattedMonth + " ";
+            String sql = "SELECT NroDocumento, Provision FROM ProvisionVacHistorial WHERE Año = " + year + " AND Mes = " + formattedMonth + " ";
             ResultSet rs = st.executeQuery(sql);
             while (rs.next()) {
                 for (int i = 0; i < tb_resultado.getRowCount(); i++) {
                     if (tb_resultado.getValueAt(i, 1).toString().equals(rs.getString(1))) {
-                        tb_resultado.setValueAt(rs.getObject(2), i, 23);
-                        tb_resultado.setValueAt(rs.getObject(3), i, 26);
+                        tb_resultado.setValueAt(rs.getObject(2), i, 65);
                     }
                 }
             }
@@ -579,26 +793,19 @@ public class Vacaciones extends javax.swing.JFrame {
     
     private void cargarDiferenciasyAdicionales(){
         for (int i = 0; i < tb_resultado.getRowCount(); i++) {
-            double provision = Double.parseDouble(tb_resultado.getValueAt(i, 22).toString());
-            double provisionHistorial = tb_resultado.getValueAt(i, 23) != null ? Double.parseDouble(tb_resultado.getValueAt(i, 23).toString()) : 0.0;
+            double provision = Double.parseDouble(tb_resultado.getValueAt(i, 64).toString());
+            double provisionHistorial = tb_resultado.getValueAt(i, 65) != null ? Double.parseDouble(tb_resultado.getValueAt(i, 65).toString()) : 0.0;
             double diferencia = provision - provisionHistorial;
-            tb_resultado.setValueAt(diferencia, i, 24);
+            tb_resultado.setValueAt(diferencia, i, 66);
             
-            double provision9sistema = provision * 0.09;
-            
-            tb_resultado.setValueAt(provision9sistema , i, 25);
-            
-            double provision9historial =  tb_resultado.getValueAt(i, 26) != null ? Double.parseDouble(tb_resultado.getValueAt(i, 26).toString()) : 0.0;;
-            
-            double diferencia9 = provision9sistema - provision9historial;
-            
-            tb_resultado.setValueAt(diferencia9, i, 27);
-            
-            if (tb_resultado.getValueAt(i, 9) == null) {
-                tb_resultado.setValueAt("INACTIVO", i, 28);
+            if (tb_resultado.getValueAt(i, 8) == null) {
+                tb_resultado.setValueAt("INACTIVO", i, 67);
             }else{
-                tb_resultado.setValueAt("ACTIVO", i, 28);
+                tb_resultado.setValueAt("ACTIVO", i, 67);
             }
+            tb_resultado.setValueAt("SI", i, 68);
+            tb_resultado.setValueAt("VAC " + tb_resultado.getValueAt(i, 1), i, 69);
+            
         }
         packColumns(tb_resultado);
     }
@@ -609,8 +816,8 @@ public class Vacaciones extends javax.swing.JFrame {
         jButton3.setEnabled(false);
         Connection cn = null;
         try {
-            String deleteSQL = "DELETE FROM ProvisionGratiHistorial WHERE Año = ? AND Mes = ?";
-            String insertSQL = "INSERT INTO ProvisionGratiHistorial (Año, Mes, NroDocumento, Provision, Provision9) VALUES (?, ?, ?, ?, ?)";
+            String deleteSQL = "DELETE FROM ProvisionVacHistorial WHERE Año = ? AND Mes = ?";
+            String insertSQL = "INSERT INTO ProvisionVacHistorial (Año, Mes, NroDocumento, Provision) VALUES (?, ?, ?, ?)";
             cn = Conexion.getConnection();
             // Iniciar una transacción
             cn.setAutoCommit(false);
@@ -627,31 +834,23 @@ public class Vacaciones extends javax.swing.JFrame {
                 for (int i = 0; i < tb_resultado.getRowCount(); i++) {
                     // Obtener valores de las columnas
                     Object nroDocumentoObj = tb_resultado.getValueAt(i, 1);
-                    Object valor23Obj = tb_resultado.getValueAt(i, 23);
-                    Object valor24Obj = tb_resultado.getValueAt(i, 24);
-                    
-                    Object valor26Obj = tb_resultado.getValueAt(i, 26);
-                    Object valor27Obj = tb_resultado.getValueAt(i, 27);
+                    Object valor65Obj = tb_resultado.getValueAt(i, 65);
+                    Object valor66Obj = tb_resultado.getValueAt(i, 66);
 
                     // Manejar valores nulos o vacíos
                     String nroDocumento = (nroDocumentoObj != null) ? nroDocumentoObj.toString() : null;
-                    double valor23 = (valor23Obj != null && !valor23Obj.toString().trim().isEmpty()) ? Double.parseDouble(valor23Obj.toString()) : 0.0;
-                    double valor24 = (valor24Obj != null && !valor24Obj.toString().trim().isEmpty()) ? Double.parseDouble(valor24Obj.toString()) : 0.0;
+                    double valor65 = (valor65Obj != null && !valor65Obj.toString().trim().isEmpty()) ? Double.parseDouble(valor65Obj.toString()) : 0.0;
+                    double valor66 = (valor66Obj != null && !valor66Obj.toString().trim().isEmpty()) ? Double.parseDouble(valor66Obj.toString()) : 0.0;
                     
-                    double valor26 = (valor26Obj != null && !valor26Obj.toString().trim().isEmpty()) ? Double.parseDouble(valor26Obj.toString()) : 0.0;
-                    double valor27 = (valor27Obj != null && !valor27Obj.toString().trim().isEmpty()) ? Double.parseDouble(valor27Obj.toString()) : 0.0;
-
                     // Calcular el valor de provision
-                    double provision = valor23 + valor24;
+                    double provision = valor65 + valor66;
                     
-                    double provision9 = valor26 + valor27;
 
                     // Configurar parámetros para el insert
                     insertStmt.setInt(1, jdc_año.getYear());
                     insertStmt.setInt(2, (jdc_mes.getMonth() + 1));
                     insertStmt.setString(3, nroDocumento);
                     insertStmt.setDouble(4, provision);
-                    insertStmt.setDouble(5, provision9);
 
                     // Añadir al batch
                     insertStmt.addBatch();
@@ -801,12 +1000,9 @@ public class Vacaciones extends javax.swing.JFrame {
         jPanel14 = new javax.swing.JPanel();
         jLabel12 = new javax.swing.JLabel();
         jdc_año = new com.toedter.calendar.JYearChooser();
-        jLabel14 = new javax.swing.JLabel();
         jdc_mes = new com.toedter.calendar.JMonthChooser();
-        jRadioButton1 = new javax.swing.JRadioButton();
         jRadioButton2 = new javax.swing.JRadioButton();
         jLabel16 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
         jPanel15 = new javax.swing.JPanel();
         jButton3 = new javax.swing.JButton();
         txt_razonsocial2 = new javax.swing.JLabel();
@@ -815,7 +1011,6 @@ public class Vacaciones extends javax.swing.JFrame {
         jMenuItem3 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
-        jMenuItem4 = new javax.swing.JMenuItem();
         ExportarExcel = new javax.swing.JMenuItem();
 
         jButton2.setText("jButton2");
@@ -826,7 +1021,7 @@ public class Vacaciones extends javax.swing.JFrame {
         });
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Calculo mensual de Gratificación y Bonificaciones");
+        setTitle("Calculo mensual de Vacaciones");
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -845,21 +1040,9 @@ public class Vacaciones extends javax.swing.JFrame {
         jLabel12.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
         jLabel12.setText("Año:");
 
-        jLabel14.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        jLabel14.setText("o");
-
         jdc_mes.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jdc_mes.setForeground(new java.awt.Color(255, 0, 0));
         jdc_mes.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
-
-        buttonGroup1.add(jRadioButton1);
-        jRadioButton1.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        jRadioButton1.setText("Semestre");
-        jRadioButton1.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                jRadioButton1ItemStateChanged(evt);
-            }
-        });
 
         buttonGroup1.add(jRadioButton2);
         jRadioButton2.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
@@ -873,15 +1056,6 @@ public class Vacaciones extends javax.swing.JFrame {
 
         jLabel16.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
         jLabel16.setText("->");
-
-        jComboBox1.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Gratificación Julio", "Gratificación Diciembre" }));
-        jComboBox1.setEnabled(false);
-        jComboBox1.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                jComboBox1ItemStateChanged(evt);
-            }
-        });
 
         javax.swing.GroupLayout jPanel14Layout = new javax.swing.GroupLayout(jPanel14);
         jPanel14.setLayout(jPanel14Layout);
@@ -898,12 +1072,6 @@ public class Vacaciones extends javax.swing.JFrame {
                 .addComponent(jRadioButton2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jdc_mes, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel14, javax.swing.GroupLayout.PREFERRED_SIZE, 7, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jRadioButton1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel14Layout.setVerticalGroup(
@@ -915,10 +1083,7 @@ public class Vacaciones extends javax.swing.JFrame {
                     .addComponent(jdc_mes, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
                     .addComponent(jdc_año, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jRadioButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel16, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jComboBox1)
-                    .addComponent(jRadioButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jLabel16, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -1010,23 +1175,13 @@ public class Vacaciones extends javax.swing.JFrame {
 
         jMenuItem2.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
         jMenuItem2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Terms and Conditions.png"))); // NOI18N
-        jMenuItem2.setText("Asiento Contable - Gratificación");
+        jMenuItem2.setText("Asiento Contable - Vacaciones");
         jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem2ActionPerformed(evt);
             }
         });
         jMenu2.add(jMenuItem2);
-
-        jMenuItem4.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
-        jMenuItem4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Terms and Conditions.png"))); // NOI18N
-        jMenuItem4.setText("Asiento Contable - Bonificación");
-        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem4ActionPerformed(evt);
-            }
-        });
-        jMenu2.add(jMenuItem4);
 
         ExportarExcel.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
         ExportarExcel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Microsoft excel.png"))); // NOI18N
@@ -1182,21 +1337,8 @@ public class Vacaciones extends javax.swing.JFrame {
         FuncionesGlobales.colocarnombremesannio(jdc_año, jdc_mes, txt_razonsocial2);
     }//GEN-LAST:event_jButton2ActionPerformed
 
-    private void jRadioButton1ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jRadioButton1ItemStateChanged
-        if (jRadioButton1.isSelected()) {
-            jComboBox1.setEnabled(true);
-            jdc_mes.setEnabled(false);
-            if (jComboBox1.getSelectedItem().equals("CTS Mayo")) {
-                jdc_mes.setMonth(3);
-            } else if (jComboBox1.getSelectedItem().equals("CTS Noviembre")) {
-                jdc_mes.setMonth(9);
-            }
-        }
-    }//GEN-LAST:event_jRadioButton1ItemStateChanged
-
     private void jRadioButton2ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jRadioButton2ItemStateChanged
         if (jRadioButton2.isSelected()) {
-            jComboBox1.setEnabled(false);
             jdc_mes.setEnabled(true);
         }
     }//GEN-LAST:event_jRadioButton2ItemStateChanged
@@ -1206,14 +1348,6 @@ public class Vacaciones extends javax.swing.JFrame {
         ini.toFront();
         ini.setVisible(true);
     }//GEN-LAST:event_jMenuItem3ActionPerformed
-
-    private void jComboBox1ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jComboBox1ItemStateChanged
-        if (jComboBox1.getSelectedItem().equals("CTS Mayo")) {
-            jdc_mes.setMonth(3);
-        } else if (jComboBox1.getSelectedItem().equals("CTS Noviembre")) {
-            jdc_mes.setMonth(9);
-        }
-    }//GEN-LAST:event_jComboBox1ItemStateChanged
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
         DefaultTableModel model = new DefaultTableModel();
@@ -1240,120 +1374,46 @@ public class Vacaciones extends javax.swing.JFrame {
 
         int mesSeleccionado = jdc_mes.getMonth();
         
-        String cTS = null, fInicio = null, fFin = null;
         
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR, año);
-
-        calendar.set(Calendar.MONTH, mesSeleccionado);
-        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        calendar.set(Calendar.MONTH, (mesSeleccionado+1));
+        calendar.set(Calendar.DAY_OF_MONTH, 1);  // Establecer el primer día del mes
         
+        // Obtener el último día del mes
         int ultimoDia = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-
-        if (mesSeleccionado >= 0 && mesSeleccionado <= 5) {
-            cTS = "GRAT " + meses[0].substring(0, 3).toUpperCase() + "-" + meses[5].substring(0, 3).toUpperCase() + " " + String.valueOf(año).substring(2, 4);
-            fInicio = "01/01/" + año;
-            fFin = ultimoDia + "/06/" + año;  
-        } else if (mesSeleccionado >= 6 && mesSeleccionado <= 11) {
-            cTS = "GRAT " + meses[6].substring(0, 3).toUpperCase() + "-" + meses[11].substring(0, 3).toUpperCase() + " " + String.valueOf(año).substring(2, 4);
-            fInicio = "01/07/" + año;
-            fFin = ultimoDia + "/12/" + año; 
-        } 
         
+        // Establecer el último día en el calendario
+        calendar.set(Calendar.DAY_OF_MONTH, ultimoDia);
+        
+        // Formatear la fecha en el formato dd/MM/yyyy
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        String fechaFormateada = sdf.format(calendar.getTime());
+
         Object data[] = new Object[12];
         
         for (int i = 0; i < tb_resultado.getRowCount(); i++) {
-            if (Double.parseDouble(tb_resultado.getValueAt(i, 24).toString()) > 0) {
-                data[0] = 411410;
+            if (Double.parseDouble(tb_resultado.getValueAt(i, 66).toString()) > 0) {
+                data[0] = 411510;
                 data[1] = "";
                 data[2] = "SOLES";
-                data[3] = "3.722";
+                data[3] = "3.750";
                 data[4] = "-";
-                data[5] = tb_resultado.getValueAt(i, 24);
-                data[6] = "PROV DE GRATIFICACION MES DE " + meses[mesSeleccionado].toUpperCase() + " " + jdc_año.getYear();
+                data[5] = tb_resultado.getValueAt(i, 66);
+                data[6] = "PROVISION DE VACACIONES MES DE " + meses[mesSeleccionado].toUpperCase() + " " + jdc_año.getYear();
                 data[7] = "TRABAJADOR";
                 data[8] = tb_resultado.getValueAt(i, 1);
-                data[9] = cTS;
-                data[10] = fInicio;
-                data[11] = fFin;
+                data[9] = tb_resultado.getValueAt(i, 69);
+                data[10] = tb_resultado.getValueAt(i, 3);
+                data[11] = fechaFormateada;
                 
                 model.addRow(data);
             }
         }
         
-        exportarAExcel(model, meses[mesSeleccionado].substring(0, 3).toUpperCase() + " " + String.valueOf(año).substring(2, 4), "GRATIFICACIÓN");
+        exportarAExcel(model, meses[mesSeleccionado].substring(0, 3).toUpperCase() + " " + String.valueOf(año).substring(2, 4), "VACACIONES");
         
     }//GEN-LAST:event_jMenuItem2ActionPerformed
-
-    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
-        DefaultTableModel model = new DefaultTableModel();
-        
-        model.addColumn("Cuenta");	
-        model.addColumn("Descripcion");	
-        model.addColumn("Moneda");	
-        model.addColumn("TipoCambio");	
-        model.addColumn("DebeSoles");	
-        model.addColumn("HaberSoles");	
-        model.addColumn("Glosa");	
-        model.addColumn("TipoAnexo");	
-        model.addColumn("CodigoAnexo");	
-        model.addColumn("NroDocumento");	
-        model.addColumn("FechaEmisionDoc");	
-        model.addColumn("FechaVencimientoDoc");
-
-        int año = jdc_año.getYear();
-        
-        String[] meses = {
-            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-        };
-
-        int mesSeleccionado = jdc_mes.getMonth();
-        
-        String cTS = null, fInicio = null, fFin = null;
-        
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.YEAR, año);
-
-        calendar.set(Calendar.MONTH, mesSeleccionado);
-        calendar.set(Calendar.DAY_OF_MONTH, 1);
-        
-        int ultimoDia = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-
-        if (mesSeleccionado >= 0 && mesSeleccionado <= 5) {
-            cTS = "BONIF " + meses[0].substring(0, 3).toUpperCase() + "-" + meses[5].substring(0, 3).toUpperCase() + " " + String.valueOf(año).substring(2, 4);
-            fInicio = "01/01/" + año;
-            fFin = ultimoDia + "/06/" + año;  
-        } else if (mesSeleccionado >= 6 && mesSeleccionado <= 11) {
-            cTS = "BONIF " + meses[6].substring(0, 3).toUpperCase() + "-" + meses[11].substring(0, 3).toUpperCase() + " " + String.valueOf(año).substring(2, 4);
-            fInicio = "01/07/" + año;
-            fFin = ultimoDia + "/12/" + año; 
-        } 
-        
-        Object data[] = new Object[12];
-        
-        for (int i = 0; i < tb_resultado.getRowCount(); i++) {
-            if (Double.parseDouble(tb_resultado.getValueAt(i, 27).toString()) > 0) {
-                data[0] = 419110;
-                data[1] = "";
-                data[2] = "SOLES";
-                data[3] = "3.722";
-                data[4] = "-";
-                data[5] = tb_resultado.getValueAt(i, 27);
-                data[6] = "PROV DE BONIFICACION MES DE " + meses[mesSeleccionado].toUpperCase() + " " + jdc_año.getYear();
-                data[7] = "TRABAJADOR";
-                data[8] = tb_resultado.getValueAt(i, 1);
-                data[9] = cTS;
-                data[10] = fInicio;
-                data[11] = fFin;
-                
-                model.addRow(data);
-            }
-        }
-        
-        exportarAExcel(model, meses[mesSeleccionado].substring(0, 3).toUpperCase() + " " + String.valueOf(año).substring(2, 4), "BONIFICACION");
-        
-    }//GEN-LAST:event_jMenuItem4ActionPerformed
 
     // Método para exportar los datos de la tabla a Excel
     public void exportarAExcel(DefaultTableModel model, String mesannio, String tipoAsiento) {
@@ -1489,20 +1549,16 @@ public class Vacaciones extends javax.swing.JFrame {
     private javax.swing.ButtonGroup buttonGroup1;
     public static final javax.swing.JButton jButton2 = new javax.swing.JButton();
     private javax.swing.JButton jButton3;
-    private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
-    private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel15;
-    private javax.swing.JRadioButton jRadioButton1;
     private javax.swing.JRadioButton jRadioButton2;
     private javax.swing.JScrollPane jScrollPane1;
     public static com.toedter.calendar.JYearChooser jdc_año;
