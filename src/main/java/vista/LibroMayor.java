@@ -15,6 +15,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -70,7 +71,7 @@ public class LibroMayor extends javax.swing.JFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                setVisible(false); 
+                setVisible(false);
                 FlatMacDarkLaf.setup();
                 Application anteriorFrame = new Application();
                 anteriorFrame.setVisible(true);
@@ -132,6 +133,114 @@ public class LibroMayor extends javax.swing.JFrame {
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(this, "Error al leer el archivo: " + ex.getMessage(),
                         "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private String ValidacionCuentas = "";
+
+    public void identificarCuentas(JTable tb_resultado) {
+        // Obtener el modelo de la tabla
+        DefaultTableModel model = (DefaultTableModel) tb_resultado.getModel();
+
+        // Variable para contar cuentas encontradas
+        int cuentasEncontradas = 0;
+
+        // Iterar sobre todas las filas de la tabla
+        for (int i = 0; i < model.getRowCount(); i++) {
+            // Obtener el valor de la columna que contiene las cuentas (suponiendo que está en la columna 1)
+            Object cuentaObj = model.getValueAt(i, 1);  // Cambia el índice según la columna de cuenta
+
+            // Verificar si el valor es una cadena
+            String cuenta = null;
+            if (cuentaObj instanceof String) {
+                cuenta = (String) cuentaObj;
+            } else if (cuentaObj instanceof Integer) {
+                cuenta = String.valueOf(cuentaObj); // Convertir Integer a String
+            } else {
+                // Continuar si el valor no es un String o Integer
+                continue;
+            }
+
+            // Verificar si la cuenta tiene al menos 2 caracteres
+            if (cuenta.length() >= 2) {
+                // Comprobar si comienza con 90, 92, 94, 95 o 97
+                if (cuenta.startsWith("90") || cuenta.startsWith("92")
+                        || cuenta.startsWith("94") || cuenta.startsWith("95")
+                        || cuenta.startsWith("97")) {
+                    // Imprimir en consola
+                    ValidacionCuentas = ValidacionCuentas + "('" + cuenta + "'),";
+//                    System.out.println("Cuenta encontrada: " + cuenta);
+                    cuentasEncontradas++;
+                }
+            }
+        }
+        System.out.println("las cuentas son las siguientes: " + ValidacionCuentas);
+        // Mensaje si no se encontraron cuentas
+        if (cuentasEncontradas == 0) {
+            System.out.println("No se encontraron cuentas que comiencen con 90, 92, 94, 95 o 97.");
+        }
+    }
+
+    private void validacionCuentas() {
+        boolean conforme = true; // Asumimos inicialmente que todas tienen equivalencias
+        Connection con = null;
+        Statement st = null;
+        ResultSet rs1 = null;
+
+        try {
+            con = Conexion.getConnection();
+            st = con.createStatement();
+
+            // Eliminar datos
+            String deleteData = "DELETE FROM [dbo].[TempCuenta];";
+            PreparedStatement ps = con.prepareStatement(deleteData);           
+            ps.executeUpdate();
+
+            // Insertar datos
+            String insertDataSql = "INSERT INTO [dbo].[TempCuenta] ([Cuenta]) "
+                    + "VALUES " + ValidacionCuentas.substring(0, ValidacionCuentas.length() - 1) + ";";
+            st.executeUpdate(insertDataSql);
+
+            // Seleccionar cuentas sin equivalencia
+            String selectSql = "SELECT TC.Cuenta FROM LibroMayorEquivalencias LM "
+                    + "RIGHT JOIN dbo.TempCuenta TC ON LM.Cuenta = TC.Cuenta "
+                    + "WHERE LM.Cuenta_Equivalente IS NULL;";
+
+            System.out.println(selectSql);
+            rs1 = st.executeQuery(selectSql);
+
+            // Procesar resultados
+            while (rs1.next()) {
+                conforme = false; // Al menos una cuenta no tiene equivalencia
+                String cuenta = rs1.getString(1); // Obtener el valor de la cuenta
+                if (cuenta == null) {
+                    cuenta = "Cuenta desconocida"; // Mensaje alternativo
+                }
+                JOptionPane.showMessageDialog(this, cuenta + " No Tiene Equivalencia");
+            }
+
+            // Solo si conforme sigue siendo true, todas tienen equivalencias
+            if (conforme) {
+                JOptionPane.showMessageDialog(this, "Todas las cuentas tienen Equivalencias");
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(LibroMayor.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            // Cerrar recursos
+            try {
+                if (rs1 != null) {
+                    rs1.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                if (con != null) {
+                    con.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace(); // Manejar posibles excepciones al cerrar
             }
         }
     }
@@ -348,8 +457,7 @@ public class LibroMayor extends javax.swing.JFrame {
         }
     }
 
-    
-     public void ordenarLibroMayor(List<Bloque> bloques, JTable tb_resultado) {
+    public void ordenarLibroMayor(List<Bloque> bloques, JTable tb_resultado) {
         // Obtener el modelo de la tabla original (tb_resultado)
         DefaultTableModel modelOriginal = (DefaultTableModel) tb_resultado.getModel();
 
@@ -360,18 +468,18 @@ public class LibroMayor extends javax.swing.JFrame {
         for (int i = 0; i < tb_resultado.getColumnCount(); i++) {
             modelTemporal.addColumn(tb_resultado.getColumnName(i));
         }
-        
-         for (int i = 0; i <= 8; i++) {
-             Object[] row = new Object[tb_resultado.getColumnCount()];
 
-                // Copiar los datos de la fila de tb_resultado a row
-                for (int col = 0; col < tb_resultado.getColumnCount(); col++) {
-                    row[col] = tb_resultado.getValueAt(i, col);
-                }
+        for (int i = 0; i <= 8; i++) {
+            Object[] row = new Object[tb_resultado.getColumnCount()];
 
-                // Agregar la fila a la tabla temporal
-                modelTemporal.addRow(row);
-         }
+            // Copiar los datos de la fila de tb_resultado a row
+            for (int col = 0; col < tb_resultado.getColumnCount(); col++) {
+                row[col] = tb_resultado.getValueAt(i, col);
+            }
+
+            // Agregar la fila a la tabla temporal
+            modelTemporal.addRow(row);
+        }
 
         // Recorrer el List<Bloque> y copiar las filas correspondientes
         for (Bloque bloque : bloques) {
@@ -429,16 +537,103 @@ public class LibroMayor extends javax.swing.JFrame {
 
     private void ordenarJTableCuentas() {
         List<Bloque> bloques = encontrarBloques(tb_resultado);
-        
-        bloques.sort(Comparator.comparingInt(b -> Integer.valueOf(b.numeroCuenta)));
-        
-        if (tb_resultado.getRowCount()> 0) {
+
+        bloques.sort(Comparator.comparingInt(b -> Integer.valueOf(b.numeroCuenta.substring(0, 2))));
+
+        if (tb_resultado.getRowCount() > 0) {
             ordenarLibroMayor(bloques, tb_resultado);
         }
-        
+
     }
-    
-     public static void exportarAExcel(JTable table) throws IOException {
+
+//    public static void exportarAExcel(JTable table) throws IOException {
+//        // Crear un libro de trabajo
+//        Workbook workbook = new XSSFWorkbook();
+//        // Crear una hoja
+//        Sheet sheet = workbook.createSheet("Datos");
+//
+//        // Crear una fuente de Arial, tamaño 9
+//        Font fuente = workbook.createFont();
+//        fuente.setFontName("Arial");
+//        fuente.setFontHeightInPoints((short) 9);
+//
+//        // Crear un estilo de celda con la fuente
+//        CellStyle estiloCelda = workbook.createCellStyle();
+//        estiloCelda.setFont(fuente);
+//
+//        // Obtener el modelo de tabla
+//        TableModel model = table.getModel();
+//
+//        // Crear las cabeceras de columna
+//        Row filaCabecera = sheet.createRow(0);
+//        for (int col = 0; col < model.getColumnCount(); col++) {
+//            Cell celda = filaCabecera.createCell(col);
+//            celda.setCellValue(model.getColumnName(col));
+//            celda.setCellStyle(estiloCelda);  // Aplicar el estilo a las cabeceras
+//        }
+//
+//        // Rellenar las filas con los datos
+//        for (int row = 0; row < model.getRowCount(); row++) {
+//            Row fila = sheet.createRow(row + 1);  // Empezar desde la segunda fila (la primera es la cabecera)
+//            for (int col = 0; col < model.getColumnCount(); col++) {
+//                Cell celda = fila.createCell(col);
+//                Object valorCelda = model.getValueAt(row, col);
+//
+//                if (valorCelda != null) {
+//                    if (valorCelda instanceof String) {
+//                        celda.setCellValue((String) valorCelda);
+//                    } else if (valorCelda instanceof Integer) {
+//                        celda.setCellValue((Integer) valorCelda);
+//                    } else if (valorCelda instanceof Double) {
+//                        celda.setCellValue((Double) valorCelda);
+//                    } else if (valorCelda instanceof Boolean) {
+//                        celda.setCellValue((Boolean) valorCelda);
+//                    }
+//                }
+//                celda.setCellStyle(estiloCelda);  // Aplicar el estilo a cada celda
+//            }
+//        }
+//
+//        // Ajustar el tamaño de las columnas
+//        for (int i = 0; i < model.getColumnCount(); i++) {
+//            sheet.autoSizeColumn(i);
+//        }
+//
+//        // Abrir JFileChooser para seleccionar la ruta y el nombre del archivo
+//        JFileChooser fileChooser = new JFileChooser();
+//        fileChooser.setDialogTitle("Guardar archivo Excel");
+//        fileChooser.setAcceptAllFileFilterUsed(false);
+//        // Filtrar para solo aceptar archivos .xlsx
+//        FileNameExtensionFilter filter = new FileNameExtensionFilter("Archivos Excel", "xlsx");
+//        fileChooser.addChoosableFileFilter(filter);
+//
+//        // Mostrar el JFileChooser
+//        int seleccion = fileChooser.showSaveDialog(null);
+//
+//        if (seleccion == JFileChooser.APPROVE_OPTION) {
+//            // Obtener la ruta y el nombre del archivo seleccionado
+//            String filePath = fileChooser.getSelectedFile().getAbsolutePath();
+//
+//            // Asegurarse de que el archivo termine con ".xlsx"
+//            if (!filePath.endsWith(".xlsx")) {
+//                filePath += ".xlsx";
+//            }
+//
+//            // Guardar el archivo Excel en la ubicación seleccionada
+//            try (FileOutputStream fileOut = new FileOutputStream(filePath)) {
+//                workbook.write(fileOut);
+//            }
+//
+//            // Mostrar mensaje de éxito
+//            JOptionPane.showMessageDialog(null, "Archivo exportado con éxito: " + filePath);
+//        } else {
+//            JOptionPane.showMessageDialog(null, "Operación cancelada.");
+//        }
+//
+//        // Cerrar el libro
+//        workbook.close();
+//    }
+    public static void exportarAExcel(JTable table) throws IOException {
         // Crear un libro de trabajo
         Workbook workbook = new XSSFWorkbook();
         // Crear una hoja
@@ -449,9 +644,17 @@ public class LibroMayor extends javax.swing.JFrame {
         fuente.setFontName("Arial");
         fuente.setFontHeightInPoints((short) 9);
 
-        // Crear un estilo de celda con la fuente
+        // Crear un estilo de celda con la fuente normal
         CellStyle estiloCelda = workbook.createCellStyle();
         estiloCelda.setFont(fuente);
+
+        // Crear un estilo de celda para negrita
+        CellStyle estiloCeldaNegrita = workbook.createCellStyle();
+        Font fuenteNegrita = workbook.createFont();
+        fuenteNegrita.setFontName("Arial");
+        fuenteNegrita.setFontHeightInPoints((short) 9);
+        fuenteNegrita.setBold(true); // Establecer negrita
+        estiloCeldaNegrita.setFont(fuenteNegrita);
 
         // Obtener el modelo de tabla
         TableModel model = table.getModel();
@@ -483,6 +686,14 @@ public class LibroMayor extends javax.swing.JFrame {
                     }
                 }
                 celda.setCellStyle(estiloCelda);  // Aplicar el estilo a cada celda
+            }
+
+            // Verificar si la fila contiene "Cuenta:" en la primera columna
+            if ("Cuenta: ".equals(model.getValueAt(row, 0))) {
+                // Aplicar el estilo de celda en negrita
+                for (int col = 0; col < model.getColumnCount(); col++) {
+                    fila.getCell(col).setCellStyle(estiloCeldaNegrita);
+                }
             }
         }
 
@@ -525,29 +736,71 @@ public class LibroMayor extends javax.swing.JFrame {
         // Cerrar el libro
         workbook.close();
     }
-     
-     public void buscarCuenta(JTable tb_resultado, JTextField txtBuscar) {
+
+//     public void buscarCuenta(JTable tb_resultado, JTextField txtBuscar) {
+//        // Obtener el texto a buscar desde el JTextField
+//        String textoBuscar = txtBuscar.getText().trim();
+//
+//        // Obtener el modelo de la tabla
+//        DefaultTableModel model = (DefaultTableModel) tb_resultado.getModel();
+//        
+//        // Iterar sobre todas las filas de la tabla
+//        boolean encontrado = false;  // Variable para saber si se encontró el valor
+//        for (int i = 0; i < model.getRowCount(); i++) {
+//            // Verificar si la columna 1 tiene el texto "Cuenta:"
+//            String columna1 = (String) model.getValueAt(i, 0);  // Columna 1
+//            if ("Cuenta: ".equals(columna1)) {
+//                // Verificar si el valor en la columna 2 coincide con el texto a buscar
+//                String columna2 = (String) model.getValueAt(i, 1);  // Columna 2
+//                if (columna2 != null && columna2.contains(textoBuscar)) {
+//                    // Si se encuentra, seleccionar la fila
+//                    tb_resultado.setRowSelectionInterval(i, i);
+//
+//                    // Asegurarse de que la fila seleccionada sea visible
+//                    tb_resultado.scrollRectToVisible(tb_resultado.getCellRect(i, 0, true));
+//                    
+//                    encontrado = true;
+//                    break;  // Salir del bucle si ya se encontró el valor
+//                }
+//            }
+//        }
+//
+//        // Si no se encuentra el texto
+//        if (!encontrado) {
+//            JOptionPane.showMessageDialog(null, "No se encontró el N° de Cuenta", "Resultado de búsqueda", JOptionPane.INFORMATION_MESSAGE);
+//        }
+//    }
+    public void buscarCuenta(JTable tb_resultado, JTextField txtBuscar) {
         // Obtener el texto a buscar desde el JTextField
         String textoBuscar = txtBuscar.getText().trim();
 
+        // Asegúrate de que el texto a buscar tenga al menos dos caracteres
+        if (textoBuscar.length() < 2) {
+            JOptionPane.showMessageDialog(null, "Por favor ingrese al menos dos caracteres para buscar.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+            return; // Salir del método si no hay suficientes caracteres
+        }
+
         // Obtener el modelo de la tabla
         DefaultTableModel model = (DefaultTableModel) tb_resultado.getModel();
-        
+
+        // Obtener los dos primeros caracteres del texto a buscar
+        String dosPrimeros = textoBuscar.substring(0, 2);
+
         // Iterar sobre todas las filas de la tabla
         boolean encontrado = false;  // Variable para saber si se encontró el valor
         for (int i = 0; i < model.getRowCount(); i++) {
             // Verificar si la columna 1 tiene el texto "Cuenta:"
             String columna1 = (String) model.getValueAt(i, 0);  // Columna 1
             if ("Cuenta: ".equals(columna1)) {
-                // Verificar si el valor en la columna 2 coincide con el texto a buscar
+                // Verificar si el valor en la columna 2 comienza con los dos primeros caracteres del texto a buscar
                 String columna2 = (String) model.getValueAt(i, 1);  // Columna 2
-                if (columna2 != null && columna2.contains(textoBuscar)) {
+                if (columna2 != null && columna2.startsWith(dosPrimeros)) {
                     // Si se encuentra, seleccionar la fila
                     tb_resultado.setRowSelectionInterval(i, i);
 
                     // Asegurarse de que la fila seleccionada sea visible
                     tb_resultado.scrollRectToVisible(tb_resultado.getCellRect(i, 0, true));
-                    
+
                     encontrado = true;
                     break;  // Salir del bucle si ya se encontró el valor
                 }
@@ -581,6 +834,7 @@ public class LibroMayor extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         jTextField1 = new javax.swing.JTextField();
         jButton5 = new javax.swing.JButton();
+        btnidentificarCuentas = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Libro Mayor (Cuentas Contables Clase 6)");
@@ -686,6 +940,13 @@ public class LibroMayor extends javax.swing.JFrame {
             }
         });
 
+        btnidentificarCuentas.setText("Identificar de Cuentas");
+        btnidentificarCuentas.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnidentificarCuentasActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -701,6 +962,8 @@ public class LibroMayor extends javax.swing.JFrame {
                         .addComponent(jButton1))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jButton5)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnidentificarCuentas, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -715,7 +978,9 @@ public class LibroMayor extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton5)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jButton5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnidentificarCuentas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -741,10 +1006,10 @@ public class LibroMayor extends javax.swing.JFrame {
         ordenarJTableCuentas();
         jButton1.setEnabled(true);
         this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-        
+
         if (tb_resultado.getRowCount() > 0) {
             jButton5.setEnabled(true);
-        }else{
+        } else {
             jButton5.setEnabled(false);
         }
     }//GEN-LAST:event_jButton1ActionPerformed
@@ -764,6 +1029,12 @@ public class LibroMayor extends javax.swing.JFrame {
         jButton5.setEnabled(true);
         this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_jButton5ActionPerformed
+
+    private void btnidentificarCuentasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnidentificarCuentasActionPerformed
+        // Suponiendo que tienes un JTable llamado tb_resultado
+        identificarCuentas(tb_resultado); // Llamar al método y pasarle el JTable
+        validacionCuentas();
+    }//GEN-LAST:event_btnidentificarCuentasActionPerformed
 
     /**
      * @param args the command line arguments
@@ -790,6 +1061,7 @@ public class LibroMayor extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnidentificarCuentas;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;

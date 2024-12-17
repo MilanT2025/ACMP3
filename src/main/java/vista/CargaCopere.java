@@ -1219,14 +1219,6 @@ public class CargaCopere extends javax.swing.JFrame {
             }
         });
         jScrollPane1.setViewportView(tbCopere);
-        if (tbCopere.getColumnModel().getColumnCount() > 0) {
-            tbCopere.getColumnModel().getColumn(0).setResizable(false);
-            tbCopere.getColumnModel().getColumn(1).setResizable(false);
-            tbCopere.getColumnModel().getColumn(2).setResizable(false);
-            tbCopere.getColumnModel().getColumn(3).setResizable(false);
-            tbCopere.getColumnModel().getColumn(4).setResizable(false);
-            tbCopere.getColumnModel().getColumn(5).setResizable(false);
-        }
 
         btnExportarCopere.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnExportarCopere.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/sobresalir.png"))); // NOI18N
