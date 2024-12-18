@@ -376,10 +376,10 @@ public class Mercaderia extends javax.swing.JFrame {
         jMenu2 = new javax.swing.JMenu();
         ExportarExcel = new javax.swing.JMenuItem();
         jMenu1 = new javax.swing.JMenu();
+        AgregarSedes = new javax.swing.JMenuItem();
         MenuRegistrarEmpleado2 = new javax.swing.JMenuItem();
         MenuRegistrarEmpleado = new javax.swing.JMenuItem();
         MenuRegistrarEmpleado1 = new javax.swing.JMenuItem();
-        AgregarSedes = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Valorizacion de Mercaderias y Existencias");
@@ -612,6 +612,15 @@ public class Mercaderia extends javax.swing.JFrame {
         jMenu1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/ajustes.png"))); // NOI18N
         jMenu1.setText("Opciones");
 
+        AgregarSedes.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/agregarsedes 1.png"))); // NOI18N
+        AgregarSedes.setText("Agregar Sedes");
+        AgregarSedes.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                AgregarSedesActionPerformed(evt);
+            }
+        });
+        jMenu1.add(AgregarSedes);
+
         MenuRegistrarEmpleado2.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
         MenuRegistrarEmpleado2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Profit.png"))); // NOI18N
         MenuRegistrarEmpleado2.setText("Agregar Precio");
@@ -641,15 +650,6 @@ public class Mercaderia extends javax.swing.JFrame {
             }
         });
         jMenu1.add(MenuRegistrarEmpleado1);
-
-        AgregarSedes.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/agregarsedes 1.png"))); // NOI18N
-        AgregarSedes.setText("Agregar Sedes");
-        AgregarSedes.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                AgregarSedesActionPerformed(evt);
-            }
-        });
-        jMenu1.add(AgregarSedes);
 
         jMenuBar1.add(jMenu1);
 

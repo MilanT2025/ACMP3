@@ -1,0 +1,428 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JDialog.java to edit this template
+ */
+package vista;
+
+import Controlador.Conexion;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+
+/**
+ *
+ * @author ejmg3
+ */
+public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
+
+    private DefaultTableModel model;  // Modelo de la tabla
+    private final Modelo modelo = new Modelo();
+
+    /**
+     * Creates new form AgregarSedes
+     */
+    public AgregarCuentasEquivalentesLM(java.awt.Frame parent, boolean modal) {
+        super(parent, modal);
+        initComponents();
+        this.setLocationRelativeTo(null);
+        llenar_tabla();
+
+    }
+
+    private void cargarDatos() {
+        try {
+            Object data[] = new Object[4];
+            Connection con = Conexion.getConnection();
+            Statement st = con.createStatement();
+            String sql = "SELECT * FROM LibroMayorEquivalencias ORDER BY Cuenta";
+            ResultSet rs = st.executeQuery(sql);
+            while (rs.next()) {
+                for (int i = 0; i < data.length; i++) {
+                    data[i] = rs.getObject(i+1);
+                }
+                modelo.addRow(data);
+            }
+            rs.close();
+            st.close();
+            con.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(AgregarCuentasEquivalentesLM.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }
+
+    private void limpiar() {
+        txtcuenta.setText("");
+        txtcuentae.setText("");
+        txtdescripcion.setText("");
+        txtdescripcione.setText("");
+    }
+
+    private void eliminarCuenta(String posicion) {
+        try {
+            Connection con = Conexion.getConnection();
+            String sql = "DELETE FROM LibroMayorEquivalencias WHERE Cuenta = ?";
+            PreparedStatement pstm = con.prepareStatement(sql);
+            pstm.setString(1, posicion);
+            pstm.executeUpdate();
+            pstm.close();
+            con.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(AgregarCuentasEquivalentesLM.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void agregarCuenta(String cuenta, String descripcion, String cuentae, String descripcione) {
+         try {
+            Connection con = Conexion.getConnection();
+            String sql = "INSERT INTO LibroMayorEquivalencias (Cuenta, Descripcion, Cuenta_Equivalente, Descripcion_Equivalente) VALUES (?, ?, ?, ?)";
+            PreparedStatement pstm = con.prepareStatement(sql);
+            pstm.setString(1, cuenta);
+            pstm.setString(2, descripcion);
+            pstm.setString(3, cuentae);
+            pstm.setString(4, descripcione);
+            pstm.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Se ha agregado la Cuenta Equivalente Correctamente");
+            pstm.close();
+            con.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(AgregarCuentasEquivalentesLM.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public class Modelo extends DefaultTableModel {
+
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return true;
+        }
+    }
+
+    private void llenar_tabla() {
+        String[] columnNames = new String[]{
+            "Cuenta",
+            "Descripcion",
+            "Cuenta Equivalente",
+            "Descripción de Cta Equiv."
+        };
+
+        modelo.setColumnIdentifiers(columnNames);
+
+        JTableHeader header = tbresultado.getTableHeader();
+        header.setPreferredSize(new java.awt.Dimension(header.getWidth(), 40)); // Establece la altura deseada (por ejemplo, 30 píxeles)
+
+        header.setBackground(new java.awt.Color(0, 102, 153));
+        header.setForeground(new java.awt.Color(255, 255, 255));
+        tbresultado.getTableHeader().setFont(new java.awt.Font("Roboto", java.awt.Font.BOLD, 12));
+
+        cargarDatos();
+
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jPanel2 = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tbresultado = new javax.swing.JTable();
+        jLabel2 = new javax.swing.JLabel();
+        txtcuenta = new javax.swing.JTextField();
+        btnAgregar = new javax.swing.JButton();
+        jButton5 = new javax.swing.JButton();
+        txtdescripcion = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        txtcuentae = new javax.swing.JTextField();
+        txtdescripcione = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Agregar Sede");
+
+        jPanel2.setBackground(new java.awt.Color(255, 255, 255));
+
+        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Agregar Cuenta Equivalente", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Roboto", 1, 13), new java.awt.Color(255, 51, 51))); // NOI18N
+
+        tbresultado.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
+        tbresultado.setModel(modelo);
+        tbresultado.setRowHeight(30);
+        jScrollPane1.setViewportView(tbresultado);
+
+        jLabel2.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
+        jLabel2.setText("Cuenta:");
+
+        txtcuenta.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
+        txtcuenta.setDisabledTextColor(new java.awt.Color(0, 0, 0));
+
+        btnAgregar.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
+        btnAgregar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8_add_32px.png"))); // NOI18N
+        btnAgregar.setText("Agregar");
+        btnAgregar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAgregarActionPerformed(evt);
+            }
+        });
+
+        jButton5.setFont(new java.awt.Font("Roboto", 1, 12)); // NOI18N
+        jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Close_2.png"))); // NOI18N
+        jButton5.setText("Eliminar");
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
+            }
+        });
+
+        txtdescripcion.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
+        txtdescripcion.setDisabledTextColor(new java.awt.Color(0, 0, 0));
+        txtdescripcion.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtdescripcionActionPerformed(evt);
+            }
+        });
+
+        jLabel3.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
+        jLabel3.setText("Descripción:");
+
+        jLabel4.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
+        jLabel4.setText("Cuenta Equiv.:");
+
+        txtcuentae.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
+        txtcuentae.setDisabledTextColor(new java.awt.Color(0, 0, 0));
+
+        txtdescripcione.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
+        txtdescripcione.setDisabledTextColor(new java.awt.Color(0, 0, 0));
+
+        jLabel5.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
+        jLabel5.setText("Descripción:");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(btnAgregar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addComponent(jLabel2)
+                        .addGap(45, 45, 45)
+                        .addComponent(txtcuenta, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtdescripcion))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 895, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtcuentae, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel5)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtdescripcione)))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                            .addGap(17, 17, 17)
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(txtcuenta, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jLabel3)))
+                        .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtdescripcion, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(txtcuentae, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel5)
+                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtdescripcione))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnAgregar, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton5))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void btnAgregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAgregarActionPerformed
+        if (txtcuenta.getText().trim().equals("") || txtcuenta.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, ingrese una Cuenta ", "Error", JOptionPane.ERROR_MESSAGE);
+            txtcuenta.requestFocus();
+            return;
+        }
+        if (txtdescripcion.getText().trim().equals("") || txtdescripcion.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, ingrese una Descripcion ", "Error", JOptionPane.ERROR_MESSAGE);
+            txtdescripcion.requestFocus();
+            return;
+        }
+
+        if (txtcuentae.getText().trim().equals("") || txtcuentae.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, ingrese una Cuenta Equivalente ", "Error", JOptionPane.ERROR_MESSAGE);
+            txtcuentae.requestFocus();
+            return;
+        }
+
+        if (txtdescripcione.getText().trim().equals("") || txtdescripcione.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, ingrese una Descripcion para la Cuenta Equivalente ", "Error", JOptionPane.ERROR_MESSAGE);
+            txtdescripcione.requestFocus();
+            return;
+        }
+        
+        agregarCuenta(txtcuenta.getText(), txtdescripcion.getText(), txtcuentae.getText(), txtdescripcione.getText());
+        modelo.addRow(new Object[]{txtcuenta.getText(), txtdescripcion.getText(), txtcuentae.getText(), txtdescripcione.getText()});// Agregar la nueva sede al modelo
+        limpiar(); // Limpiar el campo de texto después de agregar
+        
+    }//GEN-LAST:event_btnAgregarActionPerformed
+
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+        int selectedRow = tbresultado.getSelectedRow();
+        if (selectedRow != -1) { // Verificar si hay una fila seleccionada
+            // Mostrar un cuadro de diálogo de confirmación
+            int confirm = JOptionPane.showConfirmDialog(this, "¿Estás seguro de que quieres eliminar esta fila?",
+                    "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                // Eliminar la fila seleccionada del modelo de datos
+                eliminarCuenta(tbresultado.getValueAt(selectedRow, 0).toString());
+                modelo.removeRow(selectedRow);
+            }
+        } else {
+            // Si no hay fila seleccionada, mostrar un mensaje de advertencia
+            JOptionPane.showMessageDialog(this, "Por favor, selecciona una fila para eliminar.",
+                    "Fila no Seleccionada", JOptionPane.WARNING_MESSAGE);
+        }
+    }//GEN-LAST:event_jButton5ActionPerformed
+
+    private void txtdescripcionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtdescripcionActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtdescripcionActionPerformed
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(AgregarCuentasEquivalentesLM.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(AgregarCuentasEquivalentesLM.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(AgregarCuentasEquivalentesLM.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(AgregarCuentasEquivalentesLM.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+        //</editor-fold>
+
+        /* Create and display the dialog */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                AgregarCuentasEquivalentesLM dialog = new AgregarCuentasEquivalentesLM(new javax.swing.JFrame(), true);
+                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+                    @Override
+                    public void windowClosing(java.awt.event.WindowEvent e) {
+                        System.exit(0);
+                    }
+                });
+                dialog.setVisible(true);
+            }
+        });
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnAgregar;
+    private javax.swing.JButton jButton5;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTable tbresultado;
+    private javax.swing.JTextField txtcuenta;
+    private javax.swing.JTextField txtcuentae;
+    private javax.swing.JTextField txtdescripcion;
+    private javax.swing.JTextField txtdescripcione;
+    // End of variables declaration//GEN-END:variables
+}

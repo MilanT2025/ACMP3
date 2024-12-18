@@ -833,8 +833,12 @@ public class LibroMayor extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
         jTextField1 = new javax.swing.JTextField();
-        jButton5 = new javax.swing.JButton();
-        btnidentificarCuentas = new javax.swing.JButton();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        jMenu2 = new javax.swing.JMenu();
+        jButton5 = new javax.swing.JMenuItem();
+        jMenu1 = new javax.swing.JMenu();
+        AgregarSedes = new javax.swing.JMenuItem();
+        MenuRegistrarEmpleado1 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Libro Mayor (Cuentas Contables Clase 6)");
@@ -886,7 +890,7 @@ public class LibroMayor extends javax.swing.JFrame {
         });
 
         jLabel2.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        jLabel2.setText("Buscar N° Cuenta:");
+        jLabel2.setText("Buscar N° Cuenta (Empieza con):");
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -895,7 +899,7 @@ public class LibroMayor extends javax.swing.JFrame {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1161, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1109, Short.MAX_VALUE)
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -913,8 +917,8 @@ public class LibroMayor extends javax.swing.JFrame {
                     .addComponent(txtBuscar)
                     .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 451, Short.MAX_VALUE)
-                .addGap(17, 17, 17))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         jButton1.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
@@ -930,25 +934,6 @@ public class LibroMayor extends javax.swing.JFrame {
         jTextField1.setDisabledTextColor(new java.awt.Color(255, 0, 0));
         jTextField1.setEnabled(false);
 
-        jButton5.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Microsoft excel.png"))); // NOI18N
-        jButton5.setText("Exportar a Excel");
-        jButton5.setEnabled(false);
-        jButton5.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton5ActionPerformed(evt);
-            }
-        });
-
-        btnidentificarCuentas.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnidentificarCuentas.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Search_4.png"))); // NOI18N
-        btnidentificarCuentas.setText("Identificar de Cuentas");
-        btnidentificarCuentas.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnidentificarCuentasActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -961,12 +946,7 @@ public class LibroMayor extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jTextField1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton1))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jButton5)
-                        .addGap(18, 18, 18)
-                        .addComponent(btnidentificarCuentas, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addComponent(jButton1)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -979,12 +959,55 @@ public class LibroMayor extends javax.swing.JFrame {
                     .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jButton5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnidentificarCuentas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
+
+        jMenu2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/flecha-hacia-abajo.png"))); // NOI18N
+        jMenu2.setText("Exportar");
+        jMenu2.setFont(new java.awt.Font("Roboto", 1, 12)); // NOI18N
+        jMenu2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenu2ActionPerformed(evt);
+            }
+        });
+
+        jButton5.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
+        jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Microsoft excel.png"))); // NOI18N
+        jButton5.setText("Excel");
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jButton5);
+
+        jMenuBar1.add(jMenu2);
+
+        jMenu1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/ajustes.png"))); // NOI18N
+        jMenu1.setText("Opciones");
+
+        AgregarSedes.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/agregarsedes 1.png"))); // NOI18N
+        AgregarSedes.setText("Cuentas Equivalentes");
+        AgregarSedes.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                AgregarSedesActionPerformed(evt);
+            }
+        });
+        jMenu1.add(AgregarSedes);
+
+        MenuRegistrarEmpleado1.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
+        MenuRegistrarEmpleado1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Upload to the Cloud_1.png"))); // NOI18N
+        MenuRegistrarEmpleado1.setText("Verificacion de Cuentas");
+        MenuRegistrarEmpleado1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuRegistrarEmpleado1ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(MenuRegistrarEmpleado1);
+
+        jMenuBar1.add(jMenu1);
+
+        setJMenuBar(jMenuBar1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -1032,11 +1055,19 @@ public class LibroMayor extends javax.swing.JFrame {
         this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_jButton5ActionPerformed
 
-    private void btnidentificarCuentasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnidentificarCuentasActionPerformed
-        // Suponiendo que tienes un JTable llamado tb_resultado
+    private void jMenu2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenu2ActionPerformed
+
+    }//GEN-LAST:event_jMenu2ActionPerformed
+
+    private void AgregarSedesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AgregarSedesActionPerformed
+        AgregarCuentasEquivalentesLM ini = new AgregarCuentasEquivalentesLM(this, true);
+        ini.setVisible(true);
+    }//GEN-LAST:event_AgregarSedesActionPerformed
+
+    private void MenuRegistrarEmpleado1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuRegistrarEmpleado1ActionPerformed
         identificarCuentas(tb_resultado); // Llamar al método y pasarle el JTable
         validacionCuentas();
-    }//GEN-LAST:event_btnidentificarCuentasActionPerformed
+    }//GEN-LAST:event_MenuRegistrarEmpleado1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -1063,12 +1094,16 @@ public class LibroMayor extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnidentificarCuentas;
+    private javax.swing.JMenuItem AgregarSedes;
+    private javax.swing.JMenuItem MenuRegistrarEmpleado1;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
+    private javax.swing.JMenuItem jButton5;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
