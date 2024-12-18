@@ -940,6 +940,8 @@ public class LibroMayor extends javax.swing.JFrame {
             }
         });
 
+        btnidentificarCuentas.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnidentificarCuentas.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Search_4.png"))); // NOI18N
         btnidentificarCuentas.setText("Identificar de Cuentas");
         btnidentificarCuentas.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -963,7 +965,7 @@ public class LibroMayor extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jButton5)
                         .addGap(18, 18, 18)
-                        .addComponent(btnidentificarCuentas, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnidentificarCuentas, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );

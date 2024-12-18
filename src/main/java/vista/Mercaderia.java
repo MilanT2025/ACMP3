@@ -67,7 +67,7 @@ public class Mercaderia extends javax.swing.JFrame {
 
     Locale locale;
     DecimalFormatSymbols symbols;
-    
+
     public class Modelo extends DefaultTableModel {
 
         @Override
@@ -81,14 +81,14 @@ public class Mercaderia extends javax.swing.JFrame {
      */
     public Mercaderia() {
         initComponents();
-        
+
         locale = new Locale("es", "PE");
         Locale.setDefault(locale);
 
         symbols = new DecimalFormatSymbols(locale);
-        symbols.setGroupingSeparator(','); 
+        symbols.setGroupingSeparator(',');
         symbols.setDecimalSeparator('.');
-        
+
         UIManager.getLookAndFeelDefaults().put("Table.alternateRowColor", new Color(254, 238, 184));
         Locale.setDefault(new Locale("es", "ES"));
         this.setIconImage(new ImageIcon(System.getProperty("user.dir") + "/logoACMP.png").getImage());
@@ -104,8 +104,8 @@ public class Mercaderia extends javax.swing.JFrame {
         });
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-        jdc_mes.setMonth((Calendar.getInstance().get(Calendar.MONTH))-1);
-        
+        jdc_mes.setMonth((Calendar.getInstance().get(Calendar.MONTH)) - 1);
+
         txtBuscar.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -122,10 +122,9 @@ public class Mercaderia extends javax.swing.JFrame {
                 realizarBusqueda(txtBuscar.getText().trim(), 4, tb_resultado);
             }
         });
-        
-        
+
         cargarDatos();
-        
+
         jdc_mes.addPropertyChangeListener("month", (java.beans.PropertyChangeEvent evt) -> {
             cargarDatos();
         });
@@ -239,13 +238,13 @@ public class Mercaderia extends javax.swing.JFrame {
         } catch (SQLException ex) {
             Logger.getLogger(Mercaderia.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         calcularTotales();
         packColumns(tb_resultado);
     }
-    
+
     private void calcularTotales() {
-        double sv = 0,  si = 0, stv = 0;
+        double sv = 0, si = 0, stv = 0;
         DecimalFormat df = new DecimalFormat("0.00", symbols);
 
         for (int i = 0; i < tb_resultado.getRowCount(); i++) {
@@ -267,7 +266,6 @@ public class Mercaderia extends javax.swing.JFrame {
 
     }
 
-    
     // METODOS ADICIONALES ******************************************************
     private void packColumns(JTable table) {
         TableColumnModel columnModel = table.getColumnModel();
@@ -299,7 +297,7 @@ public class Mercaderia extends javax.swing.JFrame {
         tabla.getColumnModel().getColumn(columnaIndex).setMaxWidth(0);
         tabla.getColumnModel().getColumn(columnaIndex).setWidth(0);
     }
-    
+
     private void realizarBusqueda(String textoBusqueda, int columna, JTable jtable) {
         // Si el texto de búsqueda está vacío, restablecemos la selección
         if (textoBusqueda.isEmpty()) {
@@ -381,6 +379,7 @@ public class Mercaderia extends javax.swing.JFrame {
         MenuRegistrarEmpleado2 = new javax.swing.JMenuItem();
         MenuRegistrarEmpleado = new javax.swing.JMenuItem();
         MenuRegistrarEmpleado1 = new javax.swing.JMenuItem();
+        AgregarSedes = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Valorizacion de Mercaderias y Existencias");
@@ -643,6 +642,15 @@ public class Mercaderia extends javax.swing.JFrame {
         });
         jMenu1.add(MenuRegistrarEmpleado1);
 
+        AgregarSedes.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/agregarsedes 1.png"))); // NOI18N
+        AgregarSedes.setText("Agregar Sedes");
+        AgregarSedes.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                AgregarSedesActionPerformed(evt);
+            }
+        });
+        jMenu1.add(AgregarSedes);
+
         jMenuBar1.add(jMenu1);
 
         setJMenuBar(jMenuBar1);
@@ -661,7 +669,6 @@ public class Mercaderia extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
     // Método para exportar archivos en XLSX
-
 
     public static void exportarArchivoExcel(DefaultTableModel model) {
         JFileChooser jFileChooser = new JFileChooser();
@@ -753,8 +760,8 @@ public class Mercaderia extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Exportación cancelada.");
         }
     }
-    
-    private void cargarDatos(){
+
+    private void cargarDatos() {
         llenar_tabla();
         FuncionesGlobales.colocarnombremesannio(jdc_año, jdc_mes, txt_razonsocial2);
     }
@@ -774,7 +781,7 @@ public class Mercaderia extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenu2ActionPerformed
 
     private void jRadioButton2ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jRadioButton2ItemStateChanged
-        
+
     }//GEN-LAST:event_jRadioButton2ItemStateChanged
 
     private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
@@ -789,14 +796,19 @@ public class Mercaderia extends javax.swing.JFrame {
     }//GEN-LAST:event_MenuRegistrarEmpleadoActionPerformed
 
     private void MenuRegistrarEmpleado1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuRegistrarEmpleado1ActionPerformed
-       VerificacionCargaMercaderia ini = new VerificacionCargaMercaderia(this, true);
-       ini.setVisible(true);
+        VerificacionCargaMercaderia ini = new VerificacionCargaMercaderia(this, true);
+        ini.setVisible(true);
     }//GEN-LAST:event_MenuRegistrarEmpleado1ActionPerformed
 
     private void MenuRegistrarEmpleado2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuRegistrarEmpleado2ActionPerformed
         AgregarPrecioMercaderia ini = new AgregarPrecioMercaderia(this, true);
-       ini.setVisible(true);
+        ini.setVisible(true);
     }//GEN-LAST:event_MenuRegistrarEmpleado2ActionPerformed
+
+    private void AgregarSedesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AgregarSedesActionPerformed
+        AgregarSedes ini = new AgregarSedes(this, true);
+        ini.setVisible(true);
+    }//GEN-LAST:event_AgregarSedesActionPerformed
 
     // Método para exportar los datos de la tabla a Excel
     public static void exportarAExcel(DefaultTableModel model, String mesannio) {
@@ -894,8 +906,6 @@ public class Mercaderia extends javax.swing.JFrame {
         }
     }
 
-
-    
     /**
      * @param args the command line arguments
      */
@@ -922,6 +932,7 @@ public class Mercaderia extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem AgregarSedes;
     private javax.swing.JMenuItem ExportarExcel;
     private javax.swing.JMenuItem MenuRegistrarEmpleado;
     private javax.swing.JMenuItem MenuRegistrarEmpleado1;
