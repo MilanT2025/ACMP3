@@ -215,7 +215,7 @@ public class Depreciacion extends javax.swing.JFrame {
                     + "      ,[MontoAcumulado] "
                     + "  FROM [Activos] A "
                     + "  LEFT JOIN ActivoHistorico AH ON A.idActivo = AH.idActivo AND Año = " + (jdc_año.getYear() - 1) + " "
-                    + "  WHERE YEAR(FechaActivacion) <= " + jdc_año.getYear() + " AND MONTH(FechaActivacion) <= " + (jdc_mes.getMonth() + 1) + " "
+                    + "  WHERE  YEAR(FechaActivacion) <= " + jdc_año.getYear() + " AND MONTH(FechaActivacion) <= " + (jdc_mes.getMonth() + 1) + " "
                     + "  ORDER BY Item ASC";
             ResultSet rs = st.executeQuery(query);
             while (rs.next()) {

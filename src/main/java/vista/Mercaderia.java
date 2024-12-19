@@ -210,7 +210,7 @@ public class Mercaderia extends javax.swing.JFrame {
                     + "INTO #Temp2 "
                     + "FROM StockAlmacen SA "
                     + "WHERE "
-                    + "    SA.Año = @Anio AND "
+                    + " SA.Año = @Anio AND SA.Tipo NOT LIKE 'PRODUCTOS TERMINADOS' AND "
                     + "    SA.Mes = @Mes "
                     + "ORDER BY SA.Producto; "
                     + "SELECT "

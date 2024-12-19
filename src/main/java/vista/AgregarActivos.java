@@ -149,6 +149,7 @@ public class AgregarActivos extends javax.swing.JDialog {
                     + "FROM cuenta33 C "
                     + "	LEFT JOIN CuentasDepreciacionEquivalentes CDE ON C.[Cta# Cont#] = CDE.CuentaContable "
                     + "WHERE "
+                    + "	C.[Cta# Cont#] LIKE '%33%' AND "
                     + "	Año = " + año + " AND "
                     + "	Mes = " + mes + " ";
 
