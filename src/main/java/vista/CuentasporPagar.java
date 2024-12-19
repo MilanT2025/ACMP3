@@ -9,24 +9,29 @@ import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
@@ -86,6 +91,12 @@ public class CuentasporPagar extends javax.swing.JFrame {
             }
         });
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        
+        jDateChooser1.addPropertyChangeListener("date", (java.beans.PropertyChangeEvent evt) -> {
+            if (jDateChooser1.getDate() != null) {
+                llenar_tabla(); // Llama al método para llenar la tabla
+            }
+        });
 
         llenar_tabla();
     }
@@ -128,12 +139,12 @@ public class CuentasporPagar extends javax.swing.JFrame {
             int width = comp.getPreferredSize().width + 25;
             tableColumn.setPreferredWidth(width);
         }
-        /*
+        
         DecimalFormat decimalFormat = new DecimalFormat("0.00", symbols);
 
         int columnCount = tb_resultado.getColumnCount();
         for (int i = 0; i < columnCount; i++) {
-            if (i == 7 || i == 8 || i == 9 || i == 10) {
+            if (i == 9 || i == 10 || i == 11) {
                 tb_resultado.getColumnModel().getColumn(i).setCellRenderer(new DefaultTableCellRenderer() {
                     @Override
                     public void setValue(Object value) {
@@ -145,17 +156,20 @@ public class CuentasporPagar extends javax.swing.JFrame {
                 });
             }
         }
-         */
+         
         
         TableRowFilterSupport.forTable(tb_resultado).searchable(true).actions(true).useTableRenderers(true).apply();
 
             TableRowSorter<TableModel> sorter = new TableRowSorter<>(tb_resultado.getModel());
             tb_resultado.setRowSorter(sorter);
             
+            
+            
         cargaDatos();
 
     }
-
+    
+    
     private void cargaDatos() {
         try {
             Object data[] = new Object[17];
@@ -163,11 +177,11 @@ public class CuentasporPagar extends javax.swing.JFrame {
             Statement st = con.createStatement();
             String sql = "SELECT "
                     + "	   [Estado] "
-                    + "      ,[CUO] "
+                    + "      ,CONVERT(INT, [CUO]) AS CUO "
                     + "      ,[Comprobante Nº] "
-                    + "      ,[F# Registro] "
-                    + "      ,[F# Emision] "
-                    + "      ,[F# Vencimiento] "
+                    + "      ,FORMAT([F# Registro], 'dd/MM/yyyy') AS [F# Registro]"
+                    + "      ,FORMAT([F# Emision], 'dd/MM/yyyy') AS [F# Emision]"
+                    + "      ,FORMAT([F# Vencimiento], 'dd/MM/yyyy') AS [F# Vencimiento]"
                     + "      ,[Nro Doc# Ident#] "
                     + "      ,[Razon Social] "
                     + "      ,[Moneda] "
@@ -177,8 +191,8 @@ public class CuentasporPagar extends javax.swing.JFrame {
                     + "      ,[Plan Cuenta] "
                     + "      ,[Descripcion] "
                     + "      ,[Centro Costo] "
-                    + "      ,(SELECT TOP 1 total FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº]) as Pagado "
-                    + "      ,(SELECT TOP 1 FechaEvaluacion FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº]) AS FechaPago "
+                    + "      ,(SELECT TOP 1 total FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) as Pagado "
+                    + "      ,(SELECT TOP 1 FechaEvaluacion FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) AS FechaPago "
                     + "FROM CuentasPorPagar "
                     + "WHERE "
                     + "	Estado = 'PENDIENTE' AND "
@@ -243,7 +257,6 @@ public class CuentasporPagar extends javax.swing.JFrame {
         tb_resultado = new javax.swing.JTable();
         jPanel14 = new javax.swing.JPanel();
         jDateChooser1 = new com.toedter.calendar.JDateChooser("dd/MM/yyyy","##/##/####", '_');
-        jButton1 = new javax.swing.JButton();
         txt_razonsocial2 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jButton2 = new javax.swing.JButton();
@@ -275,10 +288,11 @@ public class CuentasporPagar extends javax.swing.JFrame {
 
         jDateChooser1.setForeground(new java.awt.Color(255, 0, 0));
         jDateChooser1.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
-
-        jButton1.setFont(new java.awt.Font("Roboto", 1, 12)); // NOI18N
-        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Search_4.png"))); // NOI18N
-        jButton1.setText("Cargar Datos");
+        jDateChooser1.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                jDateChooser1PropertyChange(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel14Layout = new javax.swing.GroupLayout(jPanel14);
         jPanel14.setLayout(jPanel14Layout);
@@ -287,18 +301,13 @@ public class CuentasporPagar extends javax.swing.JFrame {
             .addGroup(jPanel14Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jDateChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, 221, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addContainerGap(833, Short.MAX_VALUE))
         );
         jPanel14Layout.setVerticalGroup(
             jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel14Layout.createSequentialGroup()
-                .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel14Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jDateChooser1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 37, Short.MAX_VALUE))
+                .addContainerGap()
+                .addComponent(jDateChooser1, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -307,6 +316,10 @@ public class CuentasporPagar extends javax.swing.JFrame {
         txt_razonsocial2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         txt_razonsocial2.setText("-");
 
+        jPanel3.setBackground(new java.awt.Color(255, 255, 255));
+
+        jButton2.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
+        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8_outgoing_data_32px.png"))); // NOI18N
         jButton2.setText("Procesar Informacion");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -318,10 +331,7 @@ public class CuentasporPagar extends javax.swing.JFrame {
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jButton2)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -448,25 +458,33 @@ public class CuentasporPagar extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenu2ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        ProcesarCuentasporPagar ini = new ProcesarCuentasporPagar(this, true);
+        setCursor(new Cursor(Cursor.WAIT_CURSOR));
+        jButton2.setEnabled(false);
+        ProcesarCuentasporPagar ini = new ProcesarCuentasporPagar(this, true, new SimpleDateFormat("dd/MM/yyyy").format(jDateChooser1.getDate()));
         
-        Object [] data = new Object[6];
+        Object [] data = new Object[7];
         
         int c = 1;
         
         for (int i = 0; i < tb_resultado.getRowCount(); i++) {
             data[0] = c;
-            data[1] = tb_resultado.getValueAt(i, 7);
-            data[2] = tb_resultado.getValueAt(i, 2);
-            data[3] = tb_resultado.getValueAt(i, 4);
-            data[4] = tb_resultado.getValueAt(i, 5);
-            data[5] = tb_resultado.getValueAt(i, 10);
+            data[1] = tb_resultado.getValueAt(i, 6);
+            data[2] = tb_resultado.getValueAt(i, 7);
+            data[3] = tb_resultado.getValueAt(i, 2);
+            data[4] = tb_resultado.getValueAt(i, 4);
+            data[5] = tb_resultado.getValueAt(i, 5);
+            data[6] = tb_resultado.getValueAt(i, 10);
             ini.cargarInfo(data);
             c++;
         }
         ini.packColumns();
+        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        jButton2.setEnabled(true);
         ini.setVisible(true);
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jDateChooser1PropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_jDateChooser1PropertyChange
+    }//GEN-LAST:event_jDateChooser1PropertyChange
 
     /**
      * @param args the command line arguments
@@ -495,7 +513,6 @@ public class CuentasporPagar extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem ExportarExcel;
-    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private com.toedter.calendar.JDateChooser jDateChooser1;
     private javax.swing.JMenu jMenu1;
