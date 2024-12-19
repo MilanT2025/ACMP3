@@ -5,6 +5,7 @@
 package vista;
 
 import Controlador.Conexion;
+import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -49,14 +50,14 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
 
     private void cargarDatos() {
         try {
-            Object data[] = new Object[4];
+            Object data[] = new Object[3];
             Connection con = Conexion.getConnection();
             Statement st = con.createStatement();
-            String sql = "SELECT * FROM LibroMayorEquivalencias ORDER BY Cuenta";
+            String sql = "SELECT Cuenta,Cuenta_Equivalente,Descripcion_Equivalente FROM LibroMayorEquivalencias ORDER BY Cuenta";
             ResultSet rs = st.executeQuery(sql);
             while (rs.next()) {
                 for (int i = 0; i < data.length; i++) {
-                    data[i] = rs.getObject(i+1);
+                    data[i] = rs.getObject(i + 1);
                 }
                 modelo.addRow(data);
             }
@@ -66,14 +67,13 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
         } catch (SQLException ex) {
             Logger.getLogger(AgregarCuentasEquivalentesLM.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
     }
 
     private void limpiar() {
         txtcuenta.setText("");
         txtcuentae.setText("");
         txtdescripcion.setText("");
-        txtdescripcione.setText("");
     }
 
     private void eliminarCuenta(String posicion) {
@@ -90,15 +90,14 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
         }
     }
 
-    private void agregarCuenta(String cuenta, String descripcion, String cuentae, String descripcione) {
-         try {
+    private void agregarCuenta(String cuenta, String cuentae, String Descripcion) {
+        try {
             Connection con = Conexion.getConnection();
-            String sql = "INSERT INTO LibroMayorEquivalencias (Cuenta, Descripcion, Cuenta_Equivalente, Descripcion_Equivalente) VALUES (?, ?, ?, ?)";
+            String sql = "INSERT INTO LibroMayorEquivalencias (Cuenta, Cuenta_Equivalente,Descripcion_Equivalente) VALUES (?, ?, ?)";
             PreparedStatement pstm = con.prepareStatement(sql);
             pstm.setString(1, cuenta);
-            pstm.setString(2, descripcion);
-            pstm.setString(3, cuentae);
-            pstm.setString(4, descripcione);
+            pstm.setString(2, cuentae);
+            pstm.setString(3, Descripcion);
             pstm.executeUpdate();
             JOptionPane.showMessageDialog(this, "Se ha agregado la Cuenta Equivalente Correctamente");
             pstm.close();
@@ -119,9 +118,8 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
     private void llenar_tabla() {
         String[] columnNames = new String[]{
             "Cuenta",
-            "Descripcion",
             "Cuenta Equivalente",
-            "Descripción de Cta Equiv."
+            "Descripcion Equivalente"
         };
 
         modelo.setColumnIdentifiers(columnNames);
@@ -154,15 +152,14 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
         txtcuenta = new javax.swing.JTextField();
         btnAgregar = new javax.swing.JButton();
         jButton5 = new javax.swing.JButton();
-        txtdescripcion = new javax.swing.JTextField();
-        jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         txtcuentae = new javax.swing.JTextField();
-        txtdescripcione = new javax.swing.JTextField();
+        jButton1 = new javax.swing.JButton();
+        txtdescripcion = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Agregar Sede");
+        setTitle("Cuentas Equivalentes");
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -179,6 +176,11 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
 
         txtcuenta.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
         txtcuenta.setDisabledTextColor(new java.awt.Color(0, 0, 0));
+        txtcuenta.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                txtcuentaKeyPressed(evt);
+            }
+        });
 
         btnAgregar.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
         btnAgregar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8_add_32px.png"))); // NOI18N
@@ -198,28 +200,25 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
             }
         });
 
-        txtdescripcion.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
-        txtdescripcion.setDisabledTextColor(new java.awt.Color(0, 0, 0));
-        txtdescripcion.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtdescripcionActionPerformed(evt);
-            }
-        });
-
-        jLabel3.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        jLabel3.setText("Descripción:");
-
         jLabel4.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
         jLabel4.setText("Cuenta Equiv.:");
 
         txtcuentae.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
         txtcuentae.setDisabledTextColor(new java.awt.Color(0, 0, 0));
 
-        txtdescripcione.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
-        txtdescripcione.setDisabledTextColor(new java.awt.Color(0, 0, 0));
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Search_3.png"))); // NOI18N
+        jButton1.setText("Limpiar");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        txtdescripcion.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
+        txtdescripcion.setDisabledTextColor(new java.awt.Color(0, 0, 0));
 
         jLabel5.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        jLabel5.setText("Descripción:");
+        jLabel5.setText("Descripcion");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -233,53 +232,50 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(5, 5, 5)
-                        .addComponent(jLabel2)
-                        .addGap(45, 45, 45)
-                        .addComponent(txtcuenta, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtdescripcion))
+                        .addContainerGap()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 895, Short.MAX_VALUE)))
+                .addContainerGap())
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(19, 19, 19)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel4)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 895, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jLabel4)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtcuenta, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(254, 254, 254)
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(txtcuentae, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGap(18, 18, 18)
                         .addComponent(jLabel5)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtdescripcione)))
-                .addContainerGap())
+                        .addComponent(txtdescripcion, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                            .addGap(17, 17, 17)
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(txtcuenta, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel3)))
-                        .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(txtdescripcion, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(txtcuentae, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel5)
-                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(txtdescripcione))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(16, 16, 16)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtcuenta, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jButton1))
+                .addGap(30, 30, 30)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtcuentae, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtdescripcion, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnAgregar, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton5))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -320,11 +316,11 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
             txtcuenta.requestFocus();
             return;
         }
-        if (txtdescripcion.getText().trim().equals("") || txtdescripcion.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Por favor, ingrese una Descripcion ", "Error", JOptionPane.ERROR_MESSAGE);
-            txtdescripcion.requestFocus();
-            return;
-        }
+//        if (txtdescripcion.getText().trim().equals("") || txtdescripcion.getText().isEmpty()) {
+//            JOptionPane.showMessageDialog(this, "Por favor, ingrese una Descripcion ", "Error", JOptionPane.ERROR_MESSAGE);
+//            txtdescripcion.requestFocus();
+//            return;
+//        }
 
         if (txtcuentae.getText().trim().equals("") || txtcuentae.getText().isEmpty()) {
             JOptionPane.showMessageDialog(this, "Por favor, ingrese una Cuenta Equivalente ", "Error", JOptionPane.ERROR_MESSAGE);
@@ -332,16 +328,16 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
             return;
         }
 
-        if (txtdescripcione.getText().trim().equals("") || txtdescripcione.getText().isEmpty()) {
+        if (txtdescripcion.getText().trim().equals("") || txtdescripcion.getText().isEmpty()) {
             JOptionPane.showMessageDialog(this, "Por favor, ingrese una Descripcion para la Cuenta Equivalente ", "Error", JOptionPane.ERROR_MESSAGE);
-            txtdescripcione.requestFocus();
+            txtdescripcion.requestFocus();
             return;
         }
-        
-        agregarCuenta(txtcuenta.getText(), txtdescripcion.getText(), txtcuentae.getText(), txtdescripcione.getText());
-        modelo.addRow(new Object[]{txtcuenta.getText(), txtdescripcion.getText(), txtcuentae.getText(), txtdescripcione.getText()});// Agregar la nueva sede al modelo
+
+        agregarCuenta(txtcuenta.getText(), txtcuentae.getText(), txtdescripcion.getText());
+        modelo.addRow(new Object[]{txtcuenta.getText(), txtcuentae.getText(), txtdescripcion.getText()});// Agregar la nueva sede al modelo
         limpiar(); // Limpiar el campo de texto después de agregar
-        
+
     }//GEN-LAST:event_btnAgregarActionPerformed
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
@@ -361,10 +357,49 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
                     "Fila no Seleccionada", JOptionPane.WARNING_MESSAGE);
         }
     }//GEN-LAST:event_jButton5ActionPerformed
+    private void mostrarCuenta(String Cuenta) {
+        try {
+            Connection cnn = Conexion.getConnection();
+            String sql = "SELECT Cuenta, Cuenta_Equivalente FROM LibroMayorEquivalencias WHERE Cuenta = ?";
 
-    private void txtdescripcionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtdescripcionActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtdescripcionActionPerformed
+            try (PreparedStatement pst = cnn.prepareStatement(sql)) {
+                pst.setString(1, Cuenta);
+                ResultSet rs = pst.executeQuery();
+
+                if (rs.next()) {
+                    String cuentaEquivalente = rs.getString("Cuenta_Equivalente");
+
+                    if (cuentaEquivalente != null && !cuentaEquivalente.isEmpty()) {
+                        // Si hay cuenta equivalente, mostrar mensaje
+                        JOptionPane.showMessageDialog(null, "Esta cuenta ya tiene una cuenta equivalente.", "Información", JOptionPane.INFORMATION_MESSAGE);
+                        txtcuenta.requestFocus();
+                        txtcuenta.selectAll();
+                    } else {
+                        // Si no hay cuenta equivalente, habilitar el campo
+                        txtcuentae.setText("");
+                        txtcuentae.requestFocus();
+                    }
+                } else {
+                    // Limpiar los campos si no se encuentra la cuenta
+                      txtcuentae.requestFocus();
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace(); // Manejo de excepciones
+        }
+    }
+    private void txtcuentaKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtcuentaKeyPressed
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            String NroCuenta = txtcuenta.getText();
+            mostrarCuenta(NroCuenta);
+//            txtcuenta.setEnabled(false);
+
+        }
+    }//GEN-LAST:event_txtcuentaKeyPressed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        limpiar();
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -411,9 +446,9 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAgregar;
+    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton5;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
@@ -423,6 +458,5 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
     private javax.swing.JTextField txtcuenta;
     private javax.swing.JTextField txtcuentae;
     private javax.swing.JTextField txtdescripcion;
-    private javax.swing.JTextField txtdescripcione;
     // End of variables declaration//GEN-END:variables
 }

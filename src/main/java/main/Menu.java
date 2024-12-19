@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import vista.Backup;
 import vista.CTS;
 import vista.CargaCopere;
+import vista.CuentasporPagar;
 import vista.Depreciacion;
 import vista.Estado_Patrimonio;
 import vista.Excel_AFPNet;
@@ -161,7 +162,10 @@ public class Menu extends JPanel {
         });
         
         itemTesoreria.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "*************** Modulo en Mantenimiento ***************", "Matenimiento", JOptionPane.INFORMATION_MESSAGE);
+            FlatLightLaf.setup();
+            CuentasporPagar ini = new CuentasporPagar();
+            ini.setVisible(true);
+            application.setVisible(false);
         });
         
         itemBackup.addActionListener(e -> {
