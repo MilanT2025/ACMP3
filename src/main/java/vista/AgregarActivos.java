@@ -5,6 +5,7 @@
 package vista;
 
 import Controlador.Conexion;
+import Controlador.FuncionesGlobales;
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import java.awt.Color;
 import java.awt.Component;
@@ -33,6 +34,8 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import org.oxbow.swingbits.table.filter.TableRowFilterSupport;
+import static vista.Depreciacion.jdc_año;
+import static vista.Depreciacion.jdc_mes;
 
 /**
  *
@@ -40,6 +43,7 @@ import org.oxbow.swingbits.table.filter.TableRowFilterSupport;
  */
 public class AgregarActivos extends javax.swing.JDialog {
 
+    private final boolean isInitialized = false;
     private final Modelo modelo = new Modelo();
 
     private Color originalAlternateRowColor;
@@ -149,7 +153,7 @@ public class AgregarActivos extends javax.swing.JDialog {
                     + "FROM cuenta33 C "
                     + "	LEFT JOIN CuentasDepreciacionEquivalentes CDE ON C.[Cta# Cont#] = CDE.CuentaContable "
                     + "WHERE "
-                    + "	C.[Cta# Cont#] LIKE '%33%' AND "
+                    + "	(C.[Cta# Cont#] LIKE '%33%' OR C.[Cta# Cont#] LIKE '%34%') AND "
                     + "	Año = " + año + " AND "
                     + "	Mes = " + mes + " ";
 
@@ -175,7 +179,7 @@ public class AgregarActivos extends javax.swing.JDialog {
             }
 
             tb_data.getColumnModel().getColumn(0).setCellRenderer(new AlternateRowCheckBoxRenderer());
-
+//            FuncionesGlobales.colocarnombremesannio(jdc_año, jdc_mes, jLabel12);
             TableColumn column = tb_data.getColumnModel().getColumn(0);
             column.setHeaderRenderer(new CheckBoxHeaderRenderer(tb_data));
 
@@ -396,12 +400,23 @@ public class AgregarActivos extends javax.swing.JDialog {
         jLabel12.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
         jLabel12.setText("Año:");
 
+        jdc_año.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                jdc_añoPropertyChange(evt);
+            }
+        });
+
         jLabel14.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
         jLabel14.setText("Mes");
 
         jdc_mes.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jdc_mes.setForeground(new java.awt.Color(255, 0, 0));
         jdc_mes.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
+        jdc_mes.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                jdc_mesPropertyChange(evt);
+            }
+        });
 
         jButton2.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
         jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Search_4.png"))); // NOI18N
@@ -532,6 +547,21 @@ public class AgregarActivos extends javax.swing.JDialog {
         ini.toFront();
         ini.setVisible(true);
     }//GEN-LAST:event_jMenuItem1ActionPerformed
+
+    private void jdc_mesPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_jdc_mesPropertyChange
+    if (isInitialized && "month".equals(evt.getPropertyName())) {
+        int año = jdc_año.getYear();
+        int mes = jdc_mes.getMonth() + 1; // Mes es 0-indexado
+        System.out.println("Año: " + año + ", Mes: " + mes);
+        cargarDatos(año, mes);
+    }
+    }//GEN-LAST:event_jdc_mesPropertyChange
+
+    private void jdc_añoPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_jdc_añoPropertyChange
+        if (isInitialized && "year".equals(evt.getPropertyName())) {
+            cargarDatos(jdc_año.getYear(), (jdc_mes.getMonth() + 1));
+        }
+    }//GEN-LAST:event_jdc_añoPropertyChange
 
     /**
      * @param args the command line arguments
