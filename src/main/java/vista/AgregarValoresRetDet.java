@@ -5,12 +5,6 @@
 package vista;
 
 import Controlador.Conexion;
-import java.awt.event.KeyEvent;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,21 +12,15 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.DefaultCellEditor;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
 
 /**
  *
  * @author ejmg3
  */
-public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
+public class AgregarValoresRetDet extends javax.swing.JDialog {
 
     private DefaultTableModel model;  // Modelo de la tabla
     private final Modelo modelo = new Modelo();
@@ -40,7 +28,7 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
     /**
      * Creates new form AgregarSedes
      */
-    public AgregarCuentasEquivalentesLM(java.awt.Frame parent, boolean modal) {
+    public AgregarValoresRetDet(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
         this.setLocationRelativeTo(null);
@@ -50,10 +38,10 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
 
     private void cargarDatos() {
         try {
-            Object data[] = new Object[3];
+            Object data[] = new Object[4];
             Connection con = Conexion.getConnection();
             Statement st = con.createStatement();
-            String sql = "SELECT Cuenta,Cuenta_Equivalente,Descripcion_Equivalente FROM LibroMayorEquivalencias ORDER BY Cuenta";
+            String sql = "SELECT * FROM CuentasPorPagarValores ORDER BY Posicion ASC";
             ResultSet rs = st.executeQuery(sql);
             while (rs.next()) {
                 for (int i = 0; i < data.length; i++) {
@@ -65,15 +53,15 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
             st.close();
             con.close();
         } catch (SQLException ex) {
-            Logger.getLogger(AgregarCuentasEquivalentesLM.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AgregarValoresRetDet.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }
 
     private void limpiar() {
-        txtcuenta.setText("");
-        txtcuentae.setText("");
-        txtdescripcion.setText("");
+        txtposicion.setText("");
+        txtporcentaje.setText("");
+        cbretdet.setSelectedIndex(0);
     }
 
     private void eliminarCuenta(String posicion) {
@@ -86,24 +74,25 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
             pstm.close();
             con.close();
         } catch (SQLException ex) {
-            Logger.getLogger(AgregarCuentasEquivalentesLM.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AgregarValoresRetDet.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    private void agregarCuenta(String cuenta, String cuentae, String Descripcion) {
+    private void agregarValor(int posicion, String retdet, String valorporcentaje) {
         try {
             Connection con = Conexion.getConnection();
-            String sql = "INSERT INTO LibroMayorEquivalencias (Cuenta, Cuenta_Equivalente,Descripcion_Equivalente) VALUES (?, ?, ?)";
+            String sql = "INSERT INTO CuentasPorPagarValores (Posicion, NombreColumna,ValorPorcentaje, [Det/Ret]) VALUES (?, ?, ?, ?)";
             PreparedStatement pstm = con.prepareStatement(sql);
-            pstm.setString(1, cuenta);
-            pstm.setString(2, cuentae);
-            pstm.setString(3, Descripcion);
+            pstm.setInt(1, posicion);
+            pstm.setString(2, retdet.substring(0, 3) + " [" + valorporcentaje + "]");
+            pstm.setString(3, valorporcentaje);
+            pstm.setString(4, retdet);
             pstm.executeUpdate();
-            JOptionPane.showMessageDialog(this, "Se ha agregado la Cuenta Equivalente Correctamente");
+            JOptionPane.showMessageDialog(this, "Se ha agregado los Valores RET/DET Correctamente");
             pstm.close();
             con.close();
         } catch (SQLException ex) {
-            Logger.getLogger(AgregarCuentasEquivalentesLM.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AgregarValoresRetDet.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -117,9 +106,10 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
 
     private void llenar_tabla() {
         String[] columnNames = new String[]{
-            "Cuenta",
-            "Cuenta Equivalente",
-            "Descripcion Equivalente"
+            "Posicion",
+            "Nombre Columna",
+            "Porcentaje",
+            "Det./Ret."
         };
 
         modelo.setColumnIdentifiers(columnNames);
@@ -149,14 +139,14 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
         jScrollPane1 = new javax.swing.JScrollPane();
         tbresultado = new javax.swing.JTable();
         jLabel2 = new javax.swing.JLabel();
-        txtcuenta = new javax.swing.JTextField();
+        txtposicion = new javax.swing.JTextField();
         btnAgregar = new javax.swing.JButton();
         jButton5 = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
-        txtcuentae = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
-        txtdescripcion = new javax.swing.JTextField();
+        txtporcentaje = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
+        cbretdet = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Cuentas Equivalentes");
@@ -172,13 +162,13 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
         jScrollPane1.setViewportView(tbresultado);
 
         jLabel2.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        jLabel2.setText("Cuenta:");
+        jLabel2.setText("Posicion:");
 
-        txtcuenta.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
-        txtcuenta.setDisabledTextColor(new java.awt.Color(0, 0, 0));
-        txtcuenta.addKeyListener(new java.awt.event.KeyAdapter() {
+        txtposicion.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
+        txtposicion.setDisabledTextColor(new java.awt.Color(0, 0, 0));
+        txtposicion.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
-                txtcuentaKeyPressed(evt);
+                txtposicionKeyPressed(evt);
             }
         });
 
@@ -201,10 +191,7 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
         });
 
         jLabel4.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        jLabel4.setText("Cuenta Equiv.:");
-
-        txtcuentae.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
-        txtcuentae.setDisabledTextColor(new java.awt.Color(0, 0, 0));
+        jLabel4.setText("Ret./Det.:");
 
         jButton1.setFont(new java.awt.Font("Roboto", 1, 12)); // NOI18N
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Delete Trash.png"))); // NOI18N
@@ -217,11 +204,14 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
             }
         });
 
-        txtdescripcion.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
-        txtdescripcion.setDisabledTextColor(new java.awt.Color(0, 0, 0));
+        txtporcentaje.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
+        txtporcentaje.setDisabledTextColor(new java.awt.Color(0, 0, 0));
 
         jLabel5.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        jLabel5.setText("Descripcion");
+        jLabel5.setText("Porcentaje");
+
+        cbretdet.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
+        cbretdet.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "DETRACCIÓN", "RETENCIÓN" }));
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -230,29 +220,25 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 652, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel4))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtposicion)
+                            .addComponent(cbretdet, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel5)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtporcentaje, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(52, 52, 52)
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(btnAgregar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(jScrollPane1)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(25, 25, 25))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel4)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)))
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(txtcuentae, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jLabel5)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txtdescripcion, javax.swing.GroupLayout.PREFERRED_SIZE, 490, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(txtcuenta, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jButton5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -263,20 +249,21 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
                         .addContainerGap()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtcuenta, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(txtposicion, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtcuentae, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtdescripcion, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(txtporcentaje, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(cbretdet)))
                     .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(btnAgregar, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton5))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 342, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -312,31 +299,20 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnAgregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAgregarActionPerformed
-        if (txtcuenta.getText().trim().equals("") || txtcuenta.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Por favor, ingrese una Cuenta ", "Error", JOptionPane.ERROR_MESSAGE);
-            txtcuenta.requestFocus();
-            return;
-        }
-//        if (txtdescripcion.getText().trim().equals("") || txtdescripcion.getText().isEmpty()) {
-//            JOptionPane.showMessageDialog(this, "Por favor, ingrese una Descripcion ", "Error", JOptionPane.ERROR_MESSAGE);
-//            txtdescripcion.requestFocus();
-//            return;
-//        }
-
-        if (txtcuentae.getText().trim().equals("") || txtcuentae.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Por favor, ingrese una Cuenta Equivalente ", "Error", JOptionPane.ERROR_MESSAGE);
-            txtcuentae.requestFocus();
+        if (txtposicion.getText().trim().equals("") || txtposicion.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, ingrese una Posicion ", "Error", JOptionPane.ERROR_MESSAGE);
+            txtposicion.requestFocus();
             return;
         }
 
-        if (txtdescripcion.getText().trim().equals("") || txtdescripcion.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Por favor, ingrese una Descripcion para la Cuenta Equivalente ", "Error", JOptionPane.ERROR_MESSAGE);
-            txtdescripcion.requestFocus();
+        if (txtporcentaje.getText().trim().equals("") || txtporcentaje.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, ingrese un Porcentaje", "Error", JOptionPane.ERROR_MESSAGE);
+            txtporcentaje.requestFocus();
             return;
         }
 
-        agregarCuenta(txtcuenta.getText(), txtcuentae.getText(), txtdescripcion.getText());
-        modelo.addRow(new Object[]{txtcuenta.getText(), txtcuentae.getText(), txtdescripcion.getText()});// Agregar la nueva sede al modelo
+        agregarValor(Integer.parseInt(txtposicion.getText()), cbretdet.getSelectedItem().toString(), txtporcentaje.getText());
+        modelo.addRow(new Object[]{txtposicion.getText(), cbretdet.getSelectedItem().toString().substring(0, 3) + " [" + txtporcentaje.getText() + "]", txtporcentaje.getText(), cbretdet.getSelectedItem().toString()});// Agregar la nueva sede al modelo
         limpiar(); // Limpiar el campo de texto después de agregar
 
     }//GEN-LAST:event_btnAgregarActionPerformed
@@ -358,45 +334,9 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
                     "Fila no Seleccionada", JOptionPane.WARNING_MESSAGE);
         }
     }//GEN-LAST:event_jButton5ActionPerformed
-    private void mostrarCuenta(String Cuenta) {
-        try {
-            Connection cnn = Conexion.getConnection();
-            String sql = "SELECT Cuenta, Cuenta_Equivalente FROM LibroMayorEquivalencias WHERE Cuenta = ?";
-
-            try (PreparedStatement pst = cnn.prepareStatement(sql)) {
-                pst.setString(1, Cuenta);
-                ResultSet rs = pst.executeQuery();
-
-                if (rs.next()) {
-                    String cuentaEquivalente = rs.getString("Cuenta_Equivalente");
-
-                    if (cuentaEquivalente != null && !cuentaEquivalente.isEmpty()) {
-                        // Si hay cuenta equivalente, mostrar mensaje
-                        JOptionPane.showMessageDialog(null, "Esta cuenta ya tiene una cuenta equivalente.", "Información", JOptionPane.INFORMATION_MESSAGE);
-                        txtcuenta.requestFocus();
-                        txtcuenta.selectAll();
-                    } else {
-                        // Si no hay cuenta equivalente, habilitar el campo
-                        txtcuentae.setText("");
-                        txtcuentae.requestFocus();
-                    }
-                } else {
-                    // Limpiar los campos si no se encuentra la cuenta
-                      txtcuentae.requestFocus();
-                }
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace(); // Manejo de excepciones
-        }
-    }
-    private void txtcuentaKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtcuentaKeyPressed
-        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-            String NroCuenta = txtcuenta.getText();
-            mostrarCuenta(NroCuenta);
-//            txtcuenta.setEnabled(false);
-
-        }
-    }//GEN-LAST:event_txtcuentaKeyPressed
+    
+    private void txtposicionKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtposicionKeyPressed
+    }//GEN-LAST:event_txtposicionKeyPressed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         limpiar();
@@ -419,21 +359,23 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(AgregarCuentasEquivalentesLM.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AgregarValoresRetDet.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(AgregarCuentasEquivalentesLM.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AgregarValoresRetDet.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(AgregarCuentasEquivalentesLM.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AgregarValoresRetDet.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(AgregarCuentasEquivalentesLM.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AgregarValoresRetDet.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
+        //</editor-fold>
         //</editor-fold>
         //</editor-fold>
 
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                AgregarCuentasEquivalentesLM dialog = new AgregarCuentasEquivalentesLM(new javax.swing.JFrame(), true);
+                AgregarValoresRetDet dialog = new AgregarValoresRetDet(new javax.swing.JFrame(), true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {
@@ -447,6 +389,7 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAgregar;
+    private javax.swing.JComboBox<String> cbretdet;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton5;
     private javax.swing.JLabel jLabel2;
@@ -456,8 +399,7 @@ public class AgregarCuentasEquivalentesLM extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable tbresultado;
-    private javax.swing.JTextField txtcuenta;
-    private javax.swing.JTextField txtcuentae;
-    private javax.swing.JTextField txtdescripcion;
+    private javax.swing.JTextField txtporcentaje;
+    private javax.swing.JTextField txtposicion;
     // End of variables declaration//GEN-END:variables
 }

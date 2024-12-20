@@ -8,37 +8,33 @@ import Controlador.Conexion;
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ItemEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JComboBox;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
@@ -59,7 +55,7 @@ import org.oxbow.swingbits.table.filter.TableRowFilterSupport;
  *
  * @author Farmacia-Ingeniero
  */
-public class ProcesarCuentasporPagar extends javax.swing.JDialog {
+public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
 
     private final Modelo modelo = new Modelo();
 
@@ -71,9 +67,11 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
     /**
      * Creates new form Detallado
      */
-    public ProcesarCuentasporPagar(java.awt.Frame parent, boolean modal, String fecha) {
+    public ModuloPago_CuentasPorPagar(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        
+        jDateChooser1.setDate(new Date());
         
         locale = new Locale("es", "PE");
         Locale.setDefault(locale);
@@ -82,9 +80,9 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
         symbols.setGroupingSeparator(',');
         symbols.setDecimalSeparator('.');
         
-        jLabel13.setText("CUENTAS POR PAGAR AL " + fecha);
         this.setLocationRelativeTo(null);
         
+        modelo.addColumn("FECHA PROC.");
         modelo.addColumn("N°");
         modelo.addColumn("RUC");
         modelo.addColumn("PROVEEDOR");
@@ -92,11 +90,14 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
         modelo.addColumn("FEC/E");
         modelo.addColumn("FEC/V");
         modelo.addColumn("MONTO");
-        modelo.addColumn("OPCION");
-        
-        agregarColumnasPorcentaje();
+        modelo.addColumn("PORCENTAJE");
+        modelo.addColumn("S/.");
         modelo.addColumn("TOTAL");
         modelo.addColumn("RUBRO");
+        modelo.addColumn("PAGO TOTAL");
+        modelo.addColumn("PAGO PARCIAL %");
+        modelo.addColumn("TOTAL PAGADO");
+        modelo.addColumn("N° TRANSFERENCIA");
         
         JTableHeader header = tb_data.getTableHeader();
         header.setPreferredSize(new java.awt.Dimension(header.getWidth(), 40));
@@ -129,6 +130,10 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
             }
         });
         
+         tb_data.getColumnModel().getColumn(12).setCellRenderer(new AlternateRowCheckBoxRenderer());
+
+    
+        
        modelo.addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
@@ -136,183 +141,184 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
                 int column = e.getColumn();
 
                 // Detectar si se modificó la columna 12
-                if (column == 7) { // Índice 11 porque las columnas empiezan en 0
-                    if (modelo.getValueAt(row, column) == null) {
-                        return;
-                    }
-                    
-                    String value = (String) modelo.getValueAt(row, column);
-                    
-                    if (value.equals("")) {
-                        for (int i = 8; i < tb_data.getColumnCount()-1; i++) {
-                            tb_data.setValueAt(null, row, i);
-                        }
-                        return;
-                    }
-                    
-                    // Validar que el valor no sea nulo y tenga formato de porcentaje (por ejemplo, "3%")
-                    if (value != null) {
-                        for (int i = 8; i < tb_data.getColumnCount()-1; i++) {
-                            tb_data.setValueAt(null, row, i);
-                        }
+                if (column == 13) { // Índice 11 porque las columnas empiezan en 0
+                    Object valor13 = tb_data.getValueAt(row, column);
+                    if (valor13 == null && valor13.equals("")) {
+                        tb_data.setValueAt("", row, 14);
 
-                        // Buscar la columna cuyo encabezado contiene el porcentaje dentro de "[]"
-                        int targetColumn = -1;
-                        for (int col = 0; col < modelo.getColumnCount(); col++) {
-                            String header = modelo.getColumnName(col);
-                            if (header.equals(value)) {
-                                targetColumn = col;
-                                break;
-                            }
-                        }
-                        
-                        String valor = modelo.getColumnName(targetColumn);
+                    } else {
+                        double valor13double = Double.parseDouble(valor13.toString());
+                        double valor7 = Double.parseDouble(tb_data.getValueAt(row, 7).toString());
 
-                        // Expresión regular para buscar un número con % dentro de corchetes
-                        Pattern pattern = Pattern.compile("\\[(\\d+(\\.\\d+)?%)\\]");
-                        Matcher matcher = pattern.matcher(valor);
-                        
-                        String porcentaje2 = null;
-                        if (matcher.find()) {
-                            porcentaje2 = matcher.group(1); // Extrae el contenido dentro de los corchetes
-                        } else {
-                            System.out.println("No se encontró ningún porcentaje dentro de corchetes.");
-                            return;
-                        }
-                        
-                         double percentage = Double.parseDouble(porcentaje2.replace("%", "")) / 100.0;
-
-                        // Si se encuentra la columna objetivo, realizar el cálculo
-                        if (targetColumn != -1) {
-                            try {
-                                double col6Value = Double.parseDouble(modelo.getValueAt(row, 6).toString());
-                                double result = col6Value * percentage;
-                                if (tb_data.getColumnName(targetColumn).contains("RET")) {
-                                    modelo.setValueAt(result, row, targetColumn);
-                                    modelo.setValueAt(col6Value - result, row, tb_data.getColumnCount() - 2);
-                                } else if (tb_data.getColumnName(targetColumn).contains("DET")) {
-                                    BigDecimal bdResult = new BigDecimal(result);
-                                    bdResult = bdResult.setScale(0, RoundingMode.HALF_UP);
-                                    modelo.setValueAt(bdResult, row, targetColumn);
-                                    modelo.setValueAt(col6Value - bdResult.intValue(), row, tb_data.getColumnCount() - 2);
-                                }
-                                
-                                
-                            } catch (NumberFormatException ex) {
-                                System.err.println("Error en formato numérico: " + ex.getMessage());
-                            }
-                        }
+                        tb_data.setValueAt(valor7 * (valor13double / 100), row, 14);
                     }
+
+                    
                 }
+                
             }
         });
        
-        DecimalFormat decimalFormat = new DecimalFormat("0.00", symbols);
-
-        int columnCount = tb_data.getColumnCount();
-        for (int i = 0; i < columnCount; i++) {
-            if (i == 6 || (i >= 7 && i <= modelo.getColumnCount()-2)) {
-                tb_data.getColumnModel().getColumn(i).setCellRenderer(new DefaultTableCellRenderer() {
-                    @Override
-                    public void setValue(Object value) {
-                        if (value instanceof Number) {
-                            value = decimalFormat.format(value);
-                        }
-                        super.setValue(value);
-                    }
-                });
-            }
-        }
-
-        configurarComboBoxEnTabla();
+        llenar_tabla();
     }
     
-    private JComboBox<String> obtenerComboBoxDesdeBaseDeDatos() {
-        JComboBox<String> comboBox = new JComboBox<>();
-        comboBox.addItem("");
-        try (Connection con = Conexion.getConnection(); Statement st = con.createStatement(); ResultSet rs = st.executeQuery("SELECT NombreColumna FROM CuentasPorPagarValores ORDER BY Posicion")) {
+    static class CheckBoxHeaderRenderer extends JCheckBox implements TableCellRenderer {
+
+        private final JTable table;
+
+        public CheckBoxHeaderRenderer(JTable table) {
+            this.table = table;
+            this.setHorizontalAlignment(SwingConstants.CENTER);
+
+            this.addItemListener(e -> {
+                boolean selected = e.getStateChange() == ItemEvent.SELECTED;
+                for (int i = 0; i < table.getRowCount(); i++) {
+                    table.setValueAt(selected, i, 12); // Marca/desmarca las filas de la primera columna
+                }
+            });
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(
+                JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            this.setSelected((value != null && (Boolean) value));
+            return this;
+        }
+    }
+    
+    static class AlternateRowCheckBoxRenderer extends JCheckBox implements TableCellRenderer {
+
+        public AlternateRowCheckBoxRenderer() {
+            this.setHorizontalAlignment(SwingConstants.CENTER);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(
+                JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            this.setSelected(value != null && (Boolean) value);
+
+            // Aplicar colores alternos
+            Color alternateColor = (Color) UIManager.getLookAndFeelDefaults().get("Table.alternateRowColor");
+            Color defaultColor = table.getBackground();
+
+            if (!isSelected) {
+                this.setBackground(row % 2 == 0 ? defaultColor : alternateColor);
+            } else {
+                this.setBackground(table.getSelectionBackground());
+            }
+
+            return this;
+        }
+    }
+    
+    private void llenar_tabla() {
+        try {
+            int c = 1;
+            Object data[] = new Object[12];
+            Connection con = Conexion.getConnection();
+            Statement st = con.createStatement();
+            String sql = "WITH FacturasConRanking AS ( "
+                    + "    SELECT "
+                    + "        [N°], "
+                    + "        [RUC], "
+                    + "        Proveedor, "
+                    + "        Factura, "
+                    + "        FechaEmision, "
+                    + "        FechaVencimiento, "
+                    + "        Monto, "
+                    + "        ValorCalculado, "
+                    + "        Total, "
+                    + "        Rubro, "
+                    + "        Porcentaje, "
+                    + "        FechaEvaluacion, "
+                    + "        ROW_NUMBER() OVER (PARTITION BY Factura ORDER BY FechaEvaluacion DESC) AS rn "
+                    + "    FROM "
+                    + "        CuentasPorPagarDiario "
+                    + "    WHERE "
+                    + "        CONVERT(DATE, FechaEvaluacion) = '" + new SimpleDateFormat("dd/MM/yyyy").format(jDateChooser1.getDate()) + "' "
+                    + ") "
+                    + "SELECT "
+                    + "    [N°], "
+                    + "    [RUC], "
+                    + "    Proveedor, "
+                    + "    Factura, "
+                    + "    FORMAT(FechaEmision, 'dd/MM/yyyy') AS FechaEmision, "
+                    + "    FORMAT(FechaVencimiento, 'dd/MM/yyyy') AS FechaVencimiento, "
+                    + "    Monto, "
+                    + "    ValorCalculado, "
+                    + "    Total, "
+                    + "    Rubro, "
+                    + "    Porcentaje, "
+                    + "    FORMAT(FechaEvaluacion, 'dd/MM/yyyy') AS FechaEvaluacion "
+                    + "FROM "
+                    + "    FacturasConRanking "
+                    + "WHERE "
+                    + "    rn = 1 "
+                    + "ORDER BY "
+                    + "    FechaEvaluacion DESC;";
+            ResultSet rs = st.executeQuery(sql);
             while (rs.next()) {
-                comboBox.addItem(rs.getString(1));
+                
+                data[0] = rs.getObject(12);
+                data[1] = String.valueOf(c);
+                data[2] = rs.getObject(2);
+                data[3] = rs.getObject(3);
+                data[4] = rs.getObject(4);
+                data[5] = rs.getObject(5);
+                data[6] = rs.getObject(6);
+                data[7] = rs.getObject(7);
+                data[8] = rs.getObject(11);
+                data[9] = rs.getObject(8);
+                data[10] = rs.getObject(9);
+                data[11] = rs.getObject(10);
+               
+                modelo.addRow(data);
+                c++;
             }
+            rs.close();
+            st.close();
+            con.close();
+
         } catch (SQLException ex) {
-            Logger.getLogger(CuentasporPagar.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Vacaciones.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return comboBox;
+        
+        
+        packColumns();
     }
     
-    private void configurarComboBoxEnTabla() {
-        // Crear el JComboBox desde la base de datos
-        JComboBox<String> comboBox = obtenerComboBoxDesdeBaseDeDatos();
 
-        // Editor de celdas
-        DefaultCellEditor cellEditor = new DefaultCellEditor(comboBox);
-        tb_data.getColumnModel().getColumn(7).setCellEditor(cellEditor); // Cambia el índice según tu columna
-
-        // Renderer para mantener colores de intercalación y mostrar valores seleccionados correctamente
-        tb_data.getColumnModel().getColumn(7).setCellRenderer(new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-
-                // Aplicar colores alternos desde el UIManager
-                if (!isSelected) {
-                    Color alternateColor = UIManager.getColor("Table.alternateRowColor");
-                    if (alternateColor != null && row % 2 != 0) {
-                        c.setBackground(alternateColor);
-                    } else {
-                        c.setBackground(UIManager.getColor("Table.background"));
-                    }
-                } else {
-                    c.setBackground(table.getSelectionBackground());
-                }
-
-                // Mostrar el valor seleccionado como texto
-                if (value != null) {
-                    setText(value.toString());
-                }
-                return c;
-            }
-        });
-    }
-    
     
 
     private void guardarInformacion() {
         try {
             Connection con = Conexion.getConnection();
             String sql = "INSERT INTO [dbo].[CuentasPorPagarDiario] " +
-             "([N°], [RUC], [Proveedor], [Factura], [FechaEmision], [FechaVencimiento], [Monto], [Porcentaje], " +
-             "[ValorCalculado], [Total], [Rubro], [FechaEvaluacion]) " +
-             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE())";
+             "([N°], [Proveedor], [Factura], [FechaEmision], [FechaVencimiento], [Monto], " +
+             "[ValorCalculado], [Total], [Rubro], [Porcentaje], [FechaEvaluacion]) " +
+             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE())";
             PreparedStatement pstm = con.prepareStatement(sql);
             for (int i = 0; i < tb_data.getRowCount(); i++) {
-                double total = 0;
-                if (tb_data.getValueAt(i, 7) != null && !tb_data.getValueAt(i, 7).toString().trim().equals("")) {
+                if (tb_data.getValueAt(i, 11) != null) {
                     pstm.setInt(1, (int) tb_data.getValueAt(i, 0));
                     pstm.setString(2, tb_data.getValueAt(i, 1).toString());
                     pstm.setString(3, tb_data.getValueAt(i, 2).toString());
                     pstm.setString(4, tb_data.getValueAt(i, 3).toString());
                     pstm.setString(5, tb_data.getValueAt(i, 4).toString());
-                    pstm.setString(6, tb_data.getValueAt(i, 5).toString());
-                    pstm.setDouble(7, Double.parseDouble(tb_data.getValueAt(i, 6).toString()));
-                    pstm.setString(8, tb_data.getValueAt(i, 7).toString());
-                    
-                    int totalColumnIndex = tb_data.getColumnCount() - 2; 
-
-                    for (int j = 8; j < totalColumnIndex; j++) {
-                        total += parseDoubleOrDefault(tb_data.getValueAt(i, j));
-                    }
-                    pstm.setDouble(9, total);
-                    pstm.setString(10, getStringOrDefault(tb_data.getValueAt(i, tb_data.getColumnCount()-2), ""));
-                    pstm.setString(11, getStringOrDefault(tb_data.getValueAt(i, tb_data.getColumnCount()-1), ""));
-                   
+                    pstm.setDouble(6, Double.parseDouble(tb_data.getValueAt(i, 5).toString()));
+                    pstm.setDouble(7, (parseDoubleOrDefault(tb_data.getValueAt(i, 6))
+                            + parseDoubleOrDefault(tb_data.getValueAt(i, 7))
+                            + parseDoubleOrDefault(tb_data.getValueAt(i, 8))));
+                    pstm.setDouble(8, parseDoubleOrDefault(tb_data.getValueAt(i, 9)));
+                    pstm.setString(9, getStringOrDefault(tb_data.getValueAt(i, 10), ""));
+                    pstm.setString(10, tb_data.getValueAt(i, 11).toString());
                     pstm.executeUpdate();
                 }
             }
             JOptionPane.showMessageDialog(this, "Se han guardado los datos correctamente");
             
         } catch (SQLException ex) {
-            Logger.getLogger(ProcesarCuentasporPagar.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ModuloPago_CuentasPorPagar.class.getName()).log(Level.SEVERE, null, ex);
         }
         
     }
@@ -332,48 +338,26 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
     return value == null ? defaultValue : value.toString();
 }
 
-    private void agregarColumnasPorcentaje() {
-        try {
-            Connection con = null;
-            PreparedStatement ps = null;
-            ResultSet rs = null;
-            
-            con = Conexion.getConnection();
-
-            String sql = "SELECT NombreColumna FROM CuentasPorPagarValores ORDER BY Posicion";
-            ps = con.prepareStatement(sql);
-
-            rs = ps.executeQuery();
-
-            while (rs.next()) {
-                modelo.addColumn(rs.getString(1));
-            }
-
-            rs.close();
-            ps.close();
-            con.close();
-        } catch (SQLException ex) {
-            Logger.getLogger(ProcesarCuentasporPagar.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
+   
     public class Modelo extends DefaultTableModel {
 
+        @Override
         public boolean isCellEditable(int row, int column) {
-            int lastColumnIndex = modelo.getColumnCount() - 1;
-
-            // Si es la columna 7 (índice 6) o la última columna, siempre debe ser editable
-            if (column == 6 || column == lastColumnIndex) {
+            if (column == 12 || column == 13 || column == 15 ) {
                 return true;
             }
 
-            // Aquí puedes poner tu lógica para las demás columnas no editables
-            if ((column >= 0 && column <= 6) || (column >= 8 && column < lastColumnIndex)) {
-                return false;
-            }
-
-            return true;
+            return false;
         }
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            if (columnIndex == 12) {
+                return Boolean.class;
+            }
+            return super.getColumnClass(columnIndex);
+        }
+    
 
         /*@Override
         public void setValueAt(Object aValue, int row, int column) {
@@ -399,65 +383,8 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
 
     }
     
-    public void cargarInfo(Object[] rowData){
-        modelo.addRow(rowData);
-    }
-    
-    private void cargarRubro() {
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-
-        try {
-            con = Conexion.getConnection();
-
-            // Crear el PreparedStatement para evitar múltiples declaraciones
-            String sql = "SELECT TOP 1 DESCRIPCION FROM cuenta33 WHERE Tipo+'-'+[Serie Nº]+'-'+[Numero] = ?";
-            ps = con.prepareStatement(sql);
-
-            // Iterar sobre las filas de la tabla
-            for (int i = 0; i < tb_data.getRowCount(); i++) {
-                String clave = tb_data.getValueAt(i, 3).toString();
-
-                // Asignar el valor al parámetro de la consulta
-                ps.setString(1, clave);
-                rs = ps.executeQuery();
-
-                // Actualizar la tabla con el resultado
-                if (rs.next()) {
-                    tb_data.setValueAt(rs.getString("DESCRIPCION"), i, tb_data.getColumnCount() - 1);
-                }
-
-                // Cerrar el ResultSet para evitar fugas de recursos
-                if (rs != null) {
-                    rs.close();
-                }
-            }
-
-        } catch (SQLException ex) {
-            Logger.getLogger(ProcesarCuentasporPagar.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            // Cerrar todos los recursos en el bloque finally
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (ps != null) {
-                    ps.close();
-                }
-                if (con != null) {
-                    con.close();
-                }
-            } catch (SQLException ex) {
-                Logger.getLogger(ProcesarCuentasporPagar.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-    }
-
 
     public void packColumns() {
-        cargarRubro();
-        
         TableColumnModel columnModel = tb_data.getColumnModel();
         for (int columnIndex = 0; columnIndex < columnModel.getColumnCount(); columnIndex++) {
             TableColumn column = columnModel.getColumn(columnIndex);
@@ -500,6 +427,8 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
         jButton1 = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jLabel13 = new javax.swing.JLabel();
+        jPanel14 = new javax.swing.JPanel();
+        jDateChooser1 = new com.toedter.calendar.JDateChooser("dd/MM/yyyy","##/##/####", '_');
         jMenuBar1 = new javax.swing.JMenuBar();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -516,7 +445,7 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
 
         jButton1.setFont(new java.awt.Font("Roboto", 1, 12)); // NOI18N
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8_add_32px.png"))); // NOI18N
-        jButton1.setText("Guardar y Exportar");
+        jButton1.setText("Pagar y Exportar");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -528,7 +457,7 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
         jLabel13.setFont(new java.awt.Font("Roboto", 1, 18)); // NOI18N
         jLabel13.setForeground(new java.awt.Color(255, 255, 255));
         jLabel13.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel13.setText("CUENTAS POR PAGAR AL 18/09/2024");
+        jLabel13.setText("MODULO DE PAGO - CUENTAS POR PAGAR");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -547,6 +476,34 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
                 .addContainerGap())
         );
 
+        jPanel14.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel14.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Fecha de Proceso", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Roboto", 1, 13))); // NOI18N
+
+        jDateChooser1.setForeground(new java.awt.Color(255, 0, 0));
+        jDateChooser1.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
+        jDateChooser1.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                jDateChooser1PropertyChange(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel14Layout = new javax.swing.GroupLayout(jPanel14);
+        jPanel14.setLayout(jPanel14Layout);
+        jPanel14Layout.setHorizontalGroup(
+            jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel14Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jDateChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, 221, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(1011, Short.MAX_VALUE))
+        );
+        jPanel14Layout.setVerticalGroup(
+            jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel14Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jDateChooser1, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -556,7 +513,8 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1250, Short.MAX_VALUE)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -564,7 +522,9 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 658, Short.MAX_VALUE)
+                .addComponent(jPanel14, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 584, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButton1)
                 .addContainerGap())
@@ -597,9 +557,11 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
         }
         
         exportarArchivoExcel(modelo);      
-        
-        this.dispose();
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jDateChooser1PropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_jDateChooser1PropertyChange
+
+    }//GEN-LAST:event_jDateChooser1PropertyChange
 
     public static void exportarArchivoExcel(DefaultTableModel model) {
         JFileChooser jFileChooser = new JFileChooser();
@@ -689,7 +651,7 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                ProcesarCuentasporPagar dialog = new ProcesarCuentasporPagar(new javax.swing.JFrame(), true, null);
+                ModuloPago_CuentasPorPagar dialog = new ModuloPago_CuentasPorPagar(new javax.swing.JFrame(), true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {
@@ -703,10 +665,12 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
+    private com.toedter.calendar.JDateChooser jDateChooser1;
     private javax.swing.JFileChooser jFileChooser1;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable tb_data;

@@ -25,6 +25,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -393,8 +394,42 @@ public class Vacaciones extends javax.swing.JFrame {
         
         cargaComisiones();
     }
+    
+     public static ArrayList<Integer> obtenerMesesHasta(int mesSeleccionado) {
+        ArrayList<Integer> meses = new ArrayList<>();
+        for (int i = 1; i <= mesSeleccionado; i++) {
+            meses.add(i);
+        }
+        return meses;
+    }
+
+    /**
+     * Método que imprime los meses separados por comas en una sola línea.
+     *
+     * @param meses La lista de meses.
+     */
+     public static String obtenerMesesComoCadena(ArrayList<Integer> meses) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < meses.size(); i++) {
+            sb.append(meses.get(i));
+            if (i < meses.size() - 1) {
+                sb.append(", "); // Añadir coma si no es el último elemento
+            }
+        }
+        return sb.toString();
+    }
 
     private void cargaComisiones() {
+        int mesSeleccionado = jdc_mes.getMonth() + 1; // JMonthChooser devuelve 0-11, sumamos 1 para obtener 1-12
+            ArrayList<Integer> mesesHastaSeleccionado = obtenerMesesHasta(mesSeleccionado);
+            
+            // Imprimir los meses separados por comas
+            System.out.println(obtenerMesesComoCadena(mesesHastaSeleccionado));
+            
+            System.out.println(mesSeleccionado);
+            
+        
+        
         queryComision = "SELECT "
                     + "    [Nro Doc# Ident#], "
                     + "    CONVERT(DECIMAL(20,2), "
@@ -411,10 +446,10 @@ public class Vacaciones extends javax.swing.JFrame {
                     + "    SUM(CASE WHEN Mes = 10 THEN [Bonif# Prod#] ELSE 0 END) + "
                     + "    SUM(CASE WHEN Mes = 11 THEN [Bonif# Prod#] ELSE 0 END) + "
                     + "    SUM(CASE WHEN Mes = 12 THEN [Bonif# Prod#] ELSE 0 END)) "
-                    + "	/6)) AS Comision "
+                    + "	/" + mesSeleccionado + ")) AS Comision "
                     + "FROM PlanillaSueldo "
                     + "WHERE "
-                    + "    Año = " + jdc_año.getYear() + " AND Mes IN (" + (jdc_mes.getMonth()+1) + ") "
+                    + "    Año = " + jdc_año.getYear() + " AND Mes IN (" + obtenerMesesComoCadena(mesesHastaSeleccionado) + ") "
                     + "GROUP BY "
                     + "    [Nro Doc# Ident#] "
                     + "HAVING "

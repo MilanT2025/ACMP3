@@ -16,9 +16,10 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.text.DateFormatSymbols;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
@@ -59,7 +60,11 @@ public class CargaArchivos extends javax.swing.JDialog {
         
         jLabel10.setVisible(false);
         cb_sede.setVisible(false);
+        jLabel11.setVisible(false);
+        jDateChooser1.setVisible(false);
         
+        jDateChooser1.setDate(new Date());
+
         cargarOpcionesDesdeArchivoYOrdenar(cb_sede, "sedes.txt");
     }
     
@@ -797,6 +802,92 @@ public class CargaArchivos extends javax.swing.JDialog {
             Logger.getLogger(CargaArchivos.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    public void cargarCuentasPorPagar(String excelFilePath) {
+        try {
+            Connection con = Conexion.getConnection();
+            String fecha = new SimpleDateFormat("dd/MM/yyyy").format(jDateChooser1.getDate());
+
+            String sql = "delete from CuentasPorPagar where FechaCarga = ?";
+            PreparedStatement pstm = con.prepareStatement(sql);
+            pstm.setString(1, fecha);
+            pstm.executeUpdate();
+
+            sql = "INSERT INTO [dbo].[CuentasPorPagar] " +
+                     "([FechaCarga], [Estado], [CUO], [Comprobante Nº], [F# Registro], " +
+                     "[F# Emision], [F# Vencimiento], [Nro Doc# Ident#], [Razon Social], " +
+                     "[Moneda], [Total], [Saldo MN], [Saldo ME], [Plan Cuenta], [Descripcion], [Centro Costo]) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            pstm = con.prepareStatement(sql);
+
+            try (FileInputStream fis = new FileInputStream(excelFilePath); Workbook workbook = new XSSFWorkbook(fis);) {
+
+                Sheet sheet = workbook.getSheetAt(0);
+
+                int rowCount = sheet.getLastRowNum();
+                
+                for (int i = 1; i < sheet.getLastRowNum(); i++) {
+                    Row row = sheet.getRow(i);
+
+                    if (row != null) {
+                        pstm.setString(1, fecha);  // Columna [Año]
+
+                        for (int j = 0; j < 15; j++) { // Máximo 06 columnas
+                            Cell cell = row.getCell(j);
+
+                            if (cell != null) {
+                                switch (cell.getCellType()) {
+                                    case STRING:
+                                        String strValue = cell.getStringCellValue();
+                                        pstm.setString(j + 2, strValue);
+                                        break;
+
+                                    case NUMERIC:
+                                        if (DateUtil.isCellDateFormatted(cell)) {
+                                            java.util.Date utilDate = cell.getDateCellValue();
+                                            pstm.setDate(j + 2, new java.sql.Date(utilDate.getTime()));
+                                        } else {
+                                            double numericValue = cell.getNumericCellValue();
+                                            pstm.setDouble(j + 2, numericValue);
+                                        }
+                                        break;
+
+                                    case BLANK:
+                                        pstm.setNull(j + 2, java.sql.Types.NULL);
+                                        break;
+
+                                    default:
+                                        String defaultValue = cell.toString();
+                                        pstm.setString(j + 2, defaultValue);
+                                        break;
+                                }
+                            } else {
+                                pstm.setNull(j + 2, java.sql.Types.NULL);
+                            }
+                        }
+
+                        pstm.addBatch(); // Agregar el batch
+                    }
+                    
+                    int progress = (int) ((double) (i+1) / rowCount * 100);
+                    SwingUtilities.invokeLater(() -> jProgressBar1.setValue(progress));
+                }
+
+                pstm.executeBatch();
+                pstm.close();
+                con.close();
+                
+                JOptionPane.showMessageDialog(this, "El EXCEL DE " + cb_tipo.getSelectedItem().toString().toUpperCase() + " ha sido cargado correctamente.", "Exito", JOptionPane.INFORMATION_MESSAGE);
+
+            } catch (IOException e) {
+                System.err.println("Error al leer el archivo Excel: " + e.getMessage());
+            } catch (Exception e) {
+                System.err.println("Error en la conexión o inserción: " + e.getMessage());
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(CargaArchivos.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
     private void eliminararchivo(String archivo) {
         try {
@@ -868,6 +959,8 @@ public class CargaArchivos extends javax.swing.JDialog {
         jProgressBar1 = new javax.swing.JProgressBar();
         jLabel10 = new javax.swing.JLabel();
         cb_sede = new javax.swing.JComboBox<>();
+        jLabel11 = new javax.swing.JLabel();
+        jDateChooser1 = new com.toedter.calendar.JDateChooser("dd/MM/yyyy","##/##/####", '_');
         jPanel3 = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
@@ -952,7 +1045,7 @@ public class CargaArchivos extends javax.swing.JDialog {
         jLabel6.setText("Tipo de Archivo:");
 
         cb_tipo.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
-        cb_tipo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<<Seleccionar>>", "Balance de Comprobacion (Hoja de Balance)", "Comprobante de Compra 33 (Cuenta 33)", "Movimientos de Ingresos y Egresos", "Movimientos de Egresos con Glosa", "Planilla de Sueldo", "Stock de Productos en Almacen" }));
+        cb_tipo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<<Seleccionar>>", "Balance de Comprobacion (Hoja de Balance)", "Compras Detalladas (Global)", "Comprobante de Compra 33 (Cuenta 33)", "Cuentas por Pagar", "Movimientos de Ingresos y Egresos", "Movimientos de Egresos con Glosa", "Planilla de Sueldo", "Stock de Productos en Almacen" }));
         cb_tipo.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 cb_tipoItemStateChanged(evt);
@@ -962,10 +1055,16 @@ public class CargaArchivos extends javax.swing.JDialog {
         jProgressBar1.setStringPainted(true);
 
         jLabel10.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
+        jLabel10.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         jLabel10.setText("Sede:");
 
         cb_sede.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
         cb_sede.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<<Seleccionar>>" }));
+
+        jLabel11.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
+        jLabel11.setText("Fecha");
+
+        jDateChooser1.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
@@ -980,23 +1079,29 @@ public class CargaArchivos extends javax.swing.JDialog {
                         .addComponent(txt_ruta)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btn_seleccionar, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addComponent(jLabel4)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(año, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel5)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(mes, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel6)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cb_tipo, 0, 457, Short.MAX_VALUE))
                     .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addComponent(jLabel10)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel5Layout.createSequentialGroup()
+                                .addComponent(jLabel4)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(año, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel5)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(mes, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel5Layout.createSequentialGroup()
+                                .addComponent(jLabel11)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jDateChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, 314, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cb_sede, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(cb_tipo, 0, 462, Short.MAX_VALUE)
+                            .addComponent(cb_sede, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         jPanel5Layout.setVerticalGroup(
@@ -1013,7 +1118,9 @@ public class CargaArchivos extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(cb_sede, javax.swing.GroupLayout.DEFAULT_SIZE, 34, Short.MAX_VALUE)
-                    .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jDateChooser1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(btn_seleccionar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1024,7 +1131,7 @@ public class CargaArchivos extends javax.swing.JDialog {
                 .addComponent(btn_subir)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -1263,8 +1370,15 @@ public class CargaArchivos extends javax.swing.JDialog {
 
                 String tipoSeleccionado = cb_tipo.getSelectedItem().toString();
                 String ruta = txt_ruta.getText();
+                String fechames = "";
 
-                if (JOptionPane.showConfirmDialog(null, "<html>¿Estas seguro que deseas subir el <b><font color='red'>EXCEL DE " + tipoSeleccionado.toUpperCase() + "</font></b><br>correspondiente al <b><font color='red'>MES DE " + new DateFormatSymbols().getMonths()[mes.getMonth()].toUpperCase() + " DEL " + año.getYear() + "</font></b>?", "Confirmación", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+                if (tipoSeleccionado.equals("Cuentas por Pagar")) {
+                    fechames = new SimpleDateFormat("dd/MM/yyyy").format(jDateChooser1.getDate());
+                } else {
+                    fechames = "MES DE " + new DateFormatSymbols().getMonths()[mes.getMonth()].toUpperCase() + " DEL " + año.getYear() + "";
+                }
+                
+                if (JOptionPane.showConfirmDialog(null, "<html>¿Estas seguro que deseas subir el <b><font color='red'>EXCEL DE " + tipoSeleccionado.toUpperCase() + "</font></b><br>correspondiente al <b><font color='red'>" + fechames + "</font></b>?", "Confirmación", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
                     switch (tipoSeleccionado) {
                         case "Movimientos de Ingresos y Egresos":
                             cargarIngreso(ruta);
@@ -1285,6 +1399,9 @@ public class CargaArchivos extends javax.swing.JDialog {
                         case "Stock de Productos en Almacen":
                             cargarStockAlmacen(ruta);
                             break;
+                        case "Cuentas por Pagar":
+                            cargarCuentasPorPagar(ruta);
+                            break;
                     }
                 }
                 return null;
@@ -1296,6 +1413,7 @@ public class CargaArchivos extends javax.swing.JDialog {
                 setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 limpiarCampos();
             }
+
         };
 
         worker.execute();
@@ -1354,9 +1472,29 @@ public class CargaArchivos extends javax.swing.JDialog {
         if (cb_tipo.getSelectedItem().equals("Stock de Productos en Almacen")) {
             jLabel10.setVisible(true);
             cb_sede.setVisible(true);
-        } else {
+        }  else if (cb_tipo.getSelectedItem().equals("Cuentas por Pagar")) {
+            jLabel11.setVisible(true);
+            jDateChooser1.setVisible(true);
+            
+             jLabel10.setVisible(false);
+            cb_sede.setVisible(false);
+            jLabel4.setVisible(false);
+            jLabel5.setVisible(false);
+            año.setVisible(false);
+            mes.setVisible(false);
+        } 
+        
+        
+        else {
             jLabel10.setVisible(false);
             cb_sede.setVisible(false);
+             jLabel11.setVisible(false);
+            jDateChooser1.setVisible(false);
+            
+             jLabel4.setVisible(true);
+            jLabel5.setVisible(true);
+            año.setVisible(true);
+            mes.setVisible(true);
         }
     }//GEN-LAST:event_cb_tipoItemStateChanged
 
@@ -1411,9 +1549,11 @@ public class CargaArchivos extends javax.swing.JDialog {
     private javax.swing.JComboBox<String> cb_sede;
     private javax.swing.JComboBox<String> cb_tipo;
     private javax.swing.JComboBox<String> cb_tipo2;
+    private com.toedter.calendar.JDateChooser jDateChooser1;
     private javax.swing.JFileChooser jFileChooser1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;

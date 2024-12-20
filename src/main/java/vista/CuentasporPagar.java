@@ -10,8 +10,12 @@ import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.event.ItemEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,14 +27,16 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
-import javax.swing.JComboBox;
+import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
@@ -40,8 +46,14 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import main.Application;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.oxbow.swingbits.table.filter.TableRowFilterSupport;
-import static vista.Depreciacion.exportarArchivoExcel;
 
 /**
  *
@@ -59,8 +71,21 @@ public class CuentasporPagar extends javax.swing.JFrame {
 
         @Override
         public boolean isCellEditable(int row, int column) {
+            if (column == 0) {
+                return true;
+            }
+
             return false;
         }
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            if (columnIndex == 0) {
+                return Boolean.class;
+            }
+            return super.getColumnClass(columnIndex);
+        }
+
     }
 
     /**
@@ -114,6 +139,7 @@ public class CuentasporPagar extends javax.swing.JFrame {
         header.setBackground(new java.awt.Color(255, 217, 102));
         tb_resultado.getTableHeader().setFont(new java.awt.Font("Roboto", java.awt.Font.BOLD, 12));
 
+        modelo.addColumn("Seleccionar");
         modelo.addColumn("Estado");
         modelo.addColumn("CUO");
         modelo.addColumn("Comprobante N°");
@@ -144,7 +170,7 @@ public class CuentasporPagar extends javax.swing.JFrame {
 
         int columnCount = tb_resultado.getColumnCount();
         for (int i = 0; i < columnCount; i++) {
-            if (i == 9 || i == 10 || i == 11) {
+            if (i == 10 || i == 11 || i == 12 || i == 16) {
                 tb_resultado.getColumnModel().getColumn(i).setCellRenderer(new DefaultTableCellRenderer() {
                     @Override
                     public void setValue(Object value) {
@@ -156,6 +182,11 @@ public class CuentasporPagar extends javax.swing.JFrame {
                 });
             }
         }
+        
+        tb_resultado.getColumnModel().getColumn(0).setCellRenderer(new AlternateRowCheckBoxRenderer());
+
+            TableColumn column = tb_resultado.getColumnModel().getColumn(0);
+            column.setHeaderRenderer(new CheckBoxHeaderRenderer(tb_resultado));
          
         
         TableRowFilterSupport.forTable(tb_resultado).searchable(true).actions(true).useTableRenderers(true).apply();
@@ -169,10 +200,59 @@ public class CuentasporPagar extends javax.swing.JFrame {
 
     }
     
+    static class CheckBoxHeaderRenderer extends JCheckBox implements TableCellRenderer {
+
+        private final JTable table;
+
+        public CheckBoxHeaderRenderer(JTable table) {
+            this.table = table;
+            this.setHorizontalAlignment(SwingConstants.CENTER);
+
+            this.addItemListener(e -> {
+                boolean selected = e.getStateChange() == ItemEvent.SELECTED;
+                for (int i = 0; i < table.getRowCount(); i++) {
+                    table.setValueAt(selected, i, 0); // Marca/desmarca las filas de la primera columna
+                }
+            });
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(
+                JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            this.setSelected((value != null && (Boolean) value));
+            return this;
+        }
+    }
+    
+    static class AlternateRowCheckBoxRenderer extends JCheckBox implements TableCellRenderer {
+
+        public AlternateRowCheckBoxRenderer() {
+            this.setHorizontalAlignment(SwingConstants.CENTER);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(
+                JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            this.setSelected(value != null && (Boolean) value);
+
+            // Aplicar colores alternos
+            Color alternateColor = (Color) UIManager.getLookAndFeelDefaults().get("Table.alternateRowColor");
+            Color defaultColor = table.getBackground();
+
+            if (!isSelected) {
+                this.setBackground(row % 2 == 0 ? defaultColor : alternateColor);
+            } else {
+                this.setBackground(table.getSelectionBackground());
+            }
+
+            return this;
+        }
+    }
+    
     
     private void cargaDatos() {
         try {
-            Object data[] = new Object[17];
+            Object data[] = new Object[18];
             Connection con = Conexion.getConnection();
             Statement st = con.createStatement();
             String sql = "SELECT "
@@ -192,7 +272,7 @@ public class CuentasporPagar extends javax.swing.JFrame {
                     + "      ,[Descripcion] "
                     + "      ,[Centro Costo] "
                     + "      ,(SELECT TOP 1 total FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) as Pagado "
-                    + "      ,(SELECT TOP 1 FechaEvaluacion FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) AS FechaPago "
+                    + "      ,(SELECT TOP 1 FORMAT(FechaEvaluacion, 'dd/MM/yyyy') FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) AS FechaPago "
                     + "FROM CuentasPorPagar "
                     + "WHERE "
                     + "	Estado = 'PENDIENTE' AND "
@@ -201,8 +281,9 @@ public class CuentasporPagar extends javax.swing.JFrame {
 
             ResultSet rs = st.executeQuery(sql);
             while (rs.next()) {
-                for (int i = 0; i < data.length; i++) {
-                    data[i] = rs.getObject(i + 1);
+                data[0] = false;
+                for (int i = 1; i < data.length; i++) {
+                    data[i] = rs.getObject(i);
                 }
                 modelo.addRow(data);
             }
@@ -266,6 +347,8 @@ public class CuentasporPagar extends javax.swing.JFrame {
         jMenu2 = new javax.swing.JMenu();
         ExportarExcel = new javax.swing.JMenuItem();
         jMenu1 = new javax.swing.JMenu();
+        ExportarExcel1 = new javax.swing.JMenuItem();
+        ExportarExcel2 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Cuentas por Pagar");
@@ -362,7 +445,7 @@ public class CuentasporPagar extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(txt_razonsocial2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)
+                .addComponent(jScrollPane1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -418,6 +501,27 @@ public class CuentasporPagar extends javax.swing.JFrame {
 
         jMenu1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/ajustes.png"))); // NOI18N
         jMenu1.setText("Opciones");
+
+        ExportarExcel1.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
+        ExportarExcel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Profit.png"))); // NOI18N
+        ExportarExcel1.setText("Modulo de Pago");
+        ExportarExcel1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ExportarExcel1ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(ExportarExcel1);
+
+        ExportarExcel2.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
+        ExportarExcel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Rich Text Converter_1.png"))); // NOI18N
+        ExportarExcel2.setText("Valores [Ret/Det]");
+        ExportarExcel2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ExportarExcel2ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(ExportarExcel2);
+
         jMenuBar1.add(jMenu1);
 
         setJMenuBar(jMenuBar1);
@@ -453,6 +557,75 @@ public class CuentasporPagar extends javax.swing.JFrame {
         exportarArchivoExcel(modelo);       
     }//GEN-LAST:event_ExportarExcelActionPerformed
 
+    public static void exportarArchivoExcel(DefaultTableModel model) {
+        JFileChooser jFileChooser = new JFileChooser();
+        jFileChooser.setDialogTitle("Guardar archivo Excel");
+        jFileChooser.setFileFilter(new FileNameExtensionFilter("Archivos XLSX", "xlsx"));
+
+        int result = jFileChooser.showSaveDialog(null);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = jFileChooser.getSelectedFile();
+            if (!selectedFile.getName().endsWith(".xlsx")) {
+                selectedFile = new File(selectedFile.getAbsolutePath() + ".xlsx");
+            }
+            try (Workbook workbook = new XSSFWorkbook(); FileOutputStream fos = new FileOutputStream(selectedFile)) {
+                Sheet sheet = workbook.createSheet("Datos");
+
+                // Crear estilos
+                CellStyle headerStyle = workbook.createCellStyle();
+                Font headerFont = workbook.createFont();
+                headerFont.setBold(true);
+                headerStyle.setFont(headerFont);
+
+                CellStyle integerStyle = workbook.createCellStyle();
+                integerStyle.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat("0"));
+
+                CellStyle decimalStyle = workbook.createCellStyle();
+                decimalStyle.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat("0.00"));
+
+                // Crear encabezados
+                Row headerRow = sheet.createRow(0);
+                for (int i = 1; i < model.getColumnCount(); i++) { // Comenzar desde la segunda columna para ocultar la primera
+                    Cell cell = headerRow.createCell(i - 1); // Ajustar índice
+                    cell.setCellValue(model.getColumnName(i));
+                    cell.setCellStyle(headerStyle);
+                }
+
+                // Crear datos
+                for (int i = 0; i < model.getRowCount(); i++) {
+                    Row row = sheet.createRow(i + 1);
+                    for (int j = 1; j < model.getColumnCount(); j++) { // Comenzar desde la segunda columna
+                        Cell cell = row.createCell(j - 1); // Ajustar índice
+                        Object value = model.getValueAt(i, j);
+
+                        if (value instanceof Integer) {
+                            cell.setCellValue((Integer) value);
+                            cell.setCellStyle(integerStyle);
+                        } else if (value instanceof Double) {
+                            cell.setCellValue((Double) value);
+                            cell.setCellStyle(decimalStyle);
+                        } else {
+                            String cellValue = (value != null) ? value.toString() : "";
+                            cell.setCellValue(cellValue);
+                        }
+                    }
+                }
+
+                // Autoajustar columnas
+                for (int i = 0; i < model.getColumnCount() - 1; i++) {
+                    sheet.autoSizeColumn(i);
+                }
+
+                workbook.write(fos);
+                JOptionPane.showMessageDialog(null, "Archivo exportado exitosamente.");
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(null, "Error al exportar el archivo: " + e.getMessage());
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Exportación cancelada.");
+        }
+    }
+    
     private void jMenu2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenu2ActionPerformed
 
     }//GEN-LAST:event_jMenu2ActionPerformed
@@ -461,21 +634,24 @@ public class CuentasporPagar extends javax.swing.JFrame {
         setCursor(new Cursor(Cursor.WAIT_CURSOR));
         jButton2.setEnabled(false);
         ProcesarCuentasporPagar ini = new ProcesarCuentasporPagar(this, true, new SimpleDateFormat("dd/MM/yyyy").format(jDateChooser1.getDate()));
-        
-        Object [] data = new Object[7];
-        
+
+        Object[] data = new Object[7];
+
         int c = 1;
-        
+
         for (int i = 0; i < tb_resultado.getRowCount(); i++) {
-            data[0] = c;
-            data[1] = tb_resultado.getValueAt(i, 6);
-            data[2] = tb_resultado.getValueAt(i, 7);
-            data[3] = tb_resultado.getValueAt(i, 2);
-            data[4] = tb_resultado.getValueAt(i, 4);
-            data[5] = tb_resultado.getValueAt(i, 5);
-            data[6] = tb_resultado.getValueAt(i, 10);
-            ini.cargarInfo(data);
-            c++;
+            if (Boolean.parseBoolean(tb_resultado.getValueAt(i, 0).toString())) {
+                data[0] = c;
+                data[1] = tb_resultado.getValueAt(i, 7);
+                data[2] = tb_resultado.getValueAt(i, 8);
+                data[3] = tb_resultado.getValueAt(i, 3);
+                data[4] = tb_resultado.getValueAt(i, 5);
+                data[5] = tb_resultado.getValueAt(i, 6);
+                data[6] = tb_resultado.getValueAt(i, 11);
+                ini.cargarInfo(data);
+                c++;
+            }
+
         }
         ini.packColumns();
         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -485,6 +661,16 @@ public class CuentasporPagar extends javax.swing.JFrame {
 
     private void jDateChooser1PropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_jDateChooser1PropertyChange
     }//GEN-LAST:event_jDateChooser1PropertyChange
+
+    private void ExportarExcel1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ExportarExcel1ActionPerformed
+        ModuloPago_CuentasPorPagar ini = new ModuloPago_CuentasPorPagar(this, true);
+        ini.setVisible(true);
+    }//GEN-LAST:event_ExportarExcel1ActionPerformed
+
+    private void ExportarExcel2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ExportarExcel2ActionPerformed
+        AgregarValoresRetDet ini = new AgregarValoresRetDet(this, true);
+        ini.setVisible(true);
+    }//GEN-LAST:event_ExportarExcel2ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -513,6 +699,8 @@ public class CuentasporPagar extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem ExportarExcel;
+    private javax.swing.JMenuItem ExportarExcel1;
+    private javax.swing.JMenuItem ExportarExcel2;
     private javax.swing.JButton jButton2;
     private com.toedter.calendar.JDateChooser jDateChooser1;
     private javax.swing.JMenu jMenu1;
