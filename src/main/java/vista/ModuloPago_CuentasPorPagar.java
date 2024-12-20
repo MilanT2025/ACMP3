@@ -98,6 +98,7 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
         modelo.addColumn("PAGO PARCIAL %");
         modelo.addColumn("TOTAL PAGADO");
         modelo.addColumn("N° TRANSFERENCIA");
+        modelo.addColumn("IDCUENTA"); //16
         
         JTableHeader header = tb_data.getTableHeader();
         header.setPreferredSize(new java.awt.Dimension(header.getWidth(), 40));
@@ -139,11 +140,22 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
             public void tableChanged(TableModelEvent e) {
                 int row = e.getFirstRow();
                 int column = e.getColumn();
+                
+                if (column == 12) { // Índice 11 porque las columnas empiezan en 0
+                    Boolean valor12 = Boolean.valueOf(tb_data.getValueAt(row, column).toString());
+                    if (valor12) {
+                        tb_data.setValueAt("100", row, 13);
+                    } else {
+                        tb_data.setValueAt("", row, 13);
+                    }
+
+                    
+                }
 
                 // Detectar si se modificó la columna 12
                 if (column == 13) { // Índice 11 porque las columnas empiezan en 0
                     Object valor13 = tb_data.getValueAt(row, column);
-                    if (valor13 == null && valor13.equals("")) {
+                    if (valor13 == null || valor13.toString().isEmpty()) {
                         tb_data.setValueAt("", row, 14);
 
                     } else {
@@ -155,6 +167,8 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
 
                     
                 }
+                
+                
                 
             }
         });
@@ -214,7 +228,7 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
     private void llenar_tabla() {
         try {
             int c = 1;
-            Object data[] = new Object[12];
+            Object data[] = new Object[17];
             Connection con = Conexion.getConnection();
             Statement st = con.createStatement();
             String sql = "WITH FacturasConRanking AS ( "
@@ -230,7 +244,7 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
                     + "        Total, "
                     + "        Rubro, "
                     + "        Porcentaje, "
-                    + "        FechaEvaluacion, "
+                    + "        FechaEvaluacion, idPagos, "
                     + "        ROW_NUMBER() OVER (PARTITION BY Factura ORDER BY FechaEvaluacion DESC) AS rn "
                     + "    FROM "
                     + "        CuentasPorPagarDiario "
@@ -248,8 +262,8 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
                     + "    ValorCalculado, "
                     + "    Total, "
                     + "    Rubro, "
-                    + "    Porcentaje, "
-                    + "    FORMAT(FechaEvaluacion, 'dd/MM/yyyy') AS FechaEvaluacion "
+                    + "    Porcentaje,  "
+                    + "    FORMAT(FechaEvaluacion, 'dd/MM/yyyy') AS FechaEvaluacion, idPagos "
                     + "FROM "
                     + "    FacturasConRanking "
                     + "WHERE "
@@ -271,6 +285,7 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
                 data[9] = rs.getObject(8);
                 data[10] = rs.getObject(9);
                 data[11] = rs.getObject(10);
+                data[16] = rs.getObject(13);
                
                 modelo.addRow(data);
                 c++;
@@ -293,34 +308,43 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
     private void guardarInformacion() {
         try {
             Connection con = Conexion.getConnection();
-            String sql = "INSERT INTO [dbo].[CuentasPorPagarDiario] " +
-             "([N°], [Proveedor], [Factura], [FechaEmision], [FechaVencimiento], [Monto], " +
-             "[ValorCalculado], [Total], [Rubro], [Porcentaje], [FechaEvaluacion]) " +
-             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE())";
-            PreparedStatement pstm = con.prepareStatement(sql);
+
             for (int i = 0; i < tb_data.getRowCount(); i++) {
-                if (tb_data.getValueAt(i, 11) != null) {
-                    pstm.setInt(1, (int) tb_data.getValueAt(i, 0));
-                    pstm.setString(2, tb_data.getValueAt(i, 1).toString());
-                    pstm.setString(3, tb_data.getValueAt(i, 2).toString());
-                    pstm.setString(4, tb_data.getValueAt(i, 3).toString());
-                    pstm.setString(5, tb_data.getValueAt(i, 4).toString());
-                    pstm.setDouble(6, Double.parseDouble(tb_data.getValueAt(i, 5).toString()));
-                    pstm.setDouble(7, (parseDoubleOrDefault(tb_data.getValueAt(i, 6))
-                            + parseDoubleOrDefault(tb_data.getValueAt(i, 7))
-                            + parseDoubleOrDefault(tb_data.getValueAt(i, 8))));
-                    pstm.setDouble(8, parseDoubleOrDefault(tb_data.getValueAt(i, 9)));
-                    pstm.setString(9, getStringOrDefault(tb_data.getValueAt(i, 10), ""));
-                    pstm.setString(10, tb_data.getValueAt(i, 11).toString());
-                    pstm.executeUpdate();
+                if (tb_data.getValueAt(i, 14) != null && !tb_data.getValueAt(i, 14).toString().equals("")) {
+                    int idPagos = Integer.parseInt(tb_data.getValueAt(i, 16).toString()); // Este es el ID de la fila que deseas actualizar (puedes usar cualquier valor que corresponda)
+                    String porcentajePagado = tb_data.getValueAt(i, 13).toString(); // Nuevo porcentaje pagado
+                    double totalPagado = Double.parseDouble(tb_data.getValueAt(i, 14).toString()); // Nuevo total pagado
+                    String nrotransferencia = tb_data.getValueAt(i, 15).toString(); // Nueva fecha de evaluación
+
+                    // Consulta UPDATE SQL
+                    String sql = "UPDATE CuentasPorPagarDiario SET "
+                            + "PorcentajePagado = ?, "
+                            + "TotalPagado = ?, "
+                            + "[N° Transferencia] = ?, "
+                            + "FechaPago = GETDATE() "
+                            + "WHERE idPagos = ?";
+                    PreparedStatement stmt = con.prepareStatement(sql);
+                    // Establecer los valores en la consulta SQL
+                    stmt.setString(1, porcentajePagado); // Establece la nueva fecha de evaluación
+                    stmt.setDouble(2, totalPagado); // Establece el nuevo porcentaje pagado
+                    stmt.setString(3, nrotransferencia); // Establece el nuevo total pagado
+                    stmt.setInt(4, idPagos); // Establece el ID de la fila a actualizar
+
+                    // Ejecutar la consulta UPDATE
+                    stmt.executeUpdate();
                 }
+                
             }
+
             JOptionPane.showMessageDialog(this, "Se han guardado los datos correctamente");
-            
+
+           
+            con.close();
+
         } catch (SQLException ex) {
             Logger.getLogger(ModuloPago_CuentasPorPagar.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
     }
     
     private double parseDoubleOrDefault(Object value) {
@@ -547,7 +571,17 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-       guardarInformacion();
+        for (int i = 0; i < tb_data.getRowCount(); i++) {
+            if (tb_data.getValueAt(i, 14) != null && !tb_data.getValueAt(i, 14).toString().equals("")) {
+                if (tb_data.getValueAt(i, 15) == null || tb_data.getValueAt(i, 15).toString().trim().equals("")) {
+                    JOptionPane.showMessageDialog(this, "Debe ingresar un N° de Transferencia a los registros por Pagar", "ERROR", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            }
+        }
+        
+        
+        guardarInformacion();
        
         DefaultTableModel modelo = (DefaultTableModel) tb_data.getModel();
 
