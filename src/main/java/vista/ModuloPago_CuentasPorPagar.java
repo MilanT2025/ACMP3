@@ -571,6 +571,15 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        int opcion = JOptionPane.showConfirmDialog(
+            null,
+            "¿Deseas guardar la información?",
+            "Confirmación",
+            JOptionPane.YES_NO_OPTION
+        );
+
+        if (opcion == JOptionPane.YES_OPTION) {
+        
         for (int i = 0; i < tb_data.getRowCount(); i++) {
             if (tb_data.getValueAt(i, 14) != null && !tb_data.getValueAt(i, 14).toString().equals("")) {
                 if (tb_data.getValueAt(i, 15) == null || tb_data.getValueAt(i, 15).toString().trim().equals("")) {
@@ -591,6 +600,8 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
         }
         
         exportarArchivoExcel(modelo);      
+        this.dispose();
+        }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jDateChooser1PropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_jDateChooser1PropertyChange

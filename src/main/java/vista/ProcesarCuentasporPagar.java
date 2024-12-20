@@ -587,18 +587,27 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-       guardarInformacion();
-       
-        DefaultTableModel modelo = (DefaultTableModel) tb_data.getModel();
+        int opcion = JOptionPane.showConfirmDialog(
+            null,
+            "¿Deseas guardar la información?",
+            "Confirmación",
+            JOptionPane.YES_NO_OPTION
+        );
 
-        if (modelo.getRowCount() == 0) {
-            JOptionPane.showMessageDialog(null, "No hay datos para exportar.");
-            return;
-        }
-        
-        exportarArchivoExcel(modelo);      
-        
-        this.dispose();
+        if (opcion == JOptionPane.YES_OPTION) {
+            guardarInformacion();
+
+            DefaultTableModel modelo = (DefaultTableModel) tb_data.getModel();
+
+            if (modelo.getRowCount() == 0) {
+                JOptionPane.showMessageDialog(null, "No hay datos para exportar.");
+                return;
+            }
+
+            exportarArchivoExcel(modelo);
+
+            this.dispose();
+        } 
     }//GEN-LAST:event_jButton1ActionPerformed
 
     public static void exportarArchivoExcel(DefaultTableModel model) {
@@ -665,8 +674,6 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(null, "Error al exportar el archivo: " + e.getMessage());
             }
-        } else {
-            JOptionPane.showMessageDialog(null, "Exportación cancelada.");
         }
     }
     

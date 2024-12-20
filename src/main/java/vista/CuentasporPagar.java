@@ -33,6 +33,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -95,7 +96,7 @@ public class CuentasporPagar extends javax.swing.JFrame {
         initComponents();
         locale = new Locale("es", "PE");
         Locale.setDefault(locale);
-        
+
         jDateChooser1.setDate(new Date());
 
         symbols = new DecimalFormatSymbols(locale);
@@ -116,7 +117,7 @@ public class CuentasporPagar extends javax.swing.JFrame {
             }
         });
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        
+
         jDateChooser1.addPropertyChangeListener("date", (java.beans.PropertyChangeEvent evt) -> {
             if (jDateChooser1.getDate() != null) {
                 llenar_tabla(); // Llama al método para llenar la tabla
@@ -125,12 +126,11 @@ public class CuentasporPagar extends javax.swing.JFrame {
 
         llenar_tabla();
     }
-
+int valor = 0;
     //FuncionesGlobales.colocarnombremesannio (jdc_año, jdc_mes, txt_razonsocial2);
-
     private void llenar_tabla() {
         txt_razonsocial2.setText("Fecha de Carga: " + new SimpleDateFormat("dd/MM/yyyy").format(jDateChooser1.getDate()));
-        
+
         modelo.setRowCount(0);
         modelo.setColumnCount(0);
 
@@ -155,7 +155,9 @@ public class CuentasporPagar extends javax.swing.JFrame {
         modelo.addColumn("Plan Cuenta");
         modelo.addColumn("Descripcion");
         modelo.addColumn("Centro Costo");
-        modelo.addColumn("Pagado");
+        modelo.addColumn("% Pagado");
+        modelo.addColumn("Total Pagado");
+        modelo.addColumn("N° Transferencia");
         modelo.addColumn("Fecha Pago");
 
         TableColumnModel columnModel = tb_resultado.getColumnModel();
@@ -166,39 +168,63 @@ public class CuentasporPagar extends javax.swing.JFrame {
             tableColumn.setPreferredWidth(width);
         }
         
-        DecimalFormat decimalFormat = new DecimalFormat("0.00", symbols);
-
-        int columnCount = tb_resultado.getColumnCount();
-        for (int i = 0; i < columnCount; i++) {
-            if (i == 10 || i == 11 || i == 12 || i == 16) {
-                tb_resultado.getColumnModel().getColumn(i).setCellRenderer(new DefaultTableCellRenderer() {
-                    @Override
-                    public void setValue(Object value) {
-                        if (value instanceof Number) {
-                            value = decimalFormat.format(value);
-                        }
-                        super.setValue(value);
-                    }
-                });
-            }
-        }
-        
         tb_resultado.getColumnModel().getColumn(0).setCellRenderer(new AlternateRowCheckBoxRenderer());
 
-            TableColumn column = tb_resultado.getColumnModel().getColumn(0);
-            column.setHeaderRenderer(new CheckBoxHeaderRenderer(tb_resultado));
-         
-        
+        TableColumn column = tb_resultado.getColumnModel().getColumn(0);
+        column.setHeaderRenderer(new CheckBoxHeaderRenderer(tb_resultado));
+
         TableRowFilterSupport.forTable(tb_resultado).searchable(true).actions(true).useTableRenderers(true).apply();
 
-            TableRowSorter<TableModel> sorter = new TableRowSorter<>(tb_resultado.getModel());
-            tb_resultado.setRowSorter(sorter);
-            
-            
-            
+        TableRowSorter<TableModel> sorter = new TableRowSorter<>(tb_resultado.getModel());
+        tb_resultado.setRowSorter(sorter);
+
+         tb_resultado.setDefaultRenderer(Object.class, new CustomRowColorRenderer(16)); // Índice 4 = columna 17
+
+        
         cargaDatos();
 
     }
+    
+     static class CustomRowColorRenderer extends DefaultTableCellRenderer {
+        private final int columnToCheck;
+
+        public CustomRowColorRenderer(int columnToCheck) {
+            this.columnToCheck = columnToCheck;
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+            // Obtener el valor de la columna específica
+            Object estado = table.getValueAt(row, columnToCheck);
+
+            // Determinar el color de fondo según el valor de la columna
+            if (!isSelected) {
+                if ("100%".equals(estado)) {
+                    Color alternateColor = UIManager.getLookAndFeelDefaults().getColor("Table.alternateRowColor");
+                    c.setBackground((row % 2 == 0) ? table.getBackground() : alternateColor);
+                    c.setForeground(Color.BLUE); // Fondo azul si el valor es "100%"
+                } else if (estado != null && !estado.toString().trim().isEmpty()){
+                    Color alternateColor = UIManager.getLookAndFeelDefaults().getColor("Table.alternateRowColor");
+                    c.setBackground((row % 2 == 0) ? table.getBackground() : alternateColor);
+                    c.setForeground(Color.MAGENTA);
+                }else{
+                    // Respetar los colores alternos de UIManager
+                    Color alternateColor = UIManager.getLookAndFeelDefaults().getColor("Table.alternateRowColor");
+                    c.setBackground((row % 2 == 0) ? table.getBackground() : alternateColor);
+                    c.setForeground(Color.BLACK);
+                }
+            } else {
+                // Respetar colores de selección
+                c.setBackground(table.getSelectionBackground());
+                c.setForeground(table.getSelectionForeground());
+            }
+
+            return c;
+        }
+    }
+
     
     static class CheckBoxHeaderRenderer extends JCheckBox implements TableCellRenderer {
 
@@ -223,7 +249,7 @@ public class CuentasporPagar extends javax.swing.JFrame {
             return this;
         }
     }
-    
+
     static class AlternateRowCheckBoxRenderer extends JCheckBox implements TableCellRenderer {
 
         public AlternateRowCheckBoxRenderer() {
@@ -248,15 +274,14 @@ public class CuentasporPagar extends javax.swing.JFrame {
             return this;
         }
     }
-    
-    
+
     private void cargaDatos() {
         try {
-            Object data[] = new Object[18];
+            Object data[] = new Object[20];
             Connection con = Conexion.getConnection();
             Statement st = con.createStatement();
             String sql = "SELECT "
-                    + "	   [Estado] "
+                    + "	   CASE WHEN (SELECT TOP 1 CONCAT(PorcentajePagado, '%') FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) = '100%' THEN 'PAGADO' ELSE Estado END AS [Estado]  "
                     + "      ,CONVERT(INT, [CUO]) AS CUO "
                     + "      ,[Comprobante Nº] "
                     + "      ,FORMAT([F# Registro], 'dd/MM/yyyy') AS [F# Registro]"
@@ -271,13 +296,15 @@ public class CuentasporPagar extends javax.swing.JFrame {
                     + "      ,[Plan Cuenta] "
                     + "      ,[Descripcion] "
                     + "      ,[Centro Costo] "
-                    + "      ,(SELECT TOP 1 total FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) as Pagado "
-                    + "      ,(SELECT TOP 1 FORMAT(FechaEvaluacion, 'dd/MM/yyyy') FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) AS FechaPago "
+                    + "      ,(SELECT TOP 1 CONCAT(PorcentajePagado, '%') FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) as PorcentajePag "
+                    + "      ,(SELECT TOP 1 TotalPagado FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) as TotalPago "
+                    + "      ,(SELECT TOP 1 [N° Transferencia] FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) as Transf  "
+                    + "      ,(SELECT TOP 1 FORMAT(FechaPago, 'dd/MM/yyyy') FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) AS FechaPago "
                     + "FROM CuentasPorPagar "
                     + "WHERE "
                     + "	Estado = 'PENDIENTE' AND "
                     + "	[Plan Cuenta] LIKE '42%' AND "
-                    + "	FechaCarga = '" + new SimpleDateFormat("dd/MM/yyyy").format(jDateChooser1.getDate())  + "'";
+                    + "	FechaCarga = '" + new SimpleDateFormat("dd/MM/yyyy").format(jDateChooser1.getDate()) + "'";
 
             ResultSet rs = st.executeQuery(sql);
             while (rs.next()) {
@@ -339,8 +366,14 @@ public class CuentasporPagar extends javax.swing.JFrame {
         jPanel14 = new javax.swing.JPanel();
         jDateChooser1 = new com.toedter.calendar.JDateChooser("dd/MM/yyyy","##/##/####", '_');
         txt_razonsocial2 = new javax.swing.JLabel();
-        jPanel3 = new javax.swing.JPanel();
         jButton2 = new javax.swing.JButton();
+        jPanel7 = new javax.swing.JPanel();
+        jPanel4 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jPanel5 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        jPanel6 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu3 = new javax.swing.JMenu();
         jMenuItem3 = new javax.swing.JMenuItem();
@@ -384,7 +417,7 @@ public class CuentasporPagar extends javax.swing.JFrame {
             .addGroup(jPanel14Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jDateChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, 221, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(833, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel14Layout.setVerticalGroup(
             jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -399,8 +432,6 @@ public class CuentasporPagar extends javax.swing.JFrame {
         txt_razonsocial2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         txt_razonsocial2.setText("-");
 
-        jPanel3.setBackground(new java.awt.Color(255, 255, 255));
-
         jButton2.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
         jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8_outgoing_data_32px.png"))); // NOI18N
         jButton2.setText("Procesar Informacion");
@@ -410,18 +441,103 @@ public class CuentasporPagar extends javax.swing.JFrame {
             }
         });
 
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jButton2)
+        jPanel7.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel7.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Leyenda", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Roboto", 1, 13))); // NOI18N
+
+        jPanel4.setBackground(new java.awt.Color(0, 0, 0));
+
+        jLabel1.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel1.setText("Pendiente");
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE)
                 .addContainerGap())
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanel5.setBackground(new java.awt.Color(255, 0, 255));
+
+        jLabel2.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
+        jLabel2.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel2.setText("Pagado > 0% y <100%");
+
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel2)
+                .addContainerGap())
+        );
+
+        jPanel6.setBackground(new java.awt.Color(0, 0, 255));
+
+        jLabel3.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
+        jLabel3.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel3.setText("Pagado 100%");
+
+        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
+        jPanel6.setLayout(jPanel6Layout);
+        jPanel6Layout.setHorizontalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel6Layout.setVerticalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel3)
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
+        jPanel7.setLayout(jPanel7Layout);
+        jPanel7Layout.setHorizontalGroup(
+            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel7Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel7Layout.setVerticalGroup(
+            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel7Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -431,10 +547,11 @@ public class CuentasporPagar extends javax.swing.JFrame {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1072, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1375, Short.MAX_VALUE)
                     .addComponent(jPanel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(txt_razonsocial2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -445,9 +562,11 @@ public class CuentasporPagar extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(txt_razonsocial2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jButton2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -553,8 +672,8 @@ public class CuentasporPagar extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "No hay datos para exportar.");
             return;
         }
-        
-        exportarArchivoExcel(modelo);       
+
+        exportarArchivoExcel(modelo);
     }//GEN-LAST:event_ExportarExcelActionPerformed
 
     public static void exportarArchivoExcel(DefaultTableModel model) {
@@ -625,12 +744,19 @@ public class CuentasporPagar extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Exportación cancelada.");
         }
     }
-    
+
     private void jMenu2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenu2ActionPerformed
 
     }//GEN-LAST:event_jMenu2ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        for (int i = 0; i < tb_resultado.getRowCount(); i++) {
+            if (!Boolean.parseBoolean(tb_resultado.getValueAt(i, 0).toString()) || tb_resultado.getValueAt(i, 1).toString().equals("PAGADO")) {
+                JOptionPane.showMessageDialog(this, "Debe seleccionar como minimo un registro", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        }
+        
         setCursor(new Cursor(Cursor.WAIT_CURSOR));
         jButton2.setEnabled(false);
         ProcesarCuentasporPagar ini = new ProcesarCuentasporPagar(this, true, new SimpleDateFormat("dd/MM/yyyy").format(jDateChooser1.getDate()));
@@ -639,8 +765,10 @@ public class CuentasporPagar extends javax.swing.JFrame {
 
         int c = 1;
 
+        String mensaje = "";
+
         for (int i = 0; i < tb_resultado.getRowCount(); i++) {
-            if (Boolean.parseBoolean(tb_resultado.getValueAt(i, 0).toString())) {
+            if (Boolean.parseBoolean(tb_resultado.getValueAt(i, 0).toString()) && !tb_resultado.getValueAt(i, 1).toString().equals("PAGADO")) {
                 data[0] = c;
                 data[1] = tb_resultado.getValueAt(i, 7);
                 data[2] = tb_resultado.getValueAt(i, 8);
@@ -650,10 +778,16 @@ public class CuentasporPagar extends javax.swing.JFrame {
                 data[6] = tb_resultado.getValueAt(i, 11);
                 ini.cargarInfo(data);
                 c++;
+            } else if (Boolean.parseBoolean(tb_resultado.getValueAt(i, 0).toString()) && tb_resultado.getValueAt(i, 1).toString().equals("PAGADO")) {
+                mensaje = "Uno o mas registros se encuentran en estado PAGADO, estos no seran procesados.";
             }
 
         }
+
         ini.packColumns();
+        if (!mensaje.equals("")) {
+            JOptionPane.showMessageDialog(this, mensaje, "Aviso", JOptionPane.INFORMATION_MESSAGE);
+        }
         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         jButton2.setEnabled(true);
         ini.setVisible(true);
@@ -681,10 +815,10 @@ public class CuentasporPagar extends javax.swing.JFrame {
             //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
             /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
             * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
-            */
+             */
             UIManager.setLookAndFeel(new FlatIntelliJLaf());
             //</editor-fold>
-            
+
             /* Create and display the form */
             java.awt.EventQueue.invokeLater(new Runnable() {
                 public void run() {
@@ -703,6 +837,9 @@ public class CuentasporPagar extends javax.swing.JFrame {
     private javax.swing.JMenuItem ExportarExcel2;
     private javax.swing.JButton jButton2;
     private com.toedter.calendar.JDateChooser jDateChooser1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
@@ -711,7 +848,10 @@ public class CuentasporPagar extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
+    private javax.swing.JPanel jPanel7;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable tb_resultado;
     private javax.swing.JLabel txt_razonsocial2;
