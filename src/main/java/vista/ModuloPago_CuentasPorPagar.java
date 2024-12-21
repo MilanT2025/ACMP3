@@ -189,6 +189,10 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
         });
          
          ocultarColumnaAncho(tb_data, 16);
+         ocultarColumnaAncho(tb_data, 17);
+         ocultarColumnaAncho(tb_data, 18);
+         ocultarColumnaAncho(tb_data, 19);
+         ocultarColumnaAncho(tb_data, 20);
     }
     
     public void ocultarColumnaAncho(JTable tabla, int columnaIndex) {
