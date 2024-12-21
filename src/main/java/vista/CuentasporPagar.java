@@ -283,7 +283,7 @@ int valor = 0;
             Connection con = Conexion.getConnection();
             Statement st = con.createStatement();
             String sql = "SELECT "
-                    + "	   CASE WHEN (SELECT TOP 1 CONCAT(PorcentajePagado, '%') FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) = '100%' THEN 'PAGADO' WHEN (SELECT COUNT(*) FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº]) > 0 THEN 'PROCESADO' ELSE Estado END AS [Estado]   "
+                    + "	   CASE WHEN (SELECT TOP 1 CONCAT(PorcentajePagado, '%') FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) = '100%' THEN 'PAGADO' WHEN (SELECT TOP 1 CONCAT(PorcentajePagado, '%') FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) = '100.0%' THEN 'PAGADO'WHEN (SELECT COUNT(*) FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº]) > 0 THEN 'PROCESADO' ELSE Estado END AS [Estado]    "
                     + "      ,CONVERT(INT, [CUO]) AS CUO "
                     + "      ,[Comprobante Nº] "
                     + "      ,FORMAT([F# Registro], 'dd/MM/yyyy') AS [F# Registro]"
