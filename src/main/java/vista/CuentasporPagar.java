@@ -106,16 +106,16 @@ public class CuentasporPagar extends javax.swing.JFrame {
         UIManager.getLookAndFeelDefaults().put("Table.alternateRowColor", new Color(254, 238, 184));
         Locale.setDefault(new Locale("es", "ES"));
         this.setIconImage(new ImageIcon(System.getProperty("user.dir") + "/logoACMP.png").getImage());
-        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                setVisible(false);
-                FlatMacDarkLaf.setup();
-                Application anteriorFrame = new Application();
-                anteriorFrame.setVisible(true);
-            }
-        });
+//        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+//        addWindowListener(new WindowAdapter() {
+//            @Override
+//            public void windowClosing(WindowEvent e) {
+//                setVisible(false);
+//                FlatMacDarkLaf.setup();
+//                Application anteriorFrame = new Application();
+//                anteriorFrame.setVisible(true);
+//            }
+//        });
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         jDateChooser1.addPropertyChangeListener("date", (java.beans.PropertyChangeEvent evt) -> {
