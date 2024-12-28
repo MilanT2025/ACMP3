@@ -22,8 +22,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -46,13 +50,16 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-import org.apache.poi.ss.formula.ptg.TblPtg;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.oxbow.swingbits.table.filter.TableRowFilterSupport;
 
@@ -364,35 +371,39 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
 
     public class Modelo extends DefaultTableModel {
 
+        @Override
         public boolean isCellEditable(int row, int column) {
-            int lastColumnIndex = modelo.getColumnCount() - 1;
+            int lastColumnIndex = this.getColumnCount() - 1;
 
-            // Si es la columna 7 (índice 6) o la última columna, siempre debe ser editable
-            if (column == 6 || column == lastColumnIndex) {
+            // Permitir edición solo en la columna 7 (índice 6) y la última columna
+            if (column == 7 || column == lastColumnIndex) {
                 return true;
             }
 
-            // Aquí puedes poner tu lógica para las demás columnas no editables
-            if ((column >= 0 && column <= 6) || (column >= 8 && column < lastColumnIndex)) {
-                return false;
-            }
-
-            return true;
+            // Deshabilitar edición para otras columnas
+            return false;
         }
 
-        /*@Override
+        @Override
         public void setValueAt(Object aValue, int row, int column) {
-            if (column == 1 || column == 7 || column == 8 || column == 9 || column == 16) {
+            // Validar columnas 5, 7 a penúltima
+            if (column == 6 || (column >= 8 && column < this.getColumnCount() - 1)) {
                 try {
                     if (aValue == null || aValue.toString().trim().isEmpty()) {
                         super.setValueAt(null, row, column);
                     } else {
-                        int intValue = Integer.parseInt(aValue.toString().trim());
-                        super.setValueAt(intValue, row, column);
+                        // Validar si el valor es decimal o entero
+                        if (aValue.toString().contains(".")) {
+                            double doubleValue = Double.parseDouble(aValue.toString().trim());
+                            super.setValueAt(doubleValue, row, column);
+                        } else {
+                            int intValue = Integer.parseInt(aValue.toString().trim());
+                            super.setValueAt(intValue, row, column);
+                        }
                     }
                 } catch (NumberFormatException ex) {
                     javax.swing.JOptionPane.showMessageDialog(null,
-                            "Por favor ingrese un número entero válido en la columna",
+                            "Por favor ingrese un número válido (entero o decimal) en la columna.",
                             "Error de entrada",
                             javax.swing.JOptionPane.ERROR_MESSAGE);
                 }
@@ -400,8 +411,7 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
                 // Permitir otros valores sin restricciones en las demás columnas
                 super.setValueAt(aValue, row, column);
             }
-        }*/
-
+        }
     }
     
     public void cargarInfo(Object[] rowData){
@@ -636,7 +646,11 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
                 return;
             }
 
-            exportarArchivoExcel(modelo);
+             try {
+                 exportToExcel(tb_data);
+             } catch (IOException ex) {
+                 Logger.getLogger(ProcesarCuentasporPagar.class.getName()).log(Level.SEVERE, null, ex);
+             }
 
             CuentasporPagar.jButton1.doClick();
             this.dispose();
@@ -648,72 +662,201 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
         ini.setVisible(true);
     }//GEN-LAST:event_btnAgregarActionPerformed
 
-    public static void exportarArchivoExcel(DefaultTableModel model) {
-        JFileChooser jFileChooser = new JFileChooser();
-        jFileChooser.setDialogTitle("Guardar archivo Excel");
-        jFileChooser.setFileFilter(new FileNameExtensionFilter("Archivos XLSX", "xlsx"));
+    public void exportToExcel(JTable table) throws IOException {
+        // Crear el JFileChooser para seleccionar el archivo
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Guardar archivo Excel");
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-        int result = jFileChooser.showSaveDialog(null);
-        if (result == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = jFileChooser.getSelectedFile();
-            if (!selectedFile.getName().endsWith(".xlsx")) {
-                selectedFile = new File(selectedFile.getAbsolutePath() + ".xlsx");
+        int userSelection = fileChooser.showSaveDialog(null);
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToSave = fileChooser.getSelectedFile();
+            String filePath = fileToSave.getAbsolutePath();
+
+            // Asegurarse de que el archivo tenga la extensión .xlsx
+            if (!filePath.toLowerCase().endsWith(".xlsx")) {
+                filePath += ".xlsx";
             }
-            try (Workbook workbook = new XSSFWorkbook(); FileOutputStream fos = new FileOutputStream(selectedFile)) {
-                Sheet sheet = workbook.createSheet("Datos");
 
-                // Crear estilos
-                CellStyle headerStyle = workbook.createCellStyle();
-                Font headerFont = workbook.createFont();
-                headerFont.setBold(true);
-                headerStyle.setFont(headerFont);
+            // Crear el workbook y la hoja
+            XSSFWorkbook workbook = new XSSFWorkbook();
+            XSSFSheet sheet = workbook.createSheet("Previo");
 
-                CellStyle integerStyle = workbook.createCellStyle();
-                integerStyle.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat("0"));
+            // Configurar estilos
+            Font headerFont = workbook.createFont();
+            headerFont.setFontName("Calibri");
+            headerFont.setBold(true);
+            headerFont.setFontHeightInPoints((short) 11);
 
-                CellStyle decimalStyle = workbook.createCellStyle();
-                decimalStyle.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat("0.00"));
+            Font normalFont = workbook.createFont();
+            normalFont.setFontName("Calibri");
+            normalFont.setFontHeightInPoints((short) 11);
 
-                // Crear encabezados
-                Row headerRow = sheet.createRow(0);
-                for (int i = 1; i < model.getColumnCount(); i++) { // Comenzar desde la segunda columna para ocultar la primera
-                    Cell cell = headerRow.createCell(i - 1); // Ajustar índice
-                    cell.setCellValue(model.getColumnName(i));
-                    cell.setCellStyle(headerStyle);
-                }
+            CellStyle boldStyle = workbook.createCellStyle();
+            boldStyle.setFont(headerFont);
+            boldStyle.setAlignment(HorizontalAlignment.CENTER);
+            boldStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
-                // Crear datos
-                for (int i = 0; i < model.getRowCount(); i++) {
-                    Row row = sheet.createRow(i + 1);
-                    for (int j = 1; j < model.getColumnCount(); j++) { // Comenzar desde la segunda columna
-                        Cell cell = row.createCell(j - 1); // Ajustar índice
-                        Object value = model.getValueAt(i, j);
+            CellStyle normalStyle = workbook.createCellStyle();
+            normalStyle.setFont(normalFont);
 
-                        if (value instanceof Integer) {
-                            cell.setCellValue((Integer) value);
-                            cell.setCellStyle(integerStyle);
-                        } else if (value instanceof Double) {
-                            cell.setCellValue((Double) value);
-                            cell.setCellStyle(decimalStyle);
-                        } else {
-                            String cellValue = (value != null) ? value.toString() : "";
-                            cell.setCellValue(cellValue);
+            CellStyle numberStyle = workbook.createCellStyle();
+            numberStyle.setFont(normalFont);
+            numberStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
+            CellStyle integerStyle = workbook.createCellStyle();
+            integerStyle.setFont(normalFont);
+            integerStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0"));
+
+            CellStyle boldNumberStyle = workbook.createCellStyle();
+            boldNumberStyle.setFont(headerFont);
+            boldNumberStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
+            // Zoom al 120%
+            sheet.setZoom(120);
+
+            // Obtener la cantidad de columnas del JTable
+            int columnCount = table.getColumnCount();
+
+            // Agregar título en la fila 0 y combinar celdas
+            Row titleRow = sheet.createRow(0);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("ASOCIACION CIRCULO MILITAR DEL PERU");
+            titleCell.setCellStyle(boldStyle);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, columnCount - 1));
+
+            // Agregar subtítulo en la fila 1 y combinar celdas
+            Row subtitleRow = sheet.createRow(1);
+            Cell subtitleCell = subtitleRow.createCell(0);
+            String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            subtitleCell.setCellValue("CUENTAS POR PAGAR AL \"" + currentDate + "\"");
+            subtitleCell.setCellStyle(boldStyle);
+            sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, columnCount - 1));
+
+            // Crear una fila en blanco (fila 2)
+            sheet.createRow(2);
+
+            // Extraer encabezados del JTable
+            TableModel model = table.getModel();
+            Row headerRow = sheet.createRow(3);
+            for (int col = 0; col < columnCount; col++) {
+                Cell cell = headerRow.createCell(col);
+                cell.setCellValue(model.getColumnName(col));
+                cell.setCellStyle(boldStyle);
+            }
+
+            // Mapear proveedores y acumular totales para columnas relevantes
+            Map<String, Double[]> providerSums = new HashMap<>();
+
+            // Extraer datos del JTable
+            int rowCount = model.getRowCount();
+            int currentRow = 4; // Fila inicial para datos
+            for (int row = 0; row < rowCount; row++) {
+                Row excelRow = sheet.createRow(currentRow++); // Comenzar desde la fila 4
+                String provider = model.getValueAt(row, 2).toString(); // Columna 3 (Índice 2)
+                
+                for (int col = 0; col < columnCount; col++) {
+                    Cell cell = excelRow.createCell(col);
+                    Object value = model.getValueAt(row, col);
+
+                    // Detectar si la columna es la 6, 8 o posterior hasta la penúltima
+                    if ((col == 6 || col >= 8 && col < columnCount - 1) && value != null) {
+                        try {
+                            if (value.toString().contains(".")) {
+                                double numericValue = Double.parseDouble(value.toString());
+                                cell.setCellValue(numericValue);
+                                cell.setCellStyle(numberStyle);
+                            } else {
+                                int numericValue = Integer.parseInt(value.toString());
+                                cell.setCellValue(numericValue);
+                                cell.setCellStyle(integerStyle);
+                            }
+                        } catch (NumberFormatException e) {
+                            cell.setCellValue(value.toString()); // Si no es número, exportarlo como texto
+                            cell.setCellStyle(normalStyle);
                         }
+                    } else {
+                        cell.setCellValue(value != null ? value.toString() : "");
+                        cell.setCellStyle(normalStyle);
                     }
                 }
 
-                // Autoajustar columnas
-                for (int i = 0; i < model.getColumnCount() - 1; i++) {
-                    sheet.autoSizeColumn(i);
+                // Acumular totales por proveedor para columnas desde la 7 (índice 6) hasta la penúltima
+                for (int col = 6; col < columnCount - 1; col++) {
+                    // Saltar la columna 8 (índice 7)
+                    if (col == 7) {
+                        continue;
+                    }
+
+                    double columnValue = 0;
+                    try {
+                        columnValue = Double.parseDouble(model.getValueAt(row, col).toString());
+                    } catch (NumberFormatException | NullPointerException e) {
+                        // Ignorar valores no numéricos
+                    }
+                    providerSums.putIfAbsent(provider, new Double[columnCount - 6]);
+                    if (providerSums.get(provider)[col - 6] == null) {
+                        providerSums.get(provider)[col - 6] = 0.0;
+                    }
+                    providerSums.get(provider)[col - 6] += columnValue;
                 }
 
-                workbook.write(fos);
-                JOptionPane.showMessageDialog(null, "Archivo exportado exitosamente.");
-            } catch (IOException e) {
-                JOptionPane.showMessageDialog(null, "Error al exportar el archivo: " + e.getMessage());
+                // Si cambia de proveedor o es la última fila, agregar fila de totales
+                boolean isLastRow = row == rowCount - 1;
+                String nextProvider = isLastRow ? null : model.getValueAt(row + 1, 2).toString();
+                if (isLastRow || !provider.equals(nextProvider)) {
+                    Row summaryRow = sheet.createRow(currentRow++);
+                    Cell providerCell = summaryRow.createCell(2); // Columna de proveedor
+                    providerCell.setCellValue("Total " + provider);
+                    providerCell.setCellStyle(boldStyle);
+
+                    for (int col = 6; col < columnCount - 1; col++) {
+                        // Saltar la columna 8 (índice 7)
+                        if (col == 7) {
+                            continue;
+                        }
+
+                        Cell sumCell = summaryRow.createCell(col);
+                        sumCell.setCellValue(providerSums.get(provider)[col - 6]);
+                        sumCell.setCellStyle(boldNumberStyle);
+                    }
+
+                    // Agregar una fila en blanco
+                    sheet.createRow(currentRow++);
+
+                    // Repetir los encabezados
+                    Row repeatedHeaderRow = sheet.createRow(currentRow++);
+                    for (int col = 0; col < columnCount; col++) {
+                        Cell cell = repeatedHeaderRow.createCell(col);
+                        cell.setCellValue(model.getColumnName(col));
+                        cell.setCellStyle(boldStyle);
+                    }
+
+                    // Resetear acumulador para el siguiente proveedor
+                    providerSums.remove(provider);
+                }
             }
+
+            // Autoajustar las columnas
+            for (int col = 0; col < columnCount; col++) {
+                sheet.autoSizeColumn(col);
+            }
+
+            // Escribir el archivo
+            try (FileOutputStream fileOut = new FileOutputStream(filePath)) {
+                workbook.write(fileOut);
+            }
+
+            // Cerrar el workbook
+            workbook.close();
+
+            JOptionPane.showMessageDialog(null, "Archivo guardado exitosamente en: " + filePath);
+        } else {
+            JOptionPane.showMessageDialog(null, "Exportación cancelada.");
         }
     }
+
     
     /**
      * @param args the command line arguments

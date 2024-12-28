@@ -82,22 +82,22 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
         
         this.setLocationRelativeTo(null);
         
-        modelo.addColumn("FECHA PROC.");
-        modelo.addColumn("N°");
-        modelo.addColumn("RUC");
-        modelo.addColumn("PROVEEDOR");
-        modelo.addColumn("FACT");
-        modelo.addColumn("FEC/E");
-        modelo.addColumn("FEC/V");
-        modelo.addColumn("MONTO");
-        modelo.addColumn("PORCENTAJE");
-        modelo.addColumn("S/.");
-        modelo.addColumn("TOTAL");
-        modelo.addColumn("RUBRO");
-        modelo.addColumn("PAGO TOTAL");
-        modelo.addColumn("PAGO PARCIAL %");
-        modelo.addColumn("TOTAL PAGADO");
-        modelo.addColumn("N° TRANSFERENCIA");
+        modelo.addColumn("FECHA PROC.");//0
+        modelo.addColumn("N°");//1
+        modelo.addColumn("RUC");//2
+        modelo.addColumn("PROVEEDOR");//3
+        modelo.addColumn("FACT");//4
+        modelo.addColumn("FEC/E");//5
+        modelo.addColumn("FEC/V");//6
+        modelo.addColumn("MONTO TOTAL");//7
+        modelo.addColumn("TIPO DET/RET");//8
+        modelo.addColumn("MONTO DET/RET");//9
+        modelo.addColumn("TOTAL SIN DET/RET");//10
+        modelo.addColumn("RUBRO");//11
+        modelo.addColumn("PAGO TOTAL");//12
+        modelo.addColumn("PAGO %");//13
+        modelo.addColumn("TOTAL PAGADO");//14
+        modelo.addColumn("N° TRANSFERENCIA");//15
         modelo.addColumn("IDCUENTA"); //16
         modelo.addColumn("PORCENPAGADO"); //17
         modelo.addColumn("TOTALPAGADO"); //18
@@ -614,7 +614,7 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
         
         for (int i = 0; i < tb_data.getRowCount(); i++) {
             if (tb_data.getValueAt(i, 14) != null && !tb_data.getValueAt(i, 14).toString().equals("")) {
-                if (tb_data.getValueAt(i, 15) == null || tb_data.getValueAt(i, 15).toString().trim().equals("") && !tb_data.getValueAt(i, 15).toString().equals("PAGADO")) {
+                if (tb_data.getValueAt(i, 15) == null || tb_data.getValueAt(i, 15).toString().trim().equals("") && !tb_data.getValueAt(i, 8).toString().equals("PAGADO")) {
                     JOptionPane.showMessageDialog(this, "Debe ingresar un N° de Transferencia a los registros por Pagar", "ERROR", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
