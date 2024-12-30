@@ -8,6 +8,7 @@ import Controlador.Conexion;
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -25,7 +26,6 @@ import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
@@ -41,7 +41,6 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
@@ -55,9 +54,7 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -105,6 +102,7 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
         agregarColumnasPorcentaje();
         modelo.addColumn("TOTAL");
         modelo.addColumn("RUBRO");
+        modelo.addColumn("MANUAL");
         
         JTableHeader header = tb_data.getTableHeader();
         header.setPreferredSize(new java.awt.Dimension(header.getWidth(), 40));
@@ -152,7 +150,7 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
                     String value = (String) modelo.getValueAt(row, column);
                     
                     if (value.equals("")) {
-                        for (int i = 8; i < tb_data.getColumnCount()-1; i++) {
+                        for (int i = 8; i < tb_data.getColumnCount()-2; i++) {
                             tb_data.setValueAt(null, row, i);
                         }
                         return;
@@ -160,7 +158,7 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
                     
                     // Validar que el valor no sea nulo y tenga formato de porcentaje (por ejemplo, "3%")
                     if (value != null) {
-                        for (int i = 8; i < tb_data.getColumnCount()-1; i++) {
+                        for (int i = 8; i < tb_data.getColumnCount()-2; i++) {
                             tb_data.setValueAt(null, row, i);
                         }
 
@@ -197,14 +195,14 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
                                 double result = col6Value * percentage;
                                 if (tb_data.getColumnName(targetColumn).contains("RET")) {
                                     modelo.setValueAt(result, row, targetColumn);
-                                    modelo.setValueAt(col6Value - result, row, tb_data.getColumnCount() - 2);
+                                    modelo.setValueAt(col6Value - result, row, tb_data.getColumnCount() - 3);
                                 } else if (tb_data.getColumnName(targetColumn).contains("DET")) {
                                     BigDecimal bdResult = new BigDecimal(result);
                                     bdResult = bdResult.setScale(0, RoundingMode.HALF_UP);
                                     modelo.setValueAt(bdResult, row, targetColumn);
-                                    modelo.setValueAt(col6Value - bdResult.intValue(), row, tb_data.getColumnCount() - 2);
+                                    modelo.setValueAt(col6Value - bdResult.intValue(), row, tb_data.getColumnCount() - 3);
                                 }else if (tb_data.getColumnName(targetColumn).contains("NO APLICA")) {
-                                    modelo.setValueAt(col6Value, row, tb_data.getColumnCount() - 2);
+                                    modelo.setValueAt(col6Value, row, tb_data.getColumnCount() - 3);
                                 }
                                 
                                 
@@ -294,8 +292,8 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
             Connection con = Conexion.getConnection();
             String sql = "INSERT INTO [dbo].[CuentasPorPagarDiario] " +
              "([N°], [RUC], [Proveedor], [Factura], [FechaEmision], [FechaVencimiento], [Monto], [Porcentaje], " +
-             "[ValorCalculado], [Total], [Rubro], [FechaEvaluacion]) " +
-             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE())";
+             "[ValorCalculado], [Total], [Rubro], [FechaEvaluacion], [EsManual]) " +
+             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), ?)";
             PreparedStatement pstm = con.prepareStatement(sql);
             for (int i = 0; i < tb_data.getRowCount(); i++) {
                 double total = 0;
@@ -309,14 +307,15 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
                     pstm.setDouble(7, Double.parseDouble(tb_data.getValueAt(i, 6).toString()));
                     pstm.setString(8, tb_data.getValueAt(i, 7).toString());
                     
-                    int totalColumnIndex = tb_data.getColumnCount() - 2; 
+                    int totalColumnIndex = tb_data.getColumnCount() - 3; 
 
                     for (int j = 8; j < totalColumnIndex; j++) {
                         total += parseDoubleOrDefault(tb_data.getValueAt(i, j));
                     }
                     pstm.setDouble(9, total);
-                    pstm.setString(10, getStringOrDefault(tb_data.getValueAt(i, tb_data.getColumnCount()-2), ""));
-                    pstm.setString(11, getStringOrDefault(tb_data.getValueAt(i, tb_data.getColumnCount()-1), ""));
+                    pstm.setString(10, getStringOrDefault(tb_data.getValueAt(i, tb_data.getColumnCount()-3), ""));
+                    pstm.setString(11, getStringOrDefault(tb_data.getValueAt(i, tb_data.getColumnCount()-2), ""));
+                    pstm.setBoolean(12, Boolean.parseBoolean(tb_data.getValueAt(i, tb_data.getColumnCount()-1).toString()));
                    
                     pstm.executeUpdate();
                 }
@@ -324,6 +323,7 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
             JOptionPane.showMessageDialog(this, "Se han guardado los datos correctamente");
             
         } catch (SQLException ex) {
+            System.out.println(ex.getMessage());
             Logger.getLogger(ProcesarCuentasporPagar.class.getName()).log(Level.SEVERE, null, ex);
         }
         
@@ -373,7 +373,7 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
 
         @Override
         public boolean isCellEditable(int row, int column) {
-            int lastColumnIndex = this.getColumnCount() - 1;
+            int lastColumnIndex = this.getColumnCount() - 2;
 
             // Permitir edición solo en la columna 7 (índice 6) y la última columna
             if (column == 7 || column == lastColumnIndex) {
@@ -387,7 +387,7 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
         @Override
         public void setValueAt(Object aValue, int row, int column) {
             // Validar columnas 5, 7 a penúltima
-            if (column == 6 || (column >= 8 && column < this.getColumnCount() - 1)) {
+            if (column == 6 || (column >= 8 && column < this.getColumnCount() - 2)) {
                 try {
                     if (aValue == null || aValue.toString().trim().isEmpty()) {
                         super.setValueAt(null, row, column);
@@ -440,7 +440,7 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
 
                 // Actualizar la tabla con el resultado
                 if (rs.next()) {
-                    tb_data.setValueAt(rs.getString("DESCRIPCION"), i, tb_data.getColumnCount() - 1);
+                    tb_data.setValueAt(rs.getString("DESCRIPCION"), i, tb_data.getColumnCount() - 2);
                 }
 
                 // Cerrar el ResultSet para evitar fugas de recursos
@@ -528,6 +528,11 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
         tb_data.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         tb_data.setRowHeight(35);
         tb_data.setShowHorizontalLines(true);
+        tb_data.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                tb_dataKeyPressed(evt);
+            }
+        });
         jScrollPane1.setViewportView(tb_data);
 
         jButton1.setFont(new java.awt.Font("Roboto", 1, 12)); // NOI18N
@@ -619,6 +624,21 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
             tb_data.getCellEditor().stopCellEditing(); // Detiene la edición actual si está en curso
         }
          
+        boolean verificarRegistro = false;
+
+        for (int i = 0; i < tb_data.getRowCount(); i++) {
+            Object valorTotal = tb_data.getValueAt(i, tb_data.getColumnCount() - 3);
+            if (valorTotal != null && !valorTotal.toString().trim().isEmpty()) {
+                verificarRegistro = true; // Hay al menos un valor en la columna
+                break;
+            }
+        }
+
+        if (!verificarRegistro) {
+            JOptionPane.showMessageDialog(this, "Debe existir al menos un registro con RET/DET seleccionado en OPCION.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+            return;
+        } 
+         
         if (tb_data.getRowCount() == 0) {
             JOptionPane.showMessageDialog(
                     null,
@@ -661,6 +681,32 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
         AgregarRegManual ini = new AgregarRegManual(null, true);
         ini.setVisible(true);
     }//GEN-LAST:event_btnAgregarActionPerformed
+
+    private void tb_dataKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tb_dataKeyPressed
+        if (evt.getKeyCode() == KeyEvent.VK_DELETE) {
+            int selectedRow = tb_data.getSelectedRow();
+            if (selectedRow != -1) { // Verificar que hay una fila seleccionada
+                int confirm = JOptionPane.showConfirmDialog(
+                        this,
+                        "¿Desea eliminar el registro seleccionado?",
+                        "Aviso",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE
+                );
+                if (confirm == JOptionPane.YES_OPTION) {
+                    // Eliminar la fila seleccionada del modelo
+                    modelo.removeRow(selectedRow);
+                }
+            } else {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "No hay ninguna fila seleccionada.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
+    }//GEN-LAST:event_tb_dataKeyPressed
 
     public void exportToExcel(JTable table) throws IOException {
         // Crear el JFileChooser para seleccionar el archivo

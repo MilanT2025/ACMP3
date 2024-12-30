@@ -6,13 +6,10 @@ package vista;
 
 import Controlador.Conexion;
 import com.formdev.flatlaf.FlatIntelliJLaf;
-import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.event.ItemEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -20,7 +17,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -33,7 +29,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -46,7 +41,6 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-import main.Application;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
@@ -106,16 +100,7 @@ public class CuentasporPagar extends javax.swing.JFrame {
         UIManager.getLookAndFeelDefaults().put("Table.alternateRowColor", new Color(254, 238, 184));
         Locale.setDefault(new Locale("es", "ES"));
         this.setIconImage(new ImageIcon(System.getProperty("user.dir") + "/logoACMP.png").getImage());
-//        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-//        addWindowListener(new WindowAdapter() {
-//            @Override
-//            public void windowClosing(WindowEvent e) {
-//                setVisible(false);
-//                FlatMacDarkLaf.setup();
-//                Application anteriorFrame = new Application();
-//                anteriorFrame.setVisible(true);
-//            }
-//        });
+
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         jDateChooser1.addPropertyChangeListener("date", (java.beans.PropertyChangeEvent evt) -> {
@@ -283,31 +268,68 @@ int valor = 0;
             Connection con = Conexion.getConnection();
             Statement st = con.createStatement();
             String sql = "SELECT "
-                    + "	   CASE WHEN (SELECT TOP 1 CONCAT(PorcentajePagado, '%') FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) = '100%' THEN 'PAGADO' WHEN (SELECT TOP 1 CONCAT(PorcentajePagado, '%') FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) = '100.0%' THEN 'PAGADO'WHEN (SELECT COUNT(*) FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº]) > 0 THEN 'PROCESADO' ELSE Estado END AS [Estado]    "
-                    + "      ,CONVERT(INT, [CUO]) AS CUO "
-                    + "      ,[Comprobante Nº] "
-                    + "      ,FORMAT([F# Registro], 'dd/MM/yyyy') AS [F# Registro]"
-                    + "      ,FORMAT([F# Emision], 'dd/MM/yyyy') AS [F# Emision]"
-                    + "      ,FORMAT([F# Vencimiento], 'dd/MM/yyyy') AS [F# Vencimiento]"
-                    + "      ,[Nro Doc# Ident#] "
-                    + "      ,[Razon Social] "
-                    + "      ,[Moneda] "
-                    + "      ,[Total] "
-                    + "      ,[Saldo MN] "
-                    + "      ,[Saldo ME] "
-                    + "      ,[Plan Cuenta] "
-                    + "      ,[Descripcion] "
-                    + "      ,[Centro Costo] "
-                    + "      ,(SELECT TOP 1 CASE WHEN CONCAT(PorcentajePagado, '%') = '%' THEN '' ELSE CONCAT(PorcentajePagado, '%') END FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) as PorcentajePag "
-                    + "      ,(SELECT TOP 1 TotalPagado FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) as TotalPago "
-                    + "      ,(SELECT TOP 1 [N° Transferencia] FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) as Transf  "
-                    + "      ,(SELECT TOP 1 FORMAT(FechaPago, 'dd/MM/yyyy') FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) AS FechaPago "
-                    + "FROM CuentasPorPagar "
+                    + "	CASE WHEN (SELECT TOP 1 CONCAT(PorcentajePagado, '%') FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) = '100%' THEN 'PAGADO' WHEN (SELECT TOP 1 CONCAT(PorcentajePagado, '%') FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) = '100.0%' THEN 'PAGADO'WHEN (SELECT COUNT(*) FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº]) > 0 THEN 'PROCESADO' ELSE Estado END AS [Estado] "
+                    + "  ,CONVERT(INT, [CUO]) AS CUO "
+                    + "  ,[Comprobante Nº] "
+                    + "  ,FORMAT([F# Registro], 'dd/MM/yyyy') AS [F# Registro] "
+                    + "  ,FORMAT([F# Emision], 'dd/MM/yyyy') AS [F# Emision] "
+                    + "  ,FORMAT([F# Vencimiento], 'dd/MM/yyyy') AS [F# Vencimiento] "
+                    + "  ,[Nro Doc# Ident#] "
+                    + "  ,[Razon Social] "
+                    + "  ,[Moneda] "
+                    + "  ,[Total] "
+                    + "  ,[Saldo MN] "
+                    + "  ,[Saldo ME] "
+                    + "  ,[Plan Cuenta] "
+                    + "  ,[Descripcion] "
+                    + "  ,[Centro Costo] "
+                    + "  ,(SELECT TOP 1 CASE WHEN CONCAT(PorcentajePagado, '%') = '%' THEN '' ELSE CONCAT(PorcentajePagado, '%') END FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) as PorcentajePag "
+                    + "  ,(SELECT TOP 1 TotalPagado FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) as TotalPago "
+                    + "  ,(SELECT TOP 1 [N° Transferencia] FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) as Transf "
+                    + "  ,(SELECT TOP 1 FORMAT(FechaPago, 'dd/MM/yyyy') FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) AS FechaPago "
+                    + "FROM "
+                    + "(SELECT "
+                    + "	[Estado] "
+                    + "	,[CUO] "
+                    + "	,[Comprobante Nº] "
+                    + "	,[F# Registro] "
+                    + "	,[F# Emision] "
+                    + "	,[F# Vencimiento] "
+                    + "	,[Nro Doc# Ident#] "
+                    + "	,[Razon Social] "
+                    + "	,[Moneda] "
+                    + "	,[Total] "
+                    + "	,[Saldo MN] "
+                    + "	,[Saldo ME] "
+                    + "	,[Plan Cuenta] "
+                    + "	,[Descripcion] "
+                    + "	,[Centro Costo] "
+                    + " FROM CuentasPorPagar "
+                    + " WHERE "
+                    + "	 Estado = 'PENDIENTE' AND "
+                    + "	 [Plan Cuenta] LIKE '42%' AND "
+                    + "	 FechaCarga = '" + new SimpleDateFormat("dd/MM/yyyy").format(jDateChooser1.getDate()) + "' "
+                    + "UNION "
+                    + "SELECT "
+                    + "	Estado = '', "
+                    + "	CUO = '', "
+                    + "	Factura AS [Comprobante Nº], "
+                    + "	FechaEvaluacion AS [F# Registro], "
+                    + "	FechaEmision AS [F# Emision], "
+                    + "	FechaVencimiento AS [F# Vencimiento], "
+                    + "	RUC AS [Nro Doc# Ident#], "
+                    + "	Proveedor AS [Razon Social], "
+                    + "	Moneda = 'S/', "
+                    + "	Total = '', "
+                    + "	Total AS [Saldo MN], "
+                    + "	[Saldo ME] = '', "
+                    + "	[Plan Cuenta] = '', "
+                    + "	Rubro AS [Descripcion], "
+                    + "	[Centro Costo] = '' "
+                    + "FROM CuentasPorPagarDiario "
                     + "WHERE "
-                    + "	Estado = 'PENDIENTE' AND "
-                    + "	[Plan Cuenta] LIKE '42%' AND "
-                    + "	FechaCarga = '" + new SimpleDateFormat("dd/MM/yyyy").format(jDateChooser1.getDate()) + "' "
-                    + "	ORDER BY [Razon Social], [F# Emision] " ;
+                    + "	EsManual = 1) AS D1 "
+                    + "ORDER BY [Razon Social], [F# Emision]";
 
             ResultSet rs = st.executeQuery(sql);
             while (rs.next()) {
@@ -809,7 +831,9 @@ int valor = 0;
         jButton2.setEnabled(false);
         ProcesarCuentasporPagar ini = new ProcesarCuentasporPagar(this, true, new SimpleDateFormat("dd/MM/yyyy").format(jDateChooser1.getDate()));
 
-        Object[] data = new Object[7];
+        int columnCount = ProcesarCuentasporPagar.tb_data.getColumnCount();
+        Object[] data = new Object[columnCount];
+        
         int c = 1;
         String mensaje = "";
 
@@ -824,6 +848,7 @@ int valor = 0;
                 data[4] = tb_resultado.getValueAt(i, 5);
                 data[5] = tb_resultado.getValueAt(i, 6);
                 data[6] = tb_resultado.getValueAt(i, 11);
+                data[columnCount - 1] = false;
                 ini.cargarInfo(data);
                 c++;
             }

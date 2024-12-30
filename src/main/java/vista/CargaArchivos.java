@@ -15,10 +15,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,17 +59,17 @@ public class CargaArchivos extends javax.swing.JDialog {
         LocalDate fechaMesAnterior = fechaActual.minusMonths(1);
         mes.setMonth(fechaMesAnterior.getMonthValue() - 1);
         año.setYear(fechaMesAnterior.getYear());
-        
+
         jLabel10.setVisible(false);
         cb_sede.setVisible(false);
         jLabel11.setVisible(false);
         jDateChooser1.setVisible(false);
-        
+
         jDateChooser1.setDate(new Date());
 
         cargarOpcionesDesdeArchivoYOrdenar(cb_sede, "sedes.txt");
     }
-    
+
     private void limpiarCampos() {
         cb_tipo.setSelectedIndex(0);
         txt_ruta.setText("");
@@ -77,6 +79,11 @@ public class CargaArchivos extends javax.swing.JDialog {
     private void limpiarCampos2() {
         cb_tipo2.setSelectedIndex(0);
         jProgressBar2.setValue(0);
+    }
+
+    private void limpiarCampos3() {
+        txt_ruta.setText("");
+        jProgressBar1.setValue(0);
     }
 
     private void cargarIngreso(String filePath) {
@@ -508,7 +515,6 @@ public class CargaArchivos extends javax.swing.JDialog {
         try {
 
             Connection con = Conexion.getConnection();
-            
 
             int year = año.getYear();
             int month = (mes.getMonth() + 1);
@@ -627,7 +633,7 @@ public class CargaArchivos extends javax.swing.JDialog {
                 Sheet sheet = workbook.getSheetAt(0);
 
                 int rowCount = sheet.getLastRowNum();
-                
+
                 for (int i = 1; i < sheet.getLastRowNum(); i++) {
                     Row row = sheet.getRow(i);
 
@@ -678,15 +684,15 @@ public class CargaArchivos extends javax.swing.JDialog {
 
                         pstm.addBatch(); // Agregar el batch
                     }
-                    
-                    int progress = (int) ((double) (i+1) / rowCount * 100);
+
+                    int progress = (int) ((double) (i + 1) / rowCount * 100);
                     SwingUtilities.invokeLater(() -> jProgressBar1.setValue(progress));
                 }
 
                 pstm.executeBatch();
                 pstm.close();
                 con.close();
-                
+
                 JOptionPane.showMessageDialog(this, "El EXCEL DE " + cb_tipo.getSelectedItem().toString().toUpperCase() + " ha sido cargado correctamente.", "Exito", JOptionPane.INFORMATION_MESSAGE);
 
             } catch (IOException e) {
@@ -698,111 +704,146 @@ public class CargaArchivos extends javax.swing.JDialog {
             Logger.getLogger(CargaArchivos.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
+    public void cargarStockAlmacen(String excelFilePath) throws SQLException {
+        Connection con = Conexion.getConnection();
+        String sql = "SELECT COUNT(*) AS Reg FROM StockAlmacen WHERE AÑO = ? AND MES = ? AND Sede = ?";
+        int year = año.getYear();
+        int month = (mes.getMonth() + 1);
+        String sede = cb_sede.getSelectedItem().toString();
+
+        boolean registrosEncontrados = false;
+        PreparedStatement stmt = con.prepareStatement(sql);
+
+        stmt.setInt(1, year);
+        stmt.setInt(2, month);
+        stmt.setString(3, sede);
+
+        // Ejecutar la consulta
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            int registros = rs.getInt("Reg");
+            registrosEncontrados = registros > 0;
+        }
+
+        if (registrosEncontrados) {
+            int opcion = JOptionPane.showConfirmDialog(
+                    null,
+                    "Se ha encontrado registros cargados, ¿desea reemplazarlos?",
+                    "Confirmación",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE
+            );
+
+            if (opcion == JOptionPane.YES_OPTION) {
+                cargarMercaderiasBD(year, month, sede, excelFilePath);
+            } 
+        } else {
+            cargarMercaderiasBD(year, month, sede, excelFilePath);
+        }
+    }
     
-    public void cargarStockAlmacen(String excelFilePath) {
-        try {
-            Connection con = Conexion.getConnection();
-            int year = año.getYear();
-            int month = (mes.getMonth() + 1);
-            String sede = cb_sede.getSelectedItem().toString();
-
-            String sql = "delete from StockAlmacen where año = ? and mes = ? and sede = ?";
-            PreparedStatement pstm = con.prepareStatement(sql);
-            pstm.setInt(1, year);
-            pstm.setInt(2, month);
-            pstm.setString(3, sede);
-            pstm.executeUpdate();
-
-            sql = "INSERT INTO [dbo].[StockAlmacen] "
-                    + "           ([Año] "
-                    + "           ,[Mes] "
-                    + "           ,[Sede] "
-                    + "           ,[Tipo] "
-                    + "           ,[Codigo] "
-                    + "           ,[Producto] "
-                    + "           ,[Lote N°] "
-                    + "           ,[Ubicacion] "
-                    + "           ,[Cant# Stock] "
-                    + "           ,[U/M]) "
-                    + "     VALUES "
-                    + "           (? "
-                    + "           ,? "
-                    + "           ,? "
-                    + "           ,? "
-                    + "           ,? "
-                    + "           ,? "
-                    + "           ,? "
-                    + "           ,? "
-                    + "           ,? "
-                    + "           ,?)";
-            pstm = con.prepareStatement(sql);
-
-            try (FileInputStream fis = new FileInputStream(excelFilePath); Workbook workbook = new XSSFWorkbook(fis);) {
-
-                Sheet sheet = workbook.getSheetAt(0);
-
-                int rowCount = sheet.getLastRowNum();
+    private void cargarMercaderiasBD(int year, int month, String sede, String excelFilePath){
+            try {
+                Connection con = Conexion.getConnection();
+                String sql = "delete from StockAlmacen where año = ? and mes = ? and sede = ?";
+                PreparedStatement pstm = con.prepareStatement(sql);
+                pstm.setInt(1, year);
+                pstm.setInt(2, month);
+                pstm.setString(3, sede);
+                pstm.executeUpdate();
                 
-                for (int i = 1; i < sheet.getLastRowNum(); i++) {
-                    Row row = sheet.getRow(i);
-
-                    if (row != null) {
-                        pstm.setInt(1, year);  // Columna [Año]
-                        pstm.setInt(2, month); // Columna [Mes]
-                        pstm.setString(3, sede); // Columna [Sede]
-
-                        for (int j = 0; j < 7; j++) { // Máximo 06 columnas
-                            Cell cell = row.getCell(j);
-
-                            if (cell != null) {
-                                switch (cell.getCellType()) {
-                                    case STRING:
-                                        String strValue = cell.getStringCellValue();
-                                        pstm.setString(j + 4, strValue);
-                                        break;
-
-                                    case NUMERIC:
-                                        double numericValue = cell.getNumericCellValue();
-                                        pstm.setDouble(j + 4, numericValue);
-                                        break;
-
-                                    case BLANK:
-                                        pstm.setNull(j + 4, java.sql.Types.NULL);
-                                        break;
-
-                                    default:
-                                        String defaultValue = cell.toString();
-                                        pstm.setString(j + 4, defaultValue);
-                                        break;
+                sql = "INSERT INTO [dbo].[StockAlmacen] "
+                        + "           ([Año] "
+                        + "           ,[Mes] "
+                        + "           ,[Sede] "
+                        + "           ,[Tipo] "
+                        + "           ,[Codigo] "
+                        + "           ,[Producto] "
+                        + "           ,[Lote N°] "
+                        + "           ,[Ubicacion] "
+                        + "           ,[Cant# Stock] "
+                        + "           ,[U/M]) "
+                        + "     VALUES "
+                        + "           (? "
+                        + "           ,? "
+                        + "           ,? "
+                        + "           ,? "
+                        + "           ,? "
+                        + "           ,? "
+                        + "           ,? "
+                        + "           ,? "
+                        + "           ,? "
+                        + "           ,?)";
+                pstm = con.prepareStatement(sql);
+                
+                try (FileInputStream fis = new FileInputStream(excelFilePath); Workbook workbook = new XSSFWorkbook(fis);) {
+                    
+                    Sheet sheet = workbook.getSheetAt(0);
+                    
+                    int rowCount = sheet.getLastRowNum();
+                    
+                    for (int i = 1; i < sheet.getLastRowNum(); i++) {
+                        Row row = sheet.getRow(i);
+                        
+                        if (row != null) {
+                            pstm.setInt(1, year);  // Columna [Año]
+                            pstm.setInt(2, month); // Columna [Mes]
+                            pstm.setString(3, sede); // Columna [Sede]
+                            
+                            for (int j = 0; j < 7; j++) { // Máximo 06 columnas
+                                Cell cell = row.getCell(j);
+                                
+                                if (cell != null) {
+                                    switch (cell.getCellType()) {
+                                        case STRING:
+                                            String strValue = cell.getStringCellValue();
+                                            pstm.setString(j + 4, strValue);
+                                            break;
+                                            
+                                        case NUMERIC:
+                                            double numericValue = cell.getNumericCellValue();
+                                            pstm.setDouble(j + 4, numericValue);
+                                            break;
+                                            
+                                        case BLANK:
+                                            pstm.setNull(j + 4, java.sql.Types.NULL);
+                                            break;
+                                            
+                                        default:
+                                            String defaultValue = cell.toString();
+                                            pstm.setString(j + 4, defaultValue);
+                                            break;
+                                    }
+                                } else {
+                                    pstm.setNull(j + 4, java.sql.Types.NULL);
                                 }
-                            } else {
-                                pstm.setNull(j + 4, java.sql.Types.NULL);
                             }
+                            
+                            pstm.addBatch(); // Agregar el batch
                         }
-
-                        pstm.addBatch(); // Agregar el batch
+                        
+                        int progress = (int) ((double) (i + 1) / rowCount * 100);
+                        SwingUtilities.invokeLater(() -> jProgressBar1.setValue(progress));
                     }
                     
-                    int progress = (int) ((double) (i+1) / rowCount * 100);
-                    SwingUtilities.invokeLater(() -> jProgressBar1.setValue(progress));
+                    pstm.executeBatch();
+                    pstm.close();
+                    con.close();
+                    
+                    JOptionPane.showMessageDialog(this, "El EXCEL DE " + cb_tipo.getSelectedItem().toString().toUpperCase() + " ha sido cargado correctamente.", "Exito", JOptionPane.INFORMATION_MESSAGE);
+                    
+                } catch (IOException e) {
+                    System.err.println("Error al leer el archivo Excel: " + e.getMessage());
+                } catch (Exception e) {
+                    System.err.println("Error en la conexión o inserción: " + e.getMessage());
                 }
-
-                pstm.executeBatch();
-                pstm.close();
-                con.close();
-                
-                JOptionPane.showMessageDialog(this, "El EXCEL DE " + cb_tipo.getSelectedItem().toString().toUpperCase() + " ha sido cargado correctamente.", "Exito", JOptionPane.INFORMATION_MESSAGE);
-
-            } catch (IOException e) {
-                System.err.println("Error al leer el archivo Excel: " + e.getMessage());
-            } catch (Exception e) {
-                System.err.println("Error en la conexión o inserción: " + e.getMessage());
+            } catch (SQLException ex) {
+                Logger.getLogger(CargaArchivos.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } catch (SQLException ex) {
-            Logger.getLogger(CargaArchivos.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
-    
+
     public void cargarCuentasPorPagar(String excelFilePath) {
         try {
             Connection con = Conexion.getConnection();
@@ -813,11 +854,11 @@ public class CargaArchivos extends javax.swing.JDialog {
             pstm.setString(1, fecha);
             pstm.executeUpdate();
 
-            sql = "INSERT INTO [dbo].[CuentasPorPagar] " +
-                     "([FechaCarga], [Estado], [CUO], [Comprobante Nº], [F# Registro], " +
-                     "[F# Emision], [F# Vencimiento], [Nro Doc# Ident#], [Razon Social], " +
-                     "[Moneda], [Total], [Saldo MN], [Saldo ME], [Plan Cuenta], [Descripcion], [Centro Costo]) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            sql = "INSERT INTO [dbo].[CuentasPorPagar] "
+                    + "([FechaCarga], [Estado], [CUO], [Comprobante Nº], [F# Registro], "
+                    + "[F# Emision], [F# Vencimiento], [Nro Doc# Ident#], [Razon Social], "
+                    + "[Moneda], [Total], [Saldo MN], [Saldo ME], [Plan Cuenta], [Descripcion], [Centro Costo]) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             pstm = con.prepareStatement(sql);
 
             try (FileInputStream fis = new FileInputStream(excelFilePath); Workbook workbook = new XSSFWorkbook(fis);) {
@@ -825,7 +866,7 @@ public class CargaArchivos extends javax.swing.JDialog {
                 Sheet sheet = workbook.getSheetAt(0);
 
                 int rowCount = sheet.getLastRowNum();
-                
+
                 for (int i = 1; i < sheet.getLastRowNum(); i++) {
                     Row row = sheet.getRow(i);
 
@@ -868,15 +909,15 @@ public class CargaArchivos extends javax.swing.JDialog {
 
                         pstm.addBatch(); // Agregar el batch
                     }
-                    
-                    int progress = (int) ((double) (i+1) / rowCount * 100);
+
+                    int progress = (int) ((double) (i + 1) / rowCount * 100);
                     SwingUtilities.invokeLater(() -> jProgressBar1.setValue(progress));
                 }
 
                 pstm.executeBatch();
                 pstm.close();
                 con.close();
-                
+
                 JOptionPane.showMessageDialog(this, "El EXCEL DE " + cb_tipo.getSelectedItem().toString().toUpperCase() + " ha sido cargado correctamente.", "Exito", JOptionPane.INFORMATION_MESSAGE);
 
             } catch (IOException e) {
@@ -886,6 +927,96 @@ public class CargaArchivos extends javax.swing.JDialog {
             }
         } catch (SQLException ex) {
             Logger.getLogger(CargaArchivos.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    private void cargarComprasGlobal(String filePath) {
+        FileInputStream fis = null;
+        try {
+
+            fis = new FileInputStream(new File(filePath));
+            {
+
+                Workbook workbook = new XSSFWorkbook(fis);
+
+                Sheet sheet = workbook.getSheetAt(0);
+                int rowCount = sheet.getLastRowNum();
+
+                Connection con = Conexion.getConnection();
+                int year, month;
+                
+                String sql = "delete from ComprasDetalladasGlobal";
+                PreparedStatement pstm = con.prepareStatement(sql);
+                pstm.executeUpdate();
+
+                sql = "INSERT INTO [dbo].[ComprasDetalladasGlobal] VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+                pstm = con.prepareStatement(sql);
+
+                for (int i = 1; i <= rowCount; i++) {
+                    Row row = sheet.getRow(i);
+                    Cell fechaCell = row.getCell(3);
+                    if (fechaCell != null && fechaCell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(fechaCell)) {
+                        Date date = fechaCell.getDateCellValue(); // Obtiene la fecha como objeto Date
+                        Calendar cal = Calendar.getInstance();
+                        cal.setTime(date);
+                        year = cal.get(Calendar.YEAR); // Extrae el año
+                        month = cal.get(Calendar.MONTH) + 1; // Extrae el mes (agregar 1 porque Calendar.MONTH es 0-based)
+                    } else {
+                        year = 0; // Valor predeterminado si no hay fecha válida
+                        month = 0; // Valor predeterminado si no hay fecha válida
+                    }
+                    
+                    pstm.setInt(1, year);
+                    pstm.setInt(2, month);
+
+                    for (int j = 0; j < 22; j++) {
+                        Cell cell = row.getCell(j);
+                        if (cell != null) {
+                            switch (cell.getCellType()) {
+                                case NUMERIC:
+                                    pstm.setDouble(j + 3, cell.getNumericCellValue());
+                                    break;
+                                case STRING:
+                                    pstm.setString(j + 3, cell.getStringCellValue());
+                                    break;
+                                default:
+                                    pstm.setString(j + 3, null);
+                            }
+                        } else {
+                            pstm.setString(j + 3, null);
+                        }
+
+                    }
+                    pstm.addBatch();
+
+                    int progress = (int) ((double) i / rowCount * 100);
+                    SwingUtilities.invokeLater(() -> jProgressBar1.setValue(progress));
+                }
+                
+                pstm.executeBatch();
+
+                sql = "delete from ComprasDetalladasGlobal where Periodo IS NULL";
+                pstm = con.prepareStatement(sql);
+                pstm.executeUpdate();
+
+                pstm.close();
+                con.close();
+
+                JOptionPane.showMessageDialog(this, "El EXCEL DE " + cb_tipo.getSelectedItem().toString().toUpperCase() + " ha sido cargado correctamente.", "Exito", JOptionPane.INFORMATION_MESSAGE);
+
+            }
+
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(CargaArchivos.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException | SQLException ex) {
+            Logger.getLogger(CargaArchivos.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                fis.close();
+            } catch (IOException ex) {
+                Logger.getLogger(CargaArchivos.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 
@@ -1199,6 +1330,11 @@ public class CargaArchivos extends javax.swing.JDialog {
 
         cb_tipo2.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
         cb_tipo2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<<Seleccionar>>", "Balance de Comprobacion (Hoja de Balance)", "Comprobante de Compra 33 (Cuenta 33)", "Movimientos de Ingresos y Egresos", "Movimientos de Egresos con Glosa", "Planilla de Sueldo" }));
+        cb_tipo2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cb_tipo2ActionPerformed(evt);
+            }
+        });
 
         jProgressBar2.setStringPainted(true);
 
@@ -1353,14 +1489,14 @@ public class CargaArchivos extends javax.swing.JDialog {
             JOptionPane.showMessageDialog(this, "Seleccione un Archivo", "Mensaje", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        
+
         if (cb_sede.isVisible() && cb_sede.getSelectedIndex() == 0) {
             JOptionPane.showMessageDialog(null, "Seleccione una Sede", "Mensaje", JOptionPane.ERROR_MESSAGE);
             cb_sede.requestFocus();
             cb_sede.showPopup();
             return;
         }
-        
+
         setComponentsEnabled(false);
         setCursor(new Cursor(Cursor.WAIT_CURSOR));
 
@@ -1377,7 +1513,7 @@ public class CargaArchivos extends javax.swing.JDialog {
                 } else {
                     fechames = "MES DE " + new DateFormatSymbols().getMonths()[mes.getMonth()].toUpperCase() + " DEL " + año.getYear() + "";
                 }
-                
+
                 if (JOptionPane.showConfirmDialog(null, "<html>¿Estas seguro que deseas subir el <b><font color='red'>EXCEL DE " + tipoSeleccionado.toUpperCase() + "</font></b><br>correspondiente al <b><font color='red'>" + fechames + "</font></b>?", "Confirmación", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
                     switch (tipoSeleccionado) {
                         case "Movimientos de Ingresos y Egresos":
@@ -1402,6 +1538,9 @@ public class CargaArchivos extends javax.swing.JDialog {
                         case "Cuentas por Pagar":
                             cargarCuentasPorPagar(ruta);
                             break;
+                        case "Compras Detalladas (Global)":
+                            cargarComprasGlobal(ruta);
+                            break;
                     }
                 }
                 return null;
@@ -1411,14 +1550,21 @@ public class CargaArchivos extends javax.swing.JDialog {
             protected void done() {
                 setComponentsEnabled(true);
                 setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                limpiarCampos();
+                if (!cb_tipo.getSelectedItem().toString().equals("Stock de Productos en Almacen")) {
+                    limpiarCampos();
+                } else {
+                    limpiarCampos3();
+                }
+
             }
+
+           
 
         };
 
         worker.execute();
     }//GEN-LAST:event_btn_subirActionPerformed
-
+    
     private void btn_eliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_eliminarActionPerformed
         if (cb_tipo2.getSelectedIndex() == 0) {
             JOptionPane.showMessageDialog(this, "Seleccione el Tipo de Archivo", "Mensaje", JOptionPane.ERROR_MESSAGE);
@@ -1472,31 +1618,47 @@ public class CargaArchivos extends javax.swing.JDialog {
         if (cb_tipo.getSelectedItem().equals("Stock de Productos en Almacen")) {
             jLabel10.setVisible(true);
             cb_sede.setVisible(true);
-        }  else if (cb_tipo.getSelectedItem().equals("Cuentas por Pagar")) {
+            año.setEnabled(true);
+            mes.setEnabled(true);
+        } else if (cb_tipo.getSelectedItem().equals("Compras Detalladas (Global)")) {
+            año.setEnabled(false);
+            mes.setEnabled(false);
+            
+            jLabel11.setVisible(false);
+            jDateChooser1.setVisible(false);
+            
+            año.setVisible(true);
+            mes.setVisible(true);
+        }else if (cb_tipo.getSelectedItem().equals("Cuentas por Pagar")) {
             jLabel11.setVisible(true);
             jDateChooser1.setVisible(true);
-            
-             jLabel10.setVisible(false);
+
+            jLabel10.setVisible(false);
             cb_sede.setVisible(false);
             jLabel4.setVisible(false);
             jLabel5.setVisible(false);
             año.setVisible(false);
             mes.setVisible(false);
-        } 
-        
-        
-        else {
+            año.setEnabled(true);
+            mes.setEnabled(true);
+        } else {
             jLabel10.setVisible(false);
             cb_sede.setVisible(false);
-             jLabel11.setVisible(false);
+            jLabel11.setVisible(false);
             jDateChooser1.setVisible(false);
-            
-             jLabel4.setVisible(true);
+
+            jLabel4.setVisible(true);
             jLabel5.setVisible(true);
             año.setVisible(true);
             mes.setVisible(true);
+            año.setEnabled(true);
+            mes.setEnabled(true);
         }
     }//GEN-LAST:event_cb_tipoItemStateChanged
+
+    private void cb_tipo2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cb_tipo2ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cb_tipo2ActionPerformed
 
     /**
      * @param args the command line arguments

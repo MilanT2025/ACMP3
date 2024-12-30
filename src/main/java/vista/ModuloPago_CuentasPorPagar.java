@@ -29,6 +29,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.RowFilter;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -115,7 +116,24 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
         TableRowSorter<TableModel> sorter = new TableRowSorter<>(tb_data.getModel());
         tb_data.setRowSorter(sorter);
         
-
+        sorter.setRowFilter(new RowFilter<TableModel, Integer>() {
+            @Override
+            public boolean include(Entry<? extends TableModel, ? extends Integer> entry) {
+                // Obtener el valor de la columna 9 (índice 8, ya que es base 0)
+                String value = entry.getStringValue(8); // Índice de columna 9
+                if (jCheckBox1.isSelected()) {
+                    return true; // Mostrar todos los registros
+                } else {
+                    return !value.equalsIgnoreCase("PAGADO"); // Ocultar "PAGADOS"
+                }
+            }
+        });
+        
+        jCheckBox1.addActionListener(e -> {
+            sorter.sort(); // Actualizar el filtro
+        });
+        
+        
         originalAlternateRowColor = (Color) UIManager.getLookAndFeelDefaults().get("Table.alternateRowColor");
 
         if (originalAlternateRowColor == null) {
@@ -146,11 +164,11 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
                 int column = e.getColumn();
                 
                 if (column == 12) { // Índice 11 porque las columnas empiezan en 0
-                    Boolean valor12 = Boolean.valueOf(tb_data.getValueAt(row, column).toString());
+                    Boolean valor12 = Boolean.valueOf(modelo.getValueAt(row, column).toString());
                     if (valor12) {
-                        tb_data.setValueAt("100", row, 13);
+                        modelo.setValueAt("100", row, 13);
                     } else {
-                        tb_data.setValueAt("", row, 13);
+                        modelo.setValueAt("", row, 13);
                     }
 
                     
@@ -158,15 +176,15 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
 
                 // Detectar si se modificó la columna 12
                 if (column == 13) { // Índice 11 porque las columnas empiezan en 0
-                    Object valor13 = tb_data.getValueAt(row, column);
+                    Object valor13 = modelo.getValueAt(row, column);
                     if (valor13 == null || valor13.toString().isEmpty()) {
-                        tb_data.setValueAt("", row, 14);
+                        modelo.setValueAt("", row, 14);
 
                     } else {
                         double valor13double = Double.parseDouble(valor13.toString());
-                        double valor7 = Double.parseDouble(tb_data.getValueAt(row, 7).toString());
+                        double valor7 = Double.parseDouble(modelo.getValueAt(row, 7).toString());
 
-                        tb_data.setValueAt(valor7 * (valor13double / 100), row, 14);
+                        modelo.setValueAt(valor7 * (valor13double / 100), row, 14);
                     }
 
                     
@@ -481,6 +499,7 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
         jLabel13 = new javax.swing.JLabel();
         jPanel14 = new javax.swing.JPanel();
         jDateChooser1 = new com.toedter.calendar.JDateChooser("dd/MM/yyyy","##/##/####", '_');
+        jCheckBox1 = new javax.swing.JCheckBox();
         jMenuBar1 = new javax.swing.JMenuBar();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -539,6 +558,9 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
             }
         });
 
+        jCheckBox1.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
+        jCheckBox1.setText("Mostrar \"PAGADOS\"");
+
         javax.swing.GroupLayout jPanel14Layout = new javax.swing.GroupLayout(jPanel14);
         jPanel14.setLayout(jPanel14Layout);
         jPanel14Layout.setHorizontalGroup(
@@ -546,13 +568,19 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
             .addGroup(jPanel14Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jDateChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, 221, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(1011, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jCheckBox1)
+                .addContainerGap())
         );
         jPanel14Layout.setVerticalGroup(
             jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel14Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jDateChooser1, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
+                .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel14Layout.createSequentialGroup()
+                        .addComponent(jCheckBox1)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jDateChooser1, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -743,6 +771,7 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
+    private javax.swing.JCheckBox jCheckBox1;
     private com.toedter.calendar.JDateChooser jDateChooser1;
     private javax.swing.JFileChooser jFileChooser1;
     private javax.swing.JLabel jLabel13;

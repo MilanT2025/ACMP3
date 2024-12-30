@@ -194,7 +194,7 @@ public class Mercaderia extends javax.swing.JFrame {
                     + "WITH cte AS ( "
                     + "    SELECT Codigo, [Precio Sin IGV], [F# Emision], "
                     + "           ROW_NUMBER() OVER (PARTITION BY Codigo ORDER BY [F# Emision] DESC) AS rn "
-                    + "    FROM cuenta33 "
+                    + "    FROM ComprasDetalladasGlobal "
                     + ") "
                     + "SELECT Codigo, [Precio Sin IGV] INTO #Temp1 "
                     + "FROM cte "

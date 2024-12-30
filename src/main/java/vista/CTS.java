@@ -135,7 +135,7 @@ public class CTS extends javax.swing.JFrame {
         modelo.addColumn("Neto Pagar");
         modelo.addColumn("Gratificacion Sin 9%");
         modelo.addColumn("Comisiones / Solo Bonf Prod");
-        modelo.addColumn("Computable");
+        modelo.addColumn("Computable");//13 + 12
 
         agregarColumnasPorMes(jdc_mes.getMonth() + 1);
 
