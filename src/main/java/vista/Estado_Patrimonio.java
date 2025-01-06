@@ -683,7 +683,7 @@ public class Estado_Patrimonio extends javax.swing.JFrame {
         jLabel2.setText("ASOCIACIÓN CÍRCULO MILITAR DEL PERÚ");
 
         jLabel3.setFont(new java.awt.Font("Bahnschrift", 1, 13)); // NOI18N
-        jLabel3.setText("Dirección de Recreación");
+        jLabel3.setText("Gerencia de Recreación");
 
         jLabel6.setFont(new java.awt.Font("Bahnschrift", 0, 13)); // NOI18N
         jLabel6.setText("Estado de Cambio en el Patrimonio Neto");

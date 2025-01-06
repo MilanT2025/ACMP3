@@ -1092,7 +1092,7 @@ public class Flujo_Caja extends javax.swing.JFrame {
         jLabel2.setText("ASOCIACIÓN CÍRCULO MILITAR DEL PERÚ");
 
         jLabel3.setFont(new java.awt.Font("Bahnschrift", 1, 13)); // NOI18N
-        jLabel3.setText("Dirección de Recreación");
+        jLabel3.setText("Gerencia de Recreación");
 
         jPanel7.setBackground(new java.awt.Color(255, 255, 255));
         jPanel7.setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true), "Opciones", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Roboto", 1, 13))); // NOI18N

@@ -115,7 +115,7 @@
                     </descriptorRefs>           
                     <archive>
                         <manifest>
-                            <mainClass>vista.Principal1</mainClass>
+                            <mainClass>main.Application</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
