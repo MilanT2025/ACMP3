@@ -4,6 +4,13 @@
  */
 package vista;
 
+import Controlador.Conexion;
+import java.awt.event.ItemEvent;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 /**
  *
  * @author Farmacia-Ingeniero
@@ -16,6 +23,9 @@ public class ReporteContable extends javax.swing.JDialog {
     public ReporteContable(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        cargaDatosCopere();
+//        cargaDatosCaja();
+//        cargaDatosOprefa();
     }
 
     /**
@@ -221,7 +231,7 @@ public class ReporteContable extends javax.swing.JDialog {
     }//GEN-LAST:event_cbregcontableItemStateChanged
 
     private void cbnomapeItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbnomapeItemStateChanged
-        
+
     }//GEN-LAST:event_cbnomapeItemStateChanged
 
     private void btnguardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnguardarActionPerformed
@@ -305,14 +315,93 @@ public class ReporteContable extends javax.swing.JDialog {
     }
 
     private void cargaDatosCopere() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+                try {
+            // Establecer la conexión a la base de datos
+            Connection con = Conexion.getConnection();
+            Statement stmt = con.createStatement();
+
+            // Ejecutar la consulta
+            String query = "SELECT (pe.Nombres + ' ' + pe.A_Paterno + ' ' + pe.A_Materno) AS NombreCompleto "
+                    + "FROM EstructuraCopere ec "
+                    + "INNER JOIN Personal AS pe ON ec.Numero_CIP = pe.NroCip";
+            ResultSet rs = stmt.executeQuery(query);
+
+            // Limpiar el JComboBox antes de agregar nuevos elementos
+            cbnomape.removeAllItems();
+            // Agregar la opción <<Seleccionar>>
+            cbnomape.addItem("<<Seleccionar>>");
+            // Llenar el JComboBox con los resultados
+            while (rs.next()) {
+                String nombreCompleto = rs.getString("nombreCompleto");
+                cbnomape.addItem(nombreCompleto);
+            }
+
+            // Cerrar la conexión
+            rs.close();
+            stmt.close();
+            con.close();
+        } catch (SQLException e) {
+            e.printStackTrace(); // Manejo de excepciones
+        }
     }
 
     private void cargaDatosCaja() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+               try {
+            // Establecer la conexión a la base de datos
+            Connection con = Conexion.getConnection();
+            Statement stmt = con.createStatement();
+
+            // Ejecutar la consulta
+            String query = "select (pe.Nombres+' '+pe.A_Paterno+' '+pe.A_Materno) from EstructuraCajaPensiones ecp "
+                    + "inner join Personal as pe on ecp.Codigo_CIP = pe.NroCip";
+            ResultSet rs = stmt.executeQuery(query);
+
+            // Limpiar el JComboBox antes de agregar nuevos elementos
+            cbnomape.removeAllItems();
+            // Agregar la opción <<Seleccionar>>
+            cbnomape.addItem("<<Seleccionar>>");
+            // Llenar el JComboBox con los resultados
+            while (rs.next()) {
+                String nombreCompleto2 = rs.getString("nombreCompleto2");
+                cbnomape.addItem(nombreCompleto2);
+            }
+
+            // Cerrar la conexión
+            rs.close();
+            stmt.close();
+            con.close();
+        } catch (SQLException e) {
+            e.printStackTrace(); // Manejo de excepciones
+        }
     }
 
     private void cargaDatosOprefa() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+              try {
+            // Establecer la conexión a la base de datos
+            Connection con = Conexion.getConnection();
+            Statement stmt = con.createStatement();
+
+            // Ejecutar la consulta
+            String query = "select (pe.Nombres+' '+pe.A_Paterno+' '+pe.A_Materno) from EstructuraOprefa eo "
+                    + "inner join Personal as pe on eo.DNI = pe.Dni";
+            ResultSet rs = stmt.executeQuery(query);
+
+            // Limpiar el JComboBox antes de agregar nuevos elementos
+            cbnomape.removeAllItems();
+            // Agregar la opción <<Seleccionar>>
+            cbnomape.addItem("<<Seleccionar>>");
+            // Llenar el JComboBox con los resultados
+            while (rs.next()) {
+                String nombreCompleto = rs.getString("nombreCompleto");
+                cbnomape.addItem(nombreCompleto);
+            }
+
+            // Cerrar la conexión
+            rs.close();
+            stmt.close();
+            con.close();
+        } catch (SQLException e) {
+            e.printStackTrace(); // Manejo de excepciones
+        }
     }
 }
