@@ -24,8 +24,7 @@ public class ReporteContable extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         cargaDatosCopere();
-//        cargaDatosCaja();
-//        cargaDatosOprefa();
+        this.setLocationRelativeTo(null);
     }
 
     /**
@@ -97,7 +96,6 @@ public class ReporteContable extends javax.swing.JDialog {
         jLabel4.setText("Nombres Apellidos:");
 
         cbnomape.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
-        cbnomape.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<<Seleccionar>>" }));
         cbnomape.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 cbnomapeItemStateChanged(evt);
@@ -315,28 +313,21 @@ public class ReporteContable extends javax.swing.JDialog {
     }
 
     private void cargaDatosCopere() {
-                try {
-            // Establecer la conexión a la base de datos
+        try {
             Connection con = Conexion.getConnection();
             Statement stmt = con.createStatement();
 
-            // Ejecutar la consulta
-            String query = "SELECT (pe.Nombres + ' ' + pe.A_Paterno + ' ' + pe.A_Materno) AS NombreCompleto "
+            String query = "SELECT CONCAT(pe.A_Paterno, ' ', pe.A_Materno, ' ', pe.Nombres) AS Nomape "
                     + "FROM EstructuraCopere ec "
-                    + "INNER JOIN Personal AS pe ON ec.Numero_CIP = pe.NroCip";
+                    + "INNER JOIN Personal AS pe ON ec.Numero_CIP = pe.NroCip ORDER BY Nomape";
             ResultSet rs = stmt.executeQuery(query);
-
-            // Limpiar el JComboBox antes de agregar nuevos elementos
             cbnomape.removeAllItems();
-            // Agregar la opción <<Seleccionar>>
             cbnomape.addItem("<<Seleccionar>>");
-            // Llenar el JComboBox con los resultados
             while (rs.next()) {
-                String nombreCompleto = rs.getString("nombreCompleto");
+                String nombreCompleto = rs.getString("Nomape");
                 cbnomape.addItem(nombreCompleto);
             }
 
-            // Cerrar la conexión
             rs.close();
             stmt.close();
             con.close();
@@ -346,23 +337,18 @@ public class ReporteContable extends javax.swing.JDialog {
     }
 
     private void cargaDatosCaja() {
-               try {
-            // Establecer la conexión a la base de datos
+        try {
             Connection con = Conexion.getConnection();
             Statement stmt = con.createStatement();
 
-            // Ejecutar la consulta
-            String query = "select (pe.Nombres+' '+pe.A_Paterno+' '+pe.A_Materno) from EstructuraCajaPensiones ecp "
-                    + "inner join Personal as pe on ecp.Codigo_CIP = pe.NroCip";
+            String query = "select CONCAT(pe.A_Paterno, ' ', pe.A_Materno, ' ', pe.Nombres) AS Nomape from EstructuraCajaPensiones ecp "
+                    + "inner join Personal as pe on ecp.Codigo_CIP = pe.NroCip ORDER BY Nomape";
             ResultSet rs = stmt.executeQuery(query);
 
-            // Limpiar el JComboBox antes de agregar nuevos elementos
             cbnomape.removeAllItems();
-            // Agregar la opción <<Seleccionar>>
             cbnomape.addItem("<<Seleccionar>>");
-            // Llenar el JComboBox con los resultados
             while (rs.next()) {
-                String nombreCompleto2 = rs.getString("nombreCompleto2");
+                String nombreCompleto2 = rs.getString("Nomape");
                 cbnomape.addItem(nombreCompleto2);
             }
 
@@ -376,14 +362,14 @@ public class ReporteContable extends javax.swing.JDialog {
     }
 
     private void cargaDatosOprefa() {
-              try {
+        try {
             // Establecer la conexión a la base de datos
             Connection con = Conexion.getConnection();
             Statement stmt = con.createStatement();
 
             // Ejecutar la consulta
-            String query = "select (pe.Nombres+' '+pe.A_Paterno+' '+pe.A_Materno) from EstructuraOprefa eo "
-                    + "inner join Personal as pe on eo.DNI = pe.Dni";
+            String query = "select CONCAT(pe.A_Paterno, ' ', pe.A_Materno, ' ', pe.Nombres) AS Nomape from EstructuraOprefa eo "
+                    + "inner join Personal as pe on eo.DNI = pe.Dni ORDER BY Nomape";
             ResultSet rs = stmt.executeQuery(query);
 
             // Limpiar el JComboBox antes de agregar nuevos elementos
@@ -392,7 +378,7 @@ public class ReporteContable extends javax.swing.JDialog {
             cbnomape.addItem("<<Seleccionar>>");
             // Llenar el JComboBox con los resultados
             while (rs.next()) {
-                String nombreCompleto = rs.getString("nombreCompleto");
+                String nombreCompleto = rs.getString("Nomape");
                 cbnomape.addItem(nombreCompleto);
             }
 
