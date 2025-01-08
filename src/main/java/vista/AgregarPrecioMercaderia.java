@@ -367,6 +367,8 @@ public class AgregarPrecioMercaderia extends javax.swing.JDialog {
         }
         
         guardarPrecio();
+        
+        Mercaderia.jButton1.doClick();
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void tb_resultadoKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tb_resultadoKeyPressed

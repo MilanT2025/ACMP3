@@ -348,6 +348,7 @@ public class Mercaderia extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jButton1 = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tb_resultado = new javax.swing.JTable();
@@ -380,6 +381,13 @@ public class Mercaderia extends javax.swing.JFrame {
         MenuRegistrarEmpleado2 = new javax.swing.JMenuItem();
         MenuRegistrarEmpleado = new javax.swing.JMenuItem();
         MenuRegistrarEmpleado1 = new javax.swing.JMenuItem();
+
+        jButton1.setText("jButton1");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Valorizacion de Mercaderias y Existencias");
@@ -761,7 +769,7 @@ public class Mercaderia extends javax.swing.JFrame {
         }
     }
 
-    private void cargarDatos() {
+    public void cargarDatos() {
         llenar_tabla();
         FuncionesGlobales.colocarnombremesannio(jdc_año, jdc_mes, txt_razonsocial2);
     }
@@ -809,6 +817,10 @@ public class Mercaderia extends javax.swing.JFrame {
         AgregarSedes ini = new AgregarSedes(this, true);
         ini.setVisible(true);
     }//GEN-LAST:event_AgregarSedesActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        cargarDatos();
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     // Método para exportar los datos de la tabla a Excel
     public static void exportarAExcel(DefaultTableModel model, String mesannio) {
@@ -937,6 +949,7 @@ public class Mercaderia extends javax.swing.JFrame {
     private javax.swing.JMenuItem MenuRegistrarEmpleado;
     private javax.swing.JMenuItem MenuRegistrarEmpleado1;
     private javax.swing.JMenuItem MenuRegistrarEmpleado2;
+    public static javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel16;

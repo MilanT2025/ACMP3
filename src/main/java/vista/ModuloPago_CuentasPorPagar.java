@@ -9,6 +9,7 @@ import com.formdev.flatlaf.FlatIntelliJLaf;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ItemEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -512,6 +513,11 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
         tb_data.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         tb_data.setRowHeight(35);
         tb_data.setShowHorizontalLines(true);
+        tb_data.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                tb_dataKeyPressed(evt);
+            }
+        });
         jScrollPane1.setViewportView(tb_data);
 
         jButton1.setFont(new java.awt.Font("Roboto", 1, 12)); // NOI18N
@@ -668,6 +674,115 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
     private void jDateChooser1PropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_jDateChooser1PropertyChange
 
     }//GEN-LAST:event_jDateChooser1PropertyChange
+
+    private static boolean validarContraseña(String contraseña) {
+        boolean esValida = false;
+        Connection conexion = null;
+        PreparedStatement consulta = null;
+        ResultSet resultado = null;
+
+        try {
+            // Configura tu conexión a la base de datos
+            conexion = Conexion.getConnection();
+
+            String sql = "SELECT Valor FROM Parametros WHERE idParametro = 1";
+            consulta = conexion.prepareStatement(sql);
+            resultado = consulta.executeQuery();
+
+            if (resultado.next()) {
+                String contraseñaCorrecta = resultado.getString("Valor");
+                esValida = contraseña.equals(contraseñaCorrecta);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (resultado != null) {
+                    resultado.close();
+                }
+                if (consulta != null) {
+                    consulta.close();
+                }
+                if (conexion != null) {
+                    conexion.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return esValida;
+    }
+
+    private static void eliminarRegistro(String factura) {
+        Connection conexion = null;
+        PreparedStatement consulta = null;
+
+        try {
+            // Configura tu conexión a la base de datos
+            conexion = Conexion.getConnection();
+
+            String sql = "DELETE FROM CuentasPorPagarDiario WHERE Factura = ?";
+            consulta = conexion.prepareStatement(sql);
+            consulta.setString(1, factura);
+
+            int filasAfectadas = consulta.executeUpdate();
+            if (filasAfectadas == 0) {
+                JOptionPane.showMessageDialog(null,
+                        "No se encontró el registro para eliminar.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null,
+                    "Error al eliminar el registro: " + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        } finally {
+            try {
+                if (consulta != null) {
+                    consulta.close();
+                }
+                if (conexion != null) {
+                    conexion.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void tb_dataKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tb_dataKeyPressed
+        if (evt.getKeyCode() == KeyEvent.VK_DELETE) {
+            String factura = modelo.getValueAt(tb_data.getSelectedRow(), 4).toString();
+
+                int confirmacion = JOptionPane.showConfirmDialog(null,
+                        "¿Está seguro que desea eliminar este registro?",
+                        "Confirmar eliminación",
+                        JOptionPane.YES_NO_OPTION);
+
+                if (confirmacion == JOptionPane.YES_OPTION) {
+                    String contraseñaIngresada = JOptionPane.showInputDialog(null,
+                            "Ingrese su contraseña para confirmar:");
+
+                    if (contraseñaIngresada != null) {
+                        if (validarContraseña(contraseñaIngresada)) {
+                            eliminarRegistro(factura);
+                            JOptionPane.showMessageDialog(null,
+                                    "El registro ha sido eliminado exitosamente.");
+                            llenar_tabla();
+                        } else {
+                            JOptionPane.showMessageDialog(null,
+                                    "Contraseña incorrecta. No se realizara ninguna acción.",
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                }
+             
+        }
+    }//GEN-LAST:event_tb_dataKeyPressed
 
     public static void exportarArchivoExcel(DefaultTableModel model) {
         JFileChooser jFileChooser = new JFileChooser();

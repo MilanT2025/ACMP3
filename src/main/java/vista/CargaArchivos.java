@@ -63,10 +63,13 @@ public class CargaArchivos extends javax.swing.JDialog {
         jLabel10.setVisible(false);
         cb_sede.setVisible(false);
         jLabel11.setVisible(false);
+        jLabel12.setVisible(false);
         jDateChooser1.setVisible(false);
+        jDateChooser2.setVisible(false);
 
         jDateChooser1.setDate(new Date());
-
+        jDateChooser2.setDate(new Date());
+        
         cargarOpcionesDesdeArchivoYOrdenar(cb_sede, "sedes.txt");
     }
 
@@ -1026,11 +1029,20 @@ public class CargaArchivos extends javax.swing.JDialog {
             int month = (mes2.getMonth() + 1);
 
             Connection con = Conexion.getConnection();
-
             String sql = "delete from " + archivo + " where año = ? and mes = ?";
+            
+            if (archivo.equals("CuentasPorPagar")) {
+                sql = "delete from " + archivo + " where FechaCarga = ?";
+            } 
+            
             PreparedStatement pstm = con.prepareStatement(sql);
-            pstm.setInt(1, year);
-            pstm.setInt(2, month);
+            if (archivo.equals("CuentasPorPagar")) {
+                pstm.setString(1, new SimpleDateFormat("dd/MM/yyyy").format(jDateChooser2.getDate()));
+            } else {
+                pstm.setInt(1, year);
+                pstm.setInt(2, month);
+            }
+           
             pstm.executeUpdate();
 
             pstm.close();
@@ -1042,6 +1054,7 @@ public class CargaArchivos extends javax.swing.JDialog {
 
         } catch (SQLException ex) {
             Logger.getLogger(CargaArchivos.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println(ex.getMessage());
         }
 
     }
@@ -1104,6 +1117,8 @@ public class CargaArchivos extends javax.swing.JDialog {
         cb_tipo2 = new javax.swing.JComboBox<>();
         jSeparator2 = new javax.swing.JSeparator();
         jProgressBar2 = new javax.swing.JProgressBar();
+        jLabel12 = new javax.swing.JLabel();
+        jDateChooser2 = new com.toedter.calendar.JDateChooser("dd/MM/yyyy","##/##/####", '_');
         jPanel8 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
 
@@ -1329,7 +1344,12 @@ public class CargaArchivos extends javax.swing.JDialog {
         jLabel9.setText("Tipo de Archivo a Borrar:");
 
         cb_tipo2.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
-        cb_tipo2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<<Seleccionar>>", "Balance de Comprobacion (Hoja de Balance)", "Comprobante de Compra 33 (Cuenta 33)", "Movimientos de Ingresos y Egresos", "Movimientos de Egresos con Glosa", "Planilla de Sueldo" }));
+        cb_tipo2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<<Seleccionar>>", "Balance de Comprobacion (Hoja de Balance)", "Comprobante de Compra 33 (Cuenta 33)", "Cuentas por Pagar", "Movimientos de Ingresos y Egresos", "Movimientos de Egresos con Glosa", "Planilla de Sueldo" }));
+        cb_tipo2.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cb_tipo2ItemStateChanged(evt);
+            }
+        });
         cb_tipo2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cb_tipo2ActionPerformed(evt);
@@ -1337,6 +1357,11 @@ public class CargaArchivos extends javax.swing.JDialog {
         });
 
         jProgressBar2.setStringPainted(true);
+
+        jLabel12.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
+        jLabel12.setText("Fecha");
+
+        jDateChooser2.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
 
         javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
         jPanel7.setLayout(jPanel7Layout);
@@ -1356,11 +1381,14 @@ public class CargaArchivos extends javax.swing.JDialog {
                         .addComponent(jLabel8)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(mes2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel12)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jDateChooser2, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel7Layout.createSequentialGroup()
                         .addComponent(jLabel9)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cb_tipo2, 0, 778, Short.MAX_VALUE)))
+                        .addComponent(cb_tipo2, 0, 779, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel7Layout.setVerticalGroup(
@@ -1371,7 +1399,10 @@ public class CargaArchivos extends javax.swing.JDialog {
                     .addComponent(año2, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(mes2, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(jLabel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jDateChooser2, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1579,8 +1610,11 @@ public class CargaArchivos extends javax.swing.JDialog {
             @Override
             protected Void doInBackground() throws Exception {
                 String tipoSeleccionado = cb_tipo2.getSelectedItem().toString();
-
-                if (JOptionPane.showConfirmDialog(null, "<html>¿Estas seguro que deseas borrar el <b><font color='red'>ARCHIVO DE " + tipoSeleccionado.toUpperCase() + "</font></b><br>correspondiente al <b><font color='red'>MES DE " + new DateFormatSymbols().getMonths()[mes2.getMonth()].toUpperCase() + " DEL " + año2.getYear() + "</font></b>?<br><br><b>NOTA: Al Eliminar el Archivo se vera afectado todos los reportes que esten asociados a este</b></html>", "Confirmación", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+                String mensaje = "MES DE " + new DateFormatSymbols().getMonths()[mes2.getMonth()].toUpperCase() + " DEL " + año2.getYear() + "";
+                if (tipoSeleccionado.equals("Cuentas por Pagar")) {
+                    mensaje = new SimpleDateFormat("dd/MM/yyyy").format(jDateChooser2.getDate());
+                }
+                if (JOptionPane.showConfirmDialog(null, "<html>¿Estas seguro que deseas borrar el <b><font color='red'>ARCHIVO DE " + tipoSeleccionado.toUpperCase() + "</font></b><br>correspondiente al <b><font color='red'>" + mensaje + "</font></b>?<br><br><b>NOTA: Al Eliminar el Archivo se vera afectado todos los reportes que esten asociados a este</b></html>", "Confirmación", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
                     switch (tipoSeleccionado) {
                         case "Movimientos de Ingresos y Egresos":
                             eliminararchivo("ingreso");
@@ -1597,6 +1631,9 @@ public class CargaArchivos extends javax.swing.JDialog {
                             break;
                         case "Planilla de Sueldo":
                             eliminararchivo("PlanillaSueldo");
+                            break;
+                        case "Cuentas por Pagar":
+                            eliminararchivo("CuentasPorPagar");
                             break;
                     }
                 }
@@ -1660,6 +1697,26 @@ public class CargaArchivos extends javax.swing.JDialog {
         // TODO add your handling code here:
     }//GEN-LAST:event_cb_tipo2ActionPerformed
 
+    private void cb_tipo2ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cb_tipo2ItemStateChanged
+        if (cb_tipo2.getSelectedItem().equals("Cuentas por Pagar")) {
+            jDateChooser2.setVisible(true);
+            jLabel12.setVisible(true);
+            
+            jLabel7.setVisible(false);
+            jLabel8.setVisible(false);
+            año2.setVisible(false);
+            mes2.setVisible(false);
+        }else{
+            jDateChooser2.setVisible(false);
+            jLabel12.setVisible(false);
+            
+            jLabel7.setVisible(true);
+            jLabel8.setVisible(true);
+            año2.setVisible(true);
+            mes2.setVisible(true);
+        }
+    }//GEN-LAST:event_cb_tipo2ItemStateChanged
+
     /**
      * @param args the command line arguments
      */
@@ -1712,10 +1769,12 @@ public class CargaArchivos extends javax.swing.JDialog {
     private javax.swing.JComboBox<String> cb_tipo;
     private javax.swing.JComboBox<String> cb_tipo2;
     private com.toedter.calendar.JDateChooser jDateChooser1;
+    private com.toedter.calendar.JDateChooser jDateChooser2;
     private javax.swing.JFileChooser jFileChooser1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
