@@ -1044,7 +1044,6 @@ public class CargaCopere extends javax.swing.JFrame {
         txtBuscarCopere = new javax.swing.JTextField();
         btnExportarCopere = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
-        btnAfiliadoCopere1 = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         btnAfiliadoCaja = new javax.swing.JButton();
         jPanel6 = new javax.swing.JPanel();
@@ -1054,7 +1053,6 @@ public class CargaCopere extends javax.swing.JFrame {
         btnExportarCaja = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
         btnNoProcesadosCaja = new javax.swing.JButton();
-        btnAfiliadoCaja1 = new javax.swing.JButton();
         jPanel5 = new javax.swing.JPanel();
         btnAfiliadoOprefa = new javax.swing.JButton();
         jPanel7 = new javax.swing.JPanel();
@@ -1064,11 +1062,12 @@ public class CargaCopere extends javax.swing.JFrame {
         btnExportarOprefa = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
         btnNoProcesadosOprefa = new javax.swing.JButton();
-        btnAfiliadoOprefa1 = new javax.swing.JButton();
         txt_razonsocial2 = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
+        MenuRegistrarEmpleado1 = new javax.swing.JMenuItem();
         MenuRegistrarEmpleado = new javax.swing.JMenuItem();
+        MenuRegistrarEmpleado2 = new javax.swing.JMenuItem();
 
         jButton1.setText("jButton1");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -1169,7 +1168,7 @@ public class CargaCopere extends javax.swing.JFrame {
                     .addComponent(txt_razonsocial1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel16, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(txt_ruc1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jdc_mes, javax.swing.GroupLayout.PREFERRED_SIZE, 29, Short.MAX_VALUE)
+                    .addComponent(jdc_mes, javax.swing.GroupLayout.DEFAULT_SIZE, 29, Short.MAX_VALUE)
                     .addComponent(jdc_año, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1261,15 +1260,6 @@ public class CargaCopere extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        btnAfiliadoCopere1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnAfiliadoCopere1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/imprimir.png"))); // NOI18N
-        btnAfiliadoCopere1.setText("Reporte");
-        btnAfiliadoCopere1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnAfiliadoCopere1ActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -1280,8 +1270,6 @@ public class CargaCopere extends javax.swing.JFrame {
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(btnAfiliadoCopere1, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnAfiliadoCopere, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnNoProcesadosCopere)))
@@ -1293,8 +1281,7 @@ public class CargaCopere extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnAfiliadoCopere)
-                    .addComponent(btnNoProcesadosCopere, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnAfiliadoCopere1))
+                    .addComponent(btnNoProcesadosCopere, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -1386,15 +1373,6 @@ public class CargaCopere extends javax.swing.JFrame {
             }
         });
 
-        btnAfiliadoCaja1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnAfiliadoCaja1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/imprimir.png"))); // NOI18N
-        btnAfiliadoCaja1.setText("Reporte");
-        btnAfiliadoCaja1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnAfiliadoCaja1ActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
@@ -1405,8 +1383,6 @@ public class CargaCopere extends javax.swing.JFrame {
                     .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(btnAfiliadoCaja1, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnAfiliadoCaja, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnNoProcesadosCaja)))
@@ -1416,10 +1392,9 @@ public class CargaCopere extends javax.swing.JFrame {
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnNoProcesadosCaja, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnAfiliadoCaja, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnAfiliadoCaja1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnAfiliadoCaja)
+                    .addComponent(btnNoProcesadosCaja, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -1511,15 +1486,6 @@ public class CargaCopere extends javax.swing.JFrame {
             }
         });
 
-        btnAfiliadoOprefa1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnAfiliadoOprefa1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/imprimir.png"))); // NOI18N
-        btnAfiliadoOprefa1.setText("Reporte");
-        btnAfiliadoOprefa1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnAfiliadoOprefa1ActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
@@ -1530,8 +1496,6 @@ public class CargaCopere extends javax.swing.JFrame {
                     .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel5Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(btnAfiliadoOprefa1, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnAfiliadoOprefa, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnNoProcesadosOprefa)))
@@ -1541,10 +1505,9 @@ public class CargaCopere extends javax.swing.JFrame {
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnNoProcesadosOprefa, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnAfiliadoOprefa, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnAfiliadoOprefa1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnAfiliadoOprefa)
+                    .addComponent(btnNoProcesadosOprefa, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -1574,6 +1537,17 @@ public class CargaCopere extends javax.swing.JFrame {
         jMenu1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/ajustes.png"))); // NOI18N
         jMenu1.setText("Opciones");
 
+        MenuRegistrarEmpleado1.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
+        MenuRegistrarEmpleado1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Books_1.png"))); // NOI18N
+        MenuRegistrarEmpleado1.setText("Alta / Baja");
+        MenuRegistrarEmpleado1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuRegistrarEmpleado1ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(MenuRegistrarEmpleado1);
+
+        MenuRegistrarEmpleado.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
         MenuRegistrarEmpleado.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Profile.png"))); // NOI18N
         MenuRegistrarEmpleado.setText("Registrar Empleados");
         MenuRegistrarEmpleado.addActionListener(new java.awt.event.ActionListener() {
@@ -1582,6 +1556,16 @@ public class CargaCopere extends javax.swing.JFrame {
             }
         });
         jMenu1.add(MenuRegistrarEmpleado);
+
+        MenuRegistrarEmpleado2.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
+        MenuRegistrarEmpleado2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/imprimir.png"))); // NOI18N
+        MenuRegistrarEmpleado2.setText("Reporte Contable");
+        MenuRegistrarEmpleado2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuRegistrarEmpleado2ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(MenuRegistrarEmpleado2);
 
         jMenuBar1.add(jMenu1);
 
@@ -1725,17 +1709,14 @@ public class CargaCopere extends javax.swing.JFrame {
         cargarDatos();
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    private void btnAfiliadoCopere1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAfiliadoCopere1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnAfiliadoCopere1ActionPerformed
+    private void MenuRegistrarEmpleado1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuRegistrarEmpleado1ActionPerformed
+        AltaBajaRegContable ini = new AltaBajaRegContable(this, true);
+        ini.setVisible(true);
+    }//GEN-LAST:event_MenuRegistrarEmpleado1ActionPerformed
 
-    private void btnAfiliadoCaja1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAfiliadoCaja1ActionPerformed
+    private void MenuRegistrarEmpleado2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuRegistrarEmpleado2ActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_btnAfiliadoCaja1ActionPerformed
-
-    private void btnAfiliadoOprefa1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAfiliadoOprefa1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnAfiliadoOprefa1ActionPerformed
+    }//GEN-LAST:event_MenuRegistrarEmpleado2ActionPerformed
 
     public static void saveTableToFile(JTable table, int year, int month) {
         // Formato del nombre de archivo
@@ -1831,12 +1812,11 @@ public class CargaCopere extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem MenuRegistrarEmpleado;
+    private javax.swing.JMenuItem MenuRegistrarEmpleado1;
+    private javax.swing.JMenuItem MenuRegistrarEmpleado2;
     private javax.swing.JButton btnAfiliadoCaja;
-    private javax.swing.JButton btnAfiliadoCaja1;
     private javax.swing.JButton btnAfiliadoCopere;
-    private javax.swing.JButton btnAfiliadoCopere1;
     private javax.swing.JButton btnAfiliadoOprefa;
-    private javax.swing.JButton btnAfiliadoOprefa1;
     private javax.swing.JButton btnExportarCaja;
     private javax.swing.JButton btnExportarCopere;
     private javax.swing.JButton btnExportarOprefa;

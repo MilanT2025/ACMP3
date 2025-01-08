@@ -158,9 +158,9 @@ public class DetalladoCopere extends javax.swing.JDialog {
     private void cargarDatosAporteDeuda(String numerocip, int estado, DefaultTableModel modelo) {
         String condicion;
         if (estado == 1) {
-            condicion = " AND Estado = 1 ";
+            condicion = " AND Estado IN (1, 4) ";
         } else {
-            condicion = " AND Estado <> 1 ";
+            condicion = " AND Estado NOT IN (1, 4) ";
         }
         
         
@@ -413,7 +413,7 @@ public class DetalladoCopere extends javax.swing.JDialog {
     private void tb_resultadoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tb_resultadoMouseClicked
        if (evt.getClickCount() == 2 && evt.getButton() == MouseEvent.BUTTON1) {
            
-           DCopereFamiliar ini = new DCopereFamiliar(null, true);
+           DCopereFamiliar ini = new DCopereFamiliar(null, true, txtdni.getText());
             ini.setVisible(true);
                        
         }

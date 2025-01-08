@@ -32,12 +32,12 @@ public class DCopereFamiliar extends javax.swing.JDialog {
     /**
      * Creates new form DCopereFamiliar
      */
-    public DCopereFamiliar(java.awt.Frame parent, boolean modal) {
+    public DCopereFamiliar(java.awt.Frame parent, boolean modal, String DNI) {
         super(parent, modal);
         initComponents();
         this.setLocationRelativeTo(null);
         cargarTabla();
-        cargarDatos("10106629");
+        cargarDatos(DNI);
     }
     
     private void cargarTabla(){
@@ -171,7 +171,7 @@ public class DCopereFamiliar extends javax.swing.JDialog {
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                DCopereFamiliar dialog = new DCopereFamiliar(new javax.swing.JFrame(), true);
+                DCopereFamiliar dialog = new DCopereFamiliar(new javax.swing.JFrame(), true, null);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {
