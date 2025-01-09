@@ -67,7 +67,7 @@ public class AgregarValoresRetDet extends javax.swing.JDialog {
     private void eliminarCuenta(String posicion) {
         try {
             Connection con = Conexion.getConnection();
-            String sql = "DELETE FROM LibroMayorEquivalencias WHERE Cuenta = ?";
+            String sql = "DELETE FROM CuentasPorPagarValores WHERE NombreColumna = ?";
             PreparedStatement pstm = con.prepareStatement(sql);
             pstm.setString(1, posicion);
             pstm.executeUpdate();
@@ -149,12 +149,12 @@ public class AgregarValoresRetDet extends javax.swing.JDialog {
         cbretdet = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Cuentas Equivalentes");
+        setTitle("Valores - Cuentas por Pagar");
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Agregar Cuenta Equivalente", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Roboto", 1, 13), new java.awt.Color(255, 51, 51))); // NOI18N
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Agregar Valores Det/Ret", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Roboto", 1, 13), new java.awt.Color(255, 51, 51))); // NOI18N
 
         tbresultado.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
         tbresultado.setModel(modelo);
@@ -325,7 +325,7 @@ public class AgregarValoresRetDet extends javax.swing.JDialog {
                     "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
                 // Eliminar la fila seleccionada del modelo de datos
-                eliminarCuenta(tbresultado.getValueAt(selectedRow, 0).toString());
+                eliminarCuenta(tbresultado.getValueAt(selectedRow, 1).toString());
                 modelo.removeRow(selectedRow);
             }
         } else {
