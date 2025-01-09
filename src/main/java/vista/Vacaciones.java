@@ -77,24 +77,22 @@ public class Vacaciones extends javax.swing.JFrame {
         };
 
         for (int i = 0; i < 12; i++) {
-            modelo.addColumn("Dias Ganados [" + meses[i] + " " + String.valueOf((annio-1)).substring(2, 4) + "]");
+            modelo.addColumn("Dias Ganados [" + meses[i] + " " + String.valueOf((annio - 1)).substring(2, 4) + "]");
         }
-        
+
         for (int i = 0; i < 12; i++) {
             modelo.addColumn("Dias Ganados [" + meses[i] + " " + String.valueOf((annio)).substring(2, 4) + "]");
         }
-        
+
         for (int i = 0; i < 12; i++) {
-            modelo.addColumn("Dias Gozados [" + meses[i] + " " + String.valueOf((annio-1)).substring(2, 4) + "]");
+            modelo.addColumn("Dias Gozados [" + meses[i] + " " + String.valueOf((annio - 1)).substring(2, 4) + "]");
         }
-        
+
         for (int i = 0; i < 12; i++) {
             modelo.addColumn("Dias Gozados [" + meses[i] + " " + String.valueOf((annio)).substring(2, 4) + "]");
         }
 
     }
-
-    
 
     public class Modelo extends DefaultTableModel {
 
@@ -124,10 +122,10 @@ public class Vacaciones extends javax.swing.JFrame {
         });
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-        jdc_mes.setMonth((Calendar.getInstance().get(Calendar.MONTH))-1);
+        jdc_mes.setMonth((Calendar.getInstance().get(Calendar.MONTH)) - 1);
         llenar_tabla();
         FuncionesGlobales.colocarnombremesannio(jdc_año, jdc_mes, txt_razonsocial2);
-        
+
         jdc_mes.addPropertyChangeListener("month", (java.beans.PropertyChangeEvent evt) -> {
             llenar_tabla();
             FuncionesGlobales.colocarnombremesannio(jdc_año, jdc_mes, txt_razonsocial2);
@@ -143,7 +141,7 @@ public class Vacaciones extends javax.swing.JFrame {
             "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto",
             "Septiembre", "Octubre", "Noviembre", "Diciembre"
         };
-        
+
         modelo.setRowCount(0);
         modelo.setColumnCount(0);
 
@@ -151,7 +149,7 @@ public class Vacaciones extends javax.swing.JFrame {
         header.setPreferredSize(new java.awt.Dimension(header.getWidth(), 50));
         header.setBackground(new java.awt.Color(255, 217, 102));
         tb_resultado.getTableHeader().setFont(new java.awt.Font("Roboto", java.awt.Font.BOLD, 12));
-        
+
         int annio = jdc_año.getYear();
 
         modelo.addColumn("Nº");
@@ -163,19 +161,21 @@ public class Vacaciones extends javax.swing.JFrame {
         modelo.addColumn("Centro Costo");
         modelo.addColumn("Sub Nivel");
         modelo.addColumn("Asig. Fam.");
-        
+
         modelo.addColumn("Comisiones / Solo Bonf Prod");
-        modelo.addColumn("Computable " + (annio -1));
+        modelo.addColumn("Computable " + (annio - 1));
         modelo.addColumn("Neto Pagar");
         modelo.addColumn("Computable " + (annio - 2));
         modelo.addColumn("Total dias pendientes");
         modelo.addColumn("Saldo Inicial");
-        
+
         agregarColumnasDiasGanados(annio);
 
+        int monthIndex = (jdc_mes.getMonth() - 1 + 12) % 12;
+        String monthName = meses[monthIndex];int year = jdc_año.getYear() - (monthIndex == 11 ? 1 : 0); 
         modelo.addColumn("Total dias pendientes");
         modelo.addColumn("Saldo");
-        modelo.addColumn("Provision [" + meses[jdc_mes.getMonth()-1] + " " + jdc_año.getYear() + "]");
+        modelo.addColumn("Provision [" + monthName + " " + year + "]"); 
         modelo.addColumn("Dif");
         modelo.addColumn("Situacion");
         modelo.addColumn("VERIFICACION DE VACACIONES");
@@ -221,7 +221,7 @@ public class Vacaciones extends javax.swing.JFrame {
             "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto",
             "Septiembre", "Octubre", "Noviembre", "Diciembre"
         };
-            
+
         if (mesSeleccionado >= 1 && mesSeleccionado <= 6) {
             String valorMeses = "";
 
@@ -234,13 +234,9 @@ public class Vacaciones extends javax.swing.JFrame {
             }
 
             inicioCTS = "01/01/" + jdc_año.getYear();
-            
-            
-            
-            
-            
-            queryDescuento = 
-               "SELECT "
+
+            queryDescuento
+                    = "SELECT "
                     + "	FORMAT(DATEFROMPARTS(Año, Mes, 1), 'MMMM yyyy') AS Mes_Año, "
                     + "	[Nro Doc# Ident#], "
                     + "	[Lic# S/Goce] + Falta AS FaltasYLicSinGoce "
@@ -248,7 +244,7 @@ public class Vacaciones extends javax.swing.JFrame {
                     + "WHERE "
                     + "	Año = " + jdc_año.getYear() + " AND "
                     + "	Mes IN (" + valorMeses.substring(0, valorMeses.length() - 1) + ") AND ([Lic# S/Goce] > 0 OR Falta > 0)";
-                    
+
         } else if (mesSeleccionado >= 7 && mesSeleccionado <= 12) {
             String valorMeses = "";
 
@@ -258,9 +254,9 @@ public class Vacaciones extends javax.swing.JFrame {
                     valorMeses = valorMeses + (i + 1) + ",";
                 }
             }
-           
+
             inicioCTS = "01/07/" + jdc_año.getYear();
-            
+
             queryComision = "SELECT "
                     + "    [Nro Doc# Ident#], "
                     + "    CONVERT(DECIMAL(20,2), "
@@ -285,8 +281,8 @@ public class Vacaciones extends javax.swing.JFrame {
                     + "     CASE WHEN SUM(CASE WHEN Mes = 11 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
                     + "     CASE WHEN SUM(CASE WHEN Mes = 12 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END) >= 3";
 
-            queryDescuento = 
-               "SELECT "
+            queryDescuento
+                    = "SELECT "
                     + "	FORMAT(DATEFROMPARTS(Año, Mes, 1), 'MMMM yyyy') AS Mes_Año, "
                     + "	[Nro Doc# Ident#], "
                     + "	[Lic# S/Goce] + Falta AS FaltasYLicSinGoce "
@@ -294,12 +290,12 @@ public class Vacaciones extends javax.swing.JFrame {
                     + "WHERE "
                     + "	Año = " + jdc_año.getYear() + " AND "
                     + "	Mes IN (" + valorMeses.substring(0, valorMeses.length() - 1) + ") AND ([Lic# S/Goce] > 0 OR Falta > 0)";
-           
-        } 
-        
+
+        }
+
         modelo.addColumn("Ajuste dias");
-        modelo.addColumn("Provision - Sistema [" + meses[mesSeleccionado-1] + " " + jdc_año.getYear() + "]");
-        modelo.addColumn("Provision [" + meses[mesSeleccionado-2] + " " + jdc_año.getYear() + "]");
+        modelo.addColumn("Provision - Sistema [" + meses[mesSeleccionado - 1] + " " + jdc_año.getYear() + "]");
+        modelo.addColumn("Provision [" + meses[mesSeleccionado - 2] + " " + jdc_año.getYear() + "]");
 
     }
 
@@ -342,10 +338,8 @@ public class Vacaciones extends javax.swing.JFrame {
         } catch (SQLException ex) {
             Logger.getLogger(Vacaciones.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-        
-        
-       cargaAsigNetoGrati();
+
+        cargaAsigNetoGrati();
     }
 
     private void cargaAsigNetoGrati() {
@@ -391,11 +385,10 @@ public class Vacaciones extends javax.swing.JFrame {
             Logger.getLogger(Vacaciones.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        
         cargaComisiones();
     }
-    
-     public static ArrayList<Integer> obtenerMesesHasta(int mesSeleccionado) {
+
+    public static ArrayList<Integer> obtenerMesesHasta(int mesSeleccionado) {
         ArrayList<Integer> meses = new ArrayList<>();
         for (int i = 1; i <= mesSeleccionado; i++) {
             meses.add(i);
@@ -408,7 +401,7 @@ public class Vacaciones extends javax.swing.JFrame {
      *
      * @param meses La lista de meses.
      */
-     public static String obtenerMesesComoCadena(ArrayList<Integer> meses) {
+    public static String obtenerMesesComoCadena(ArrayList<Integer> meses) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < meses.size(); i++) {
             sb.append(meses.get(i));
@@ -421,51 +414,49 @@ public class Vacaciones extends javax.swing.JFrame {
 
     private void cargaComisiones() {
         int mesSeleccionado = jdc_mes.getMonth() + 1; // JMonthChooser devuelve 0-11, sumamos 1 para obtener 1-12
-            ArrayList<Integer> mesesHastaSeleccionado = obtenerMesesHasta(mesSeleccionado);
-            
-            // Imprimir los meses separados por comas
-            System.out.println(obtenerMesesComoCadena(mesesHastaSeleccionado));
-            
-            System.out.println(mesSeleccionado);
-            
-        
-        
+        ArrayList<Integer> mesesHastaSeleccionado = obtenerMesesHasta(mesSeleccionado);
+
+        // Imprimir los meses separados por comas
+        System.out.println(obtenerMesesComoCadena(mesesHastaSeleccionado));
+
+        System.out.println(mesSeleccionado);
+
         queryComision = "SELECT "
-                    + "    [Nro Doc# Ident#], "
-                    + "    CONVERT(DECIMAL(20,2), "
-                    + "	(( "
-                    + "	SUM(CASE WHEN Mes = 1 THEN [Bonif# Prod#] ELSE 0 END) + "
-                    + "    SUM(CASE WHEN Mes = 2 THEN [Bonif# Prod#] ELSE 0 END) + "
-                    + "    SUM(CASE WHEN Mes = 3 THEN [Bonif# Prod#] ELSE 0 END) + "
-                    + "    SUM(CASE WHEN Mes = 4 THEN [Bonif# Prod#] ELSE 0 END) + "
-                    + "    SUM(CASE WHEN Mes = 5 THEN [Bonif# Prod#] ELSE 0 END) + "
-                    + "    SUM(CASE WHEN Mes = 6 THEN [Bonif# Prod#] ELSE 0 END) + "
-                    + "    SUM(CASE WHEN Mes = 7 THEN [Bonif# Prod#] ELSE 0 END) + "
-                    + "    SUM(CASE WHEN Mes = 8 THEN [Bonif# Prod#] ELSE 0 END) + "
-                    + "    SUM(CASE WHEN Mes = 9 THEN [Bonif# Prod#] ELSE 0 END) + "
-                    + "    SUM(CASE WHEN Mes = 10 THEN [Bonif# Prod#] ELSE 0 END) + "
-                    + "    SUM(CASE WHEN Mes = 11 THEN [Bonif# Prod#] ELSE 0 END) + "
-                    + "    SUM(CASE WHEN Mes = 12 THEN [Bonif# Prod#] ELSE 0 END)) "
-                    + "	/" + mesSeleccionado + ")) AS Comision "
-                    + "FROM PlanillaSueldo "
-                    + "WHERE "
-                    + "    Año = " + jdc_año.getYear() + " AND Mes IN (" + obtenerMesesComoCadena(mesesHastaSeleccionado) + ") "
-                    + "GROUP BY "
-                    + "    [Nro Doc# Ident#] "
-                    + "HAVING "
-                    + "    (CASE WHEN SUM(CASE WHEN Mes = 1 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
-                    + "     CASE WHEN SUM(CASE WHEN Mes = 2 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
-                    + "     CASE WHEN SUM(CASE WHEN Mes = 3 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
-                    + "     CASE WHEN SUM(CASE WHEN Mes = 4 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
-                    + "     CASE WHEN SUM(CASE WHEN Mes = 5 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
-                    + "     CASE WHEN SUM(CASE WHEN Mes = 6 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
-                    + "     CASE WHEN SUM(CASE WHEN Mes = 7 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
-                    + "     CASE WHEN SUM(CASE WHEN Mes = 8 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
-                    + "     CASE WHEN SUM(CASE WHEN Mes = 9 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
-                    + "     CASE WHEN SUM(CASE WHEN Mes = 10 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
-                    + "     CASE WHEN SUM(CASE WHEN Mes = 11 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
-                    + "     CASE WHEN SUM(CASE WHEN Mes = 12 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END) >= 1";
-        
+                + "    [Nro Doc# Ident#], "
+                + "    CONVERT(DECIMAL(20,2), "
+                + "	(( "
+                + "	SUM(CASE WHEN Mes = 1 THEN [Bonif# Prod#] ELSE 0 END) + "
+                + "    SUM(CASE WHEN Mes = 2 THEN [Bonif# Prod#] ELSE 0 END) + "
+                + "    SUM(CASE WHEN Mes = 3 THEN [Bonif# Prod#] ELSE 0 END) + "
+                + "    SUM(CASE WHEN Mes = 4 THEN [Bonif# Prod#] ELSE 0 END) + "
+                + "    SUM(CASE WHEN Mes = 5 THEN [Bonif# Prod#] ELSE 0 END) + "
+                + "    SUM(CASE WHEN Mes = 6 THEN [Bonif# Prod#] ELSE 0 END) + "
+                + "    SUM(CASE WHEN Mes = 7 THEN [Bonif# Prod#] ELSE 0 END) + "
+                + "    SUM(CASE WHEN Mes = 8 THEN [Bonif# Prod#] ELSE 0 END) + "
+                + "    SUM(CASE WHEN Mes = 9 THEN [Bonif# Prod#] ELSE 0 END) + "
+                + "    SUM(CASE WHEN Mes = 10 THEN [Bonif# Prod#] ELSE 0 END) + "
+                + "    SUM(CASE WHEN Mes = 11 THEN [Bonif# Prod#] ELSE 0 END) + "
+                + "    SUM(CASE WHEN Mes = 12 THEN [Bonif# Prod#] ELSE 0 END)) "
+                + "	/" + mesSeleccionado + ")) AS Comision "
+                + "FROM PlanillaSueldo "
+                + "WHERE "
+                + "    Año = " + jdc_año.getYear() + " AND Mes IN (" + obtenerMesesComoCadena(mesesHastaSeleccionado) + ") "
+                + "GROUP BY "
+                + "    [Nro Doc# Ident#] "
+                + "HAVING "
+                + "    (CASE WHEN SUM(CASE WHEN Mes = 1 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
+                + "     CASE WHEN SUM(CASE WHEN Mes = 2 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
+                + "     CASE WHEN SUM(CASE WHEN Mes = 3 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
+                + "     CASE WHEN SUM(CASE WHEN Mes = 4 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
+                + "     CASE WHEN SUM(CASE WHEN Mes = 5 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
+                + "     CASE WHEN SUM(CASE WHEN Mes = 6 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
+                + "     CASE WHEN SUM(CASE WHEN Mes = 7 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
+                + "     CASE WHEN SUM(CASE WHEN Mes = 8 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
+                + "     CASE WHEN SUM(CASE WHEN Mes = 9 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
+                + "     CASE WHEN SUM(CASE WHEN Mes = 10 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
+                + "     CASE WHEN SUM(CASE WHEN Mes = 11 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END + "
+                + "     CASE WHEN SUM(CASE WHEN Mes = 12 THEN [Bonif# Prod#] ELSE 0 END) > 0 THEN 1 ELSE 0 END) >= 1";
+
         if (queryComision != null) {
             try {
                 Connection con = Conexion.getConnection();
@@ -494,7 +485,6 @@ public class Vacaciones extends javax.swing.JFrame {
             }
         }
 
-        
         cargaComputable();
     }
 
@@ -509,15 +499,13 @@ public class Vacaciones extends javax.swing.JFrame {
             tb_resultado.setValueAt(computable, i, 12);
         }
 
-       
-       
-       cargarDiasPendientes();
-       
+        cargarDiasPendientes();
+
         //calculadiasProvision();
     }
-    
+
     private void cargarDiasPendientes() {
-        String query = "SELECT * FROM VacDiasPendientes WHERE Año = " + (jdc_año.getYear()-2);
+        String query = "SELECT * FROM VacDiasPendientes WHERE Año = " + (jdc_año.getYear() - 2);
         if (query != null) {
             try {
                 Connection con = Conexion.getConnection();
@@ -544,12 +532,11 @@ public class Vacaciones extends javax.swing.JFrame {
                 Logger.getLogger(Vacaciones.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        
-       
+
         calcularDiasGanados();
     }
-    
-    private void calcularDiasGanados(){
+
+    private void calcularDiasGanados() {
         int selectedYear = jdc_año.getYear();
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM yy");
@@ -559,14 +546,14 @@ public class Vacaciones extends javax.swing.JFrame {
                 String fechaStr = (String) modelo.getValueAt(i, 3); // Columna 4: Fecha de inicio
                 Date fecha = sdf.parse(fechaStr);
                 int fechaYear = fecha.getYear() + 1900; // Obtener el año de la fecha (ajustado)
-                
+
                 int selectedMonth = jdc_mes.getMonth(); // El valor va de 0 a 11
 
                 int reversePosition = 11 - selectedMonth;
-                
+
                 // Verificar si la fecha es menor a 2 años con respecto al año seleccionado
                 if (selectedYear - fechaYear > 2) {
-                    for (int j = 15; j <= 38- reversePosition; j++) {
+                    for (int j = 15; j <= 38 - reversePosition; j++) {
                         tb_resultado.setValueAt(2.50, i, j);
                     }
                 } else {
@@ -577,22 +564,22 @@ public class Vacaciones extends javax.swing.JFrame {
                         for (int j = columnIndex; j <= 38 - reversePosition; j++) {
                             tb_resultado.setValueAt(2.50, i, j);
                         }
-                    } 
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-    
+
         cargarDiasGozados();
-         
+
     }
-    
+
     private void cargarDiasGozados() {
-        
+
         try {
-             Connection con = Conexion.getConnection();
-             
+            Connection con = Conexion.getConnection();
+
             String query = "SELECT "
                     + "[Nro Doc# Ident#], "
                     + "	SUM(CASE WHEN Mes = 1 THEN [Vac# Fis#] ELSE 0 END) AS [1], "
@@ -611,30 +598,30 @@ public class Vacaciones extends javax.swing.JFrame {
                     + "WHERE "
                     + "Año = " + (jdc_año.getYear() - 1) + " "
                     + "GROUP BY [Nro Doc# Ident#]";
-           
+
             Statement st = con.createStatement();
             String sql = query;
             ResultSet rs = st.executeQuery(sql);
-            
+
             while (rs.next()) {
                 String nroDocIdent = rs.getString(1);
-                
+
                 for (int i = 0; i < tb_resultado.getRowCount(); i++) {
                     if (nroDocIdent.equals(tb_resultado.getValueAt(i, 1))) {
                         int c = 2;
                         for (int j = 39; j <= 50; j++) {
                             if (rs.getInt(c) == 0) {
                                 tb_resultado.setValueAt("", i, j);
-                            }else{
+                            } else {
                                 tb_resultado.setValueAt(rs.getInt(c), i, j);
                             }
-                            
+
                             c++;
                         }
                     }
                 }
             }
-            
+
             query = "SELECT "
                     + "[Nro Doc# Ident#], "
                     + "	SUM(CASE WHEN Mes = 1 THEN [Vac# Fis#] ELSE 0 END) AS [1], "
@@ -653,24 +640,24 @@ public class Vacaciones extends javax.swing.JFrame {
                     + "WHERE "
                     + "Año = " + (jdc_año.getYear()) + " "
                     + "GROUP BY [Nro Doc# Ident#]";
-            
+
             st = con.createStatement();
             rs = st.executeQuery(query);
-            
+
             int selectedMonth = jdc_mes.getMonth(); // El valor va de 0 a 11
 
-           int reversePosition = 11 - selectedMonth;
-            
+            int reversePosition = 11 - selectedMonth;
+
             while (rs.next()) {
                 String nroDocIdent = rs.getString(1);
-                
+
                 for (int i = 0; i < tb_resultado.getRowCount(); i++) {
                     if (nroDocIdent.equals(tb_resultado.getValueAt(i, 1))) {
                         int c = 2;
                         for (int j = 51; j <= 62 - reversePosition; j++) {
                             if (rs.getInt(c) == 0) {
                                 tb_resultado.setValueAt("", i, j);
-                            }else{
+                            } else {
                                 tb_resultado.setValueAt(rs.getInt(c), i, j);
                             }
                             c++;
@@ -678,18 +665,18 @@ public class Vacaciones extends javax.swing.JFrame {
                     }
                 }
             }
-            
+
             rs.close();
             st.close();
             con.close();
-            
+
             cargarTotalDiasPendiente();
 
         } catch (SQLException ex) {
             Logger.getLogger(Vacaciones.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     private void cargarTotalDiasPendiente() {
 
         // Recorremos todas las filas de la tabla
@@ -733,22 +720,21 @@ public class Vacaciones extends javax.swing.JFrame {
             double resultadoFinal = totalpendientes + total1 - total2;
             tb_resultado.setValueAt(resultadoFinal, i, 63);
         }
-        
+
         cargarSaldo();
     }
-    
-    
+
     private void cargarSaldo() {
         for (int i = 0; i < tb_resultado.getRowCount(); i++) {
             double computable = Double.parseDouble(tb_resultado.getValueAt(i, 10).toString());
             double totaldiaspendientes = Double.parseDouble(tb_resultado.getValueAt(i, 63).toString());
-            
+
             tb_resultado.setValueAt(computable / 30 * totaldiaspendientes, i, 64);
         }
-        
+
         cargarProvisionHistorial();
     }
-    
+
     public static int obtenerPosicionColumnaPorValor(JTable table, String searchValue) {
         // Recorremos todas las columnas para buscar el valor dentro de los corchetes
         for (int i = 0; i < table.getColumnCount(); i++) {
@@ -773,10 +759,8 @@ public class Vacaciones extends javax.swing.JFrame {
             return null; // Si no se encuentra ningún valor dentro de los corchetes
         }
     }
-    
-    
-    
-    private void cargarProvisionHistorial(){
+
+    private void cargarProvisionHistorial() {
         try {
             String columnName = tb_resultado.getColumnName(65).toLowerCase();
             int year = 0;
@@ -800,7 +784,7 @@ public class Vacaciones extends javax.swing.JFrame {
                 formattedMonth = String.format("%02d", month + 1); // Ajuste para convertir 0 -> 01, 1 -> 02, ..., 11 -> 12
 
             }
-            
+
             Connection con = Conexion.getConnection();
             Statement st = con.createStatement();
             String sql = "SELECT NroDocumento, Provision FROM ProvisionVacHistorial WHERE Año = " + year + " AND Mes = " + formattedMonth + " ";
@@ -815,37 +799,35 @@ public class Vacaciones extends javax.swing.JFrame {
             rs.close();
             st.close();
             con.close();
-            
-            
+
         } catch (SQLException ex) {
             Logger.getLogger(Vacaciones.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ParseException ex) {
             Logger.getLogger(Vacaciones.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         cargarDiferenciasyAdicionales();
     }
-    
-    private void cargarDiferenciasyAdicionales(){
+
+    private void cargarDiferenciasyAdicionales() {
         for (int i = 0; i < tb_resultado.getRowCount(); i++) {
             double provision = Double.parseDouble(tb_resultado.getValueAt(i, 64).toString());
             double provisionHistorial = tb_resultado.getValueAt(i, 65) != null ? Double.parseDouble(tb_resultado.getValueAt(i, 65).toString()) : 0.0;
             double diferencia = provision - provisionHistorial;
             tb_resultado.setValueAt(diferencia, i, 66);
-            
+
             if (tb_resultado.getValueAt(i, 8) == null) {
                 tb_resultado.setValueAt("INACTIVO", i, 67);
-            }else{
+            } else {
                 tb_resultado.setValueAt("ACTIVO", i, 67);
             }
             tb_resultado.setValueAt("SI", i, 68);
             tb_resultado.setValueAt("VAC " + tb_resultado.getValueAt(i, 1), i, 69);
-            
+
         }
         packColumns(tb_resultado);
     }
-    
-    
+
     private void guardarPrevisionMensual() {
         this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         jButton3.setEnabled(false);
@@ -876,10 +858,9 @@ public class Vacaciones extends javax.swing.JFrame {
                     String nroDocumento = (nroDocumentoObj != null) ? nroDocumentoObj.toString() : null;
                     double valor65 = (valor65Obj != null && !valor65Obj.toString().trim().isEmpty()) ? Double.parseDouble(valor65Obj.toString()) : 0.0;
                     double valor66 = (valor66Obj != null && !valor66Obj.toString().trim().isEmpty()) ? Double.parseDouble(valor66Obj.toString()) : 0.0;
-                    
+
                     // Calcular el valor de provision
                     double provision = valor65 + valor66;
-                    
 
                     // Configurar parámetros para el insert
                     insertStmt.setInt(1, jdc_año.getYear());
@@ -918,8 +899,7 @@ public class Vacaciones extends javax.swing.JFrame {
             }
         }
     }
-    
-    
+
     // METODOS ADICIONALES ******************************************************
     public void calcularDiferencia(String fechaInicio, String fechaFin, int fila) {
         SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
@@ -1247,7 +1227,6 @@ public class Vacaciones extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
     // Método para exportar archivos en XLSX
 
-
     public static void exportarArchivoExcel(DefaultTableModel model) {
         JFileChooser jFileChooser = new JFileChooser();
         jFileChooser.setDialogTitle("Guardar archivo Excel");
@@ -1340,7 +1319,7 @@ public class Vacaciones extends javax.swing.JFrame {
     }
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-                int opcion = JOptionPane.showConfirmDialog(
+        int opcion = JOptionPane.showConfirmDialog(
                 this,
                 "¿Desea guardar la prevision mensual del mes seleccionado?",
                 "Confirmación",
@@ -1386,47 +1365,46 @@ public class Vacaciones extends javax.swing.JFrame {
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
         DefaultTableModel model = new DefaultTableModel();
-        
-        model.addColumn("Cuenta");	
-        model.addColumn("Descripcion");	
-        model.addColumn("Moneda");	
-        model.addColumn("TipoCambio");	
-        model.addColumn("DebeSoles");	
-        model.addColumn("HaberSoles");	
-        model.addColumn("Glosa");	
-        model.addColumn("TipoAnexo");	
-        model.addColumn("CodigoAnexo");	
-        model.addColumn("NroDocumento");	
-        model.addColumn("FechaEmisionDoc");	
+
+        model.addColumn("Cuenta");
+        model.addColumn("Descripcion");
+        model.addColumn("Moneda");
+        model.addColumn("TipoCambio");
+        model.addColumn("DebeSoles");
+        model.addColumn("HaberSoles");
+        model.addColumn("Glosa");
+        model.addColumn("TipoAnexo");
+        model.addColumn("CodigoAnexo");
+        model.addColumn("NroDocumento");
+        model.addColumn("FechaEmisionDoc");
         model.addColumn("FechaVencimientoDoc");
 
         int año = jdc_año.getYear();
-        
+
         String[] meses = {
             "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
             "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
         };
 
         int mesSeleccionado = jdc_mes.getMonth();
-        
-        
+
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR, año);
-        calendar.set(Calendar.MONTH, (mesSeleccionado+1));
+        calendar.set(Calendar.MONTH, (mesSeleccionado + 1));
         calendar.set(Calendar.DAY_OF_MONTH, 1);  // Establecer el primer día del mes
-        
+
         // Obtener el último día del mes
         int ultimoDia = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-        
+
         // Establecer el último día en el calendario
         calendar.set(Calendar.DAY_OF_MONTH, ultimoDia);
-        
+
         // Formatear la fecha en el formato dd/MM/yyyy
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         String fechaFormateada = sdf.format(calendar.getTime());
 
         Object data[] = new Object[12];
-        
+
         for (int i = 0; i < tb_resultado.getRowCount(); i++) {
             if (Double.parseDouble(tb_resultado.getValueAt(i, 66).toString()) > 0) {
                 data[0] = 411510;
@@ -1441,13 +1419,13 @@ public class Vacaciones extends javax.swing.JFrame {
                 data[9] = tb_resultado.getValueAt(i, 69);
                 data[10] = tb_resultado.getValueAt(i, 3);
                 data[11] = fechaFormateada;
-                
+
                 model.addRow(data);
             }
         }
-        
+
         exportarAExcel(model, meses[mesSeleccionado].substring(0, 3).toUpperCase() + " " + String.valueOf(año).substring(2, 4), "VACACIONES");
-        
+
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     // Método para exportar los datos de la tabla a Excel
@@ -1551,9 +1529,6 @@ public class Vacaciones extends javax.swing.JFrame {
         }
     }
 
-
-
-    
     /**
      * @param args the command line arguments
      */
