@@ -6,11 +6,27 @@ package vista;
 
 import Controlador.Conexion;
 import Controlador.Options;
-import java.awt.event.ItemEvent;
+import java.awt.BorderLayout;
+import java.awt.Cursor;
+import java.awt.GraphicsEnvironment;
+import java.awt.Rectangle;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JDialog;
+import javax.swing.JPanel;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.view.JasperViewer;
 
 /**
  *
@@ -51,7 +67,7 @@ public class ReporteContable extends javax.swing.JDialog {
         cbtipo = new javax.swing.JComboBox<>();
         dcannio = new com.toedter.calendar.JYearChooser();
         jLabel6 = new javax.swing.JLabel();
-        btnguardar = new javax.swing.JButton();
+        btnimprimir = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -169,12 +185,12 @@ public class ReporteContable extends javax.swing.JDialog {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        btnguardar.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        btnguardar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/imprimir.png"))); // NOI18N
-        btnguardar.setText("Imprimir");
-        btnguardar.addActionListener(new java.awt.event.ActionListener() {
+        btnimprimir.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
+        btnimprimir.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/imprimir.png"))); // NOI18N
+        btnimprimir.setText("Imprimir");
+        btnimprimir.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnguardarActionPerformed(evt);
+                btnimprimirActionPerformed(evt);
             }
         });
 
@@ -187,7 +203,7 @@ public class ReporteContable extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnguardar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(btnimprimir, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -197,7 +213,7 @@ public class ReporteContable extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnguardar, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnimprimir, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -235,29 +251,23 @@ public class ReporteContable extends javax.swing.JDialog {
 
     }//GEN-LAST:event_cbnomapeItemStateChanged
 
-    private void btnguardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnguardarActionPerformed
+    private void btnimprimirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnimprimirActionPerformed
+        int annio = dcannio.getYear(), idPersonal = Integer.parseInt(((Options) cbnomape.getSelectedItem()).getValue());
+        String regcont = cbregcontable.getSelectedItem().toString().toUpperCase();
         if (cbtipo.getSelectedItem().toString().equals("General")) {
-            int annio = dcannio.getYear();
-            imprimirReporteGeneral(annio);
+            imprimirReporteGeneral(regcont, annio);
         } else {
-            int idPersonal = 0;
-            imprimirReporteEspecifico(idPersonal);
+            imprimirReporteEspecifico(regcont, annio, idPersonal);
         }
-    }//GEN-LAST:event_btnguardarActionPerformed
+    }//GEN-LAST:event_btnimprimirActionPerformed
 
     private void cbtipoItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbtipoItemStateChanged
         if (cbtipo.getSelectedItem().toString().equals("General")) {
             jLabel4.setVisible(false);
             cbnomape.setVisible(false);
-            
-            jLabel6.setVisible(true);
-            dcannio.setVisible(true);
-        }else{
+        } else {
             jLabel4.setVisible(true);
             cbnomape.setVisible(true);
-            
-            jLabel6.setVisible(false);
-            dcannio.setVisible(false);
         }
     }//GEN-LAST:event_cbtipoItemStateChanged
 
@@ -304,7 +314,7 @@ public class ReporteContable extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnguardar;
+    private javax.swing.JButton btnimprimir;
     private javax.swing.JComboBox cbnomape;
     private javax.swing.JComboBox<String> cbregcontable;
     private javax.swing.JComboBox<String> cbtipo;
@@ -319,12 +329,105 @@ public class ReporteContable extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel3;
     // End of variables declaration//GEN-END:variables
 
-    private void imprimirReporteGeneral(int annio) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    private void imprimirReporteGeneral(String tipo, int annio) {
+        try {
+            btnimprimir.setEnabled(false);
+            setCursor(new Cursor(Cursor.WAIT_CURSOR));
+
+            JasperReport report = null;
+
+            switch (cbregcontable.getSelectedItem().toString()) {
+                case "Copere":
+                    report = JasperCompileManager.compileReport(System.getProperty("user.dir") + "/reportes/ReporteGeneralCopere.jrxml");
+                    break;
+                case "Caja de Pensiones":
+                    report = JasperCompileManager.compileReport(System.getProperty("user.dir") + "/reportes/ReporteGeneralCaja.jrxml");
+                    break;
+                case "Oprefa":
+                    report = JasperCompileManager.compileReport(System.getProperty("user.dir") + "/reportes/ReporteGeneralOprefa.jrxml");
+                    break;
+            }
+
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("REPORT_LOCALE", new Locale("es", "ES"));
+            parameters.put("Año", annio);
+            parameters.put("Tipo", tipo);
+            JasperPrint print = JasperFillManager.fillReport(report, parameters, Conexion.getConnection());
+            JasperViewer viewer = new JasperViewer(print, false);
+
+            JPanel panel = new JPanel(new BorderLayout());
+            panel.add(viewer.getContentPane(), BorderLayout.CENTER);
+
+            GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            Rectangle bounds = env.getMaximumWindowBounds();
+
+            JDialog dialog = new JDialog();
+            dialog.setTitle("Reporte General - Registro Contable");
+            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+            dialog.setModal(true);
+            dialog.setSize(bounds.width, bounds.height);
+            dialog.setLocationRelativeTo(null);
+            dialog.getContentPane().add(panel);
+            btnimprimir.setEnabled(true);
+            setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            dialog.setVisible(true);
+
+        } catch (JRException ex) {
+            Logger.getLogger(Flujo_Caja.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(ReporteContable.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
-    private void imprimirReporteEspecifico(int idPersonal) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    private void imprimirReporteEspecifico(String tipo, int annio, int idPersonal) {
+        try {
+            btnimprimir.setEnabled(false);
+            setCursor(new Cursor(Cursor.WAIT_CURSOR));
+
+            JasperReport report = null;
+
+            switch (cbregcontable.getSelectedItem().toString()) {
+                case "Copere":
+                    report = JasperCompileManager.compileReport(System.getProperty("user.dir") + "/reportes/ReporteEspecificoCopere.jrxml");
+                    break;
+                case "Caja de Pensiones":
+                    report = JasperCompileManager.compileReport(System.getProperty("user.dir") + "/reportes/ReporteEspecificoCaja.jrxml");
+                    break;
+                case "Oprefa":
+                    report = JasperCompileManager.compileReport(System.getProperty("user.dir") + "/reportes/ReporteEspecificoOprefa.jrxml");
+                    break;
+            }
+
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("REPORT_LOCALE", new Locale("es", "ES"));
+            parameters.put("Año", annio);
+            parameters.put("Tipo", tipo);
+            parameters.put("idPersonal", idPersonal);
+            JasperPrint print = JasperFillManager.fillReport(report, parameters, Conexion.getConnection());
+            JasperViewer viewer = new JasperViewer(print, false);
+
+            JPanel panel = new JPanel(new BorderLayout());
+            panel.add(viewer.getContentPane(), BorderLayout.CENTER);
+
+            GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            Rectangle bounds = env.getMaximumWindowBounds();
+
+            JDialog dialog = new JDialog();
+            dialog.setTitle("Reporte General - Registro Contable");
+            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+            dialog.setModal(true);
+            dialog.setSize(bounds.width, bounds.height);
+            dialog.setLocationRelativeTo(null);
+            dialog.getContentPane().add(panel);
+            btnimprimir.setEnabled(true);
+            setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            dialog.setVisible(true);
+
+        } catch (JRException ex) {
+            Logger.getLogger(Flujo_Caja.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(ReporteContable.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     private void cargaDatosCopere() {
@@ -332,12 +435,12 @@ public class ReporteContable extends javax.swing.JDialog {
             Connection con = Conexion.getConnection();
             Statement stmt = con.createStatement();
 
-            String query = "SELECT ec.Numero_CIP, CONCAT(pe.A_Paterno, ' ', pe.A_Materno, ' ', pe.Nombres) AS Nomape "
+            String query = "SELECT pe.IdPersonal, CONCAT(pe.A_Paterno, ' ', pe.A_Materno, ' ', pe.Nombres) AS Nomape "
                     + "FROM EstructuraCopere ec "
                     + "INNER JOIN Personal AS pe ON ec.Numero_CIP = pe.NroCip ORDER BY Nomape";
             ResultSet rs = stmt.executeQuery(query);
             cbnomape.removeAllItems();
-            cbnomape.addItem("<<Seleccionar>>");
+            cbnomape.addItem(new Options("9999", "<<Seleccionar>>"));
             while (rs.next()) {
                 cbnomape.addItem(new Options(rs.getString(1), rs.getString(2)));
             }
@@ -355,12 +458,12 @@ public class ReporteContable extends javax.swing.JDialog {
             Connection con = Conexion.getConnection();
             Statement stmt = con.createStatement();
 
-            String query = "select ecp.Documento, CONCAT(pe.A_Paterno, ' ', pe.A_Materno, ' ', pe.Nombres) AS Nomape from EstructuraCajaPensiones ecp "
+            String query = "select pe.IdPersonal, CONCAT(pe.A_Paterno, ' ', pe.A_Materno, ' ', pe.Nombres) AS Nomape from EstructuraCajaPensiones ecp "
                     + "inner join Personal as pe on ecp.Codigo_CIP = pe.NroCip ORDER BY Nomape";
             ResultSet rs = stmt.executeQuery(query);
 
             cbnomape.removeAllItems();
-            cbnomape.addItem("<<Seleccionar>>");
+            cbnomape.addItem(new Options("9999", "<<Seleccionar>>"));
             while (rs.next()) {
                 cbnomape.addItem(new Options(rs.getString(1), rs.getString(2)));
             }
@@ -381,14 +484,14 @@ public class ReporteContable extends javax.swing.JDialog {
             Statement stmt = con.createStatement();
 
             // Ejecutar la consulta
-            String query = "select eo.DNI, CONCAT(pe.A_Paterno, ' ', pe.A_Materno, ' ', pe.Nombres) AS Nomape from EstructuraOprefa eo "
+            String query = "select pe.IdPersonal, CONCAT(pe.A_Paterno, ' ', pe.A_Materno, ' ', pe.Nombres) AS Nomape from EstructuraOprefa eo "
                     + "inner join Personal as pe on eo.DNI = pe.Dni ORDER BY Nomape";
             ResultSet rs = stmt.executeQuery(query);
 
             // Limpiar el JComboBox antes de agregar nuevos elementos
             cbnomape.removeAllItems();
             // Agregar la opción <<Seleccionar>>
-            cbnomape.addItem("<<Seleccionar>>");
+            cbnomape.addItem(new Options("9999", "<<Seleccionar>>"));
             // Llenar el JComboBox con los resultados
             while (rs.next()) {
                 cbnomape.addItem(new Options(rs.getString(1), rs.getString(2)));
