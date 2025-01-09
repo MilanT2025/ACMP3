@@ -90,14 +90,14 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
         jLabel13.setText("CUENTAS POR PAGAR AL " + fecha);
         this.setLocationRelativeTo(null);
         
-        modelo.addColumn("N°");
-        modelo.addColumn("RUC");
-        modelo.addColumn("PROVEEDOR");
-        modelo.addColumn("FACT");
-        modelo.addColumn("FEC/E");
-        modelo.addColumn("FEC/V");
-        modelo.addColumn("MONTO");
-        modelo.addColumn("OPCION");
+        modelo.addColumn("N°"); //0
+        modelo.addColumn("RUC"); //1
+        modelo.addColumn("PROVEEDOR"); //2
+        modelo.addColumn("FACT"); //3
+        modelo.addColumn("FEC/E"); //4
+        modelo.addColumn("FEC/V"); //5
+        modelo.addColumn("MONTO"); //6
+        modelo.addColumn("OPCION"); //7
         
         agregarColumnasPorcentaje();
         modelo.addColumn("TOTAL");
@@ -234,6 +234,7 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
 
         configurarComboBoxEnTabla();
        
+        ocultarColumnaAncho(tb_data, modelo.getColumnCount()-1);
     }
     
     private JComboBox<String> obtenerComboBoxDesdeBaseDeDatos() {
@@ -284,8 +285,11 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
         });
     }
     
-   
-    
+    public void ocultarColumnaAncho(JTable tabla, int columnaIndex) {
+        tabla.getColumnModel().getColumn(columnaIndex).setMinWidth(0);
+        tabla.getColumnModel().getColumn(columnaIndex).setMaxWidth(0);
+        tabla.getColumnModel().getColumn(columnaIndex).setWidth(0);
+    }
 
     private void guardarInformacion() {
         try {
