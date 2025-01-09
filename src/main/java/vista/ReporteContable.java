@@ -5,6 +5,7 @@
 package vista;
 
 import Controlador.Conexion;
+import Controlador.Options;
 import java.awt.event.ItemEvent;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -23,6 +24,8 @@ public class ReporteContable extends javax.swing.JDialog {
     public ReporteContable(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        jLabel4.setVisible(false);
+        cbnomape.setVisible(false);
         cargaDatosCopere();
         this.setLocationRelativeTo(null);
     }
@@ -43,7 +46,7 @@ public class ReporteContable extends javax.swing.JDialog {
         jLabel2 = new javax.swing.JLabel();
         cbregcontable = new javax.swing.JComboBox<>();
         jLabel4 = new javax.swing.JLabel();
-        cbnomape = new javax.swing.JComboBox<>();
+        cbnomape = new javax.swing.JComboBox();
         jLabel5 = new javax.swing.JLabel();
         cbtipo = new javax.swing.JComboBox<>();
         dcannio = new com.toedter.calendar.JYearChooser();
@@ -135,8 +138,8 @@ public class ReporteContable extends javax.swing.JDialog {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(cbtipo, 0, 389, Short.MAX_VALUE))))
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -155,10 +158,10 @@ public class ReporteContable extends javax.swing.JDialog {
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(cbtipo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(dcannio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(13, 13, 13)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(dcannio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -167,8 +170,8 @@ public class ReporteContable extends javax.swing.JDialog {
         );
 
         btnguardar.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        btnguardar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Save.png"))); // NOI18N
-        btnguardar.setText("Guardar");
+        btnguardar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/imprimir.png"))); // NOI18N
+        btnguardar.setText("Imprimir");
         btnguardar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnguardarActionPerformed(evt);
@@ -243,7 +246,19 @@ public class ReporteContable extends javax.swing.JDialog {
     }//GEN-LAST:event_btnguardarActionPerformed
 
     private void cbtipoItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbtipoItemStateChanged
-        // TODO add your handling code here:
+        if (cbtipo.getSelectedItem().toString().equals("General")) {
+            jLabel4.setVisible(false);
+            cbnomape.setVisible(false);
+            
+            jLabel6.setVisible(true);
+            dcannio.setVisible(true);
+        }else{
+            jLabel4.setVisible(true);
+            cbnomape.setVisible(true);
+            
+            jLabel6.setVisible(false);
+            dcannio.setVisible(false);
+        }
     }//GEN-LAST:event_cbtipoItemStateChanged
 
     /**
@@ -290,7 +305,7 @@ public class ReporteContable extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnguardar;
-    private javax.swing.JComboBox<String> cbnomape;
+    private javax.swing.JComboBox cbnomape;
     private javax.swing.JComboBox<String> cbregcontable;
     private javax.swing.JComboBox<String> cbtipo;
     private com.toedter.calendar.JYearChooser dcannio;
@@ -317,15 +332,14 @@ public class ReporteContable extends javax.swing.JDialog {
             Connection con = Conexion.getConnection();
             Statement stmt = con.createStatement();
 
-            String query = "SELECT CONCAT(pe.A_Paterno, ' ', pe.A_Materno, ' ', pe.Nombres) AS Nomape "
+            String query = "SELECT ec.Numero_CIP, CONCAT(pe.A_Paterno, ' ', pe.A_Materno, ' ', pe.Nombres) AS Nomape "
                     + "FROM EstructuraCopere ec "
                     + "INNER JOIN Personal AS pe ON ec.Numero_CIP = pe.NroCip ORDER BY Nomape";
             ResultSet rs = stmt.executeQuery(query);
             cbnomape.removeAllItems();
             cbnomape.addItem("<<Seleccionar>>");
             while (rs.next()) {
-                String nombreCompleto = rs.getString("Nomape");
-                cbnomape.addItem(nombreCompleto);
+                cbnomape.addItem(new Options(rs.getString(1), rs.getString(2)));
             }
 
             rs.close();
@@ -341,15 +355,14 @@ public class ReporteContable extends javax.swing.JDialog {
             Connection con = Conexion.getConnection();
             Statement stmt = con.createStatement();
 
-            String query = "select CONCAT(pe.A_Paterno, ' ', pe.A_Materno, ' ', pe.Nombres) AS Nomape from EstructuraCajaPensiones ecp "
+            String query = "select ecp.Documento, CONCAT(pe.A_Paterno, ' ', pe.A_Materno, ' ', pe.Nombres) AS Nomape from EstructuraCajaPensiones ecp "
                     + "inner join Personal as pe on ecp.Codigo_CIP = pe.NroCip ORDER BY Nomape";
             ResultSet rs = stmt.executeQuery(query);
 
             cbnomape.removeAllItems();
             cbnomape.addItem("<<Seleccionar>>");
             while (rs.next()) {
-                String nombreCompleto2 = rs.getString("Nomape");
-                cbnomape.addItem(nombreCompleto2);
+                cbnomape.addItem(new Options(rs.getString(1), rs.getString(2)));
             }
 
             // Cerrar la conexión
@@ -368,7 +381,7 @@ public class ReporteContable extends javax.swing.JDialog {
             Statement stmt = con.createStatement();
 
             // Ejecutar la consulta
-            String query = "select CONCAT(pe.A_Paterno, ' ', pe.A_Materno, ' ', pe.Nombres) AS Nomape from EstructuraOprefa eo "
+            String query = "select eo.DNI, CONCAT(pe.A_Paterno, ' ', pe.A_Materno, ' ', pe.Nombres) AS Nomape from EstructuraOprefa eo "
                     + "inner join Personal as pe on eo.DNI = pe.Dni ORDER BY Nomape";
             ResultSet rs = stmt.executeQuery(query);
 
@@ -378,8 +391,7 @@ public class ReporteContable extends javax.swing.JDialog {
             cbnomape.addItem("<<Seleccionar>>");
             // Llenar el JComboBox con los resultados
             while (rs.next()) {
-                String nombreCompleto = rs.getString("Nomape");
-                cbnomape.addItem(nombreCompleto);
+                cbnomape.addItem(new Options(rs.getString(1), rs.getString(2)));
             }
 
             // Cerrar la conexión

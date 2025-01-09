@@ -1067,6 +1067,7 @@ public class CargaCopere extends javax.swing.JFrame {
         jMenu1 = new javax.swing.JMenu();
         MenuRegistrarEmpleado1 = new javax.swing.JMenuItem();
         MenuRegistrarEmpleado = new javax.swing.JMenuItem();
+        MenuRegistrarEmpleado3 = new javax.swing.JMenuItem();
         MenuRegistrarEmpleado2 = new javax.swing.JMenuItem();
 
         jButton1.setText("jButton1");
@@ -1557,6 +1558,16 @@ public class CargaCopere extends javax.swing.JFrame {
         });
         jMenu1.add(MenuRegistrarEmpleado);
 
+        MenuRegistrarEmpleado3.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
+        MenuRegistrarEmpleado3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Profit.png"))); // NOI18N
+        MenuRegistrarEmpleado3.setText("Registrar Titular/Familiares");
+        MenuRegistrarEmpleado3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuRegistrarEmpleado3ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(MenuRegistrarEmpleado3);
+
         MenuRegistrarEmpleado2.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
         MenuRegistrarEmpleado2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/imprimir.png"))); // NOI18N
         MenuRegistrarEmpleado2.setText("Reporte Contable");
@@ -1715,8 +1726,14 @@ public class CargaCopere extends javax.swing.JFrame {
     }//GEN-LAST:event_MenuRegistrarEmpleado1ActionPerformed
 
     private void MenuRegistrarEmpleado2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuRegistrarEmpleado2ActionPerformed
-        // TODO add your handling code here:
+       ReporteContable ini = new ReporteContable(this, true);
+        ini.setVisible(true);
     }//GEN-LAST:event_MenuRegistrarEmpleado2ActionPerformed
+
+    private void MenuRegistrarEmpleado3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuRegistrarEmpleado3ActionPerformed
+        AgregarTitularFamiliar ini = new AgregarTitularFamiliar(this, true);
+        ini.setVisible(true);
+    }//GEN-LAST:event_MenuRegistrarEmpleado3ActionPerformed
 
     public static void saveTableToFile(JTable table, int year, int month) {
         // Formato del nombre de archivo
@@ -1814,6 +1831,7 @@ public class CargaCopere extends javax.swing.JFrame {
     private javax.swing.JMenuItem MenuRegistrarEmpleado;
     private javax.swing.JMenuItem MenuRegistrarEmpleado1;
     private javax.swing.JMenuItem MenuRegistrarEmpleado2;
+    private javax.swing.JMenuItem MenuRegistrarEmpleado3;
     private javax.swing.JButton btnAfiliadoCaja;
     private javax.swing.JButton btnAfiliadoCopere;
     private javax.swing.JButton btnAfiliadoOprefa;
