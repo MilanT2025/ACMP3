@@ -31,7 +31,7 @@
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                   <Image iconType="3" name="/images/Books_1.png"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Alta / Baja"/>
+                <Property name="text" type="java.lang.String" value="Alta / Baja / Aporte"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuRegistrarEmpleado1ActionPerformed"/>

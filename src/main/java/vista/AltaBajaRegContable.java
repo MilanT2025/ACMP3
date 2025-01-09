@@ -130,7 +130,7 @@ public class AltaBajaRegContable extends javax.swing.JDialog {
         jLabel5.setText("Opción:");
 
         cbopcion.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
-        cbopcion.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Alta", "Baja" }));
+        cbopcion.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Alta", "Baja", "Aporte" }));
         cbopcion.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 cbopcionItemStateChanged(evt);
@@ -283,7 +283,13 @@ public class AltaBajaRegContable extends javax.swing.JDialog {
             bajaPersonal(fechabaja);
         } else {
             Double monto = Double.valueOf(txtmonto.getText());
-            altaPersonal(monto);
+            String estado = "";
+            if (cbopcion.getSelectedItem().toString().equals("Alta")) {
+                estado = "4";
+            } else if (cbopcion.getSelectedItem().toString().equals("Aporte")) {
+                estado = "5";
+            }
+            altaPersonal(monto, estado);
         }
     }//GEN-LAST:event_btnguardarActionPerformed
 
@@ -427,8 +433,8 @@ public class AltaBajaRegContable extends javax.swing.JDialog {
             Logger.getLogger(AltaBajaRegContable.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
-    private void altaPersonal(Double monto) {
+ // 4 SIGNIFICA ALTA Y 5 SIGNIFICA APORTRE
+    private void altaPersonal(Double monto, String estado) {
             try {
                 Connection con = Conexion.getConnection();
                 String sql = "", read = "", update = "", insert = "";
@@ -437,21 +443,21 @@ public class AltaBajaRegContable extends javax.swing.JDialog {
                         sql = "UPDATE EstructuraCopere SET Estado = 1 WHERE Numero_CIP = ?";
                         
                         read = "SELECT 1 FROM [dbo].[HistorialCopere] WHERE [Numero_CIP] = ? AND [Año] = ? AND [Mes] = ?";
-                        update = "UPDATE [dbo].[HistorialCopere] SET [Monto] = ?, [Estado] = 4 WHERE [Numero_CIP] = ? AND [Año] = ? AND [Mes] = ?";
+                        update = "UPDATE [dbo].[HistorialCopere] SET [Monto] = ?, [Estado] = " + estado + " WHERE [Numero_CIP] = ? AND [Año] = ? AND [Mes] = ?";
                         insert = "INSERT INTO [dbo].[HistorialCopere] ([FechaRegistro], [Año], [Mes], [Numero_CIP], [Monto], [Estado]) VALUES (GETDATE(), ?, ?, ?, ?, 4)";
                     }
                     case "Caja de Pensiones" -> {
                         sql = "UPDATE EstructuraCajaPensiones SET Estado = 1 WHERE Documento = ?";
                         
                         read = "SELECT 1 FROM [dbo].[HistorialCajaPensiones] WHERE [Documento] = ? AND [Año] = ? AND [Mes] = ?";
-                        update = "UPDATE [dbo].[HistorialCajaPensiones] SET [Monto] = ?, [Estado] = 4 WHERE [Documento] = ? AND [Año] = ? AND [Mes] = ?";
+                        update = "UPDATE [dbo].[HistorialCajaPensiones] SET [Monto] = ?, [Estado] = " + estado + " WHERE [Documento] = ? AND [Año] = ? AND [Mes] = ?";
                         insert = "INSERT INTO [dbo].[HistorialCajaPensiones] ([FechaRegistro], [Año], [Mes], [Documento], [Monto], [Estado]) VALUES (GETDATE(), ?, ?, ?, ?, 4)";
                     }
                     case "Oprefa" -> {
                         sql = "UPDATE EstructuraOprefa SET Estado = 1 WHERE DNI = ?";
                         
                         read = "SELECT 1 FROM [dbo].[HistorialOprefa] WHERE [Documento] = ? AND [Año] = ? AND [Mes] = ?";
-                        update = "UPDATE [dbo].[HistorialOprefa] SET [Monto] = ?, [Estado] = 4 WHERE [Documento] = ? AND [Año] = ? AND [Mes] = ?";
+                        update = "UPDATE [dbo].[HistorialOprefa] SET [Monto] = ?, [Estado] = " + estado + " WHERE [Documento] = ? AND [Año] = ? AND [Mes] = ?";
                         insert = "INSERT INTO [dbo].[HistorialOprefa] ([FechaRegistro], [Año], [Mes], [Documento], [Monto], [Estado]) VALUES (GETDATE(), ?, ?, ?, ?, 4)";
                     }
                 }

@@ -158,9 +158,9 @@ public class DetalladoCopere extends javax.swing.JDialog {
     private void cargarDatosAporteDeuda(String numerocip, int estado, DefaultTableModel modelo) {
         String condicion;
         if (estado == 1) {
-            condicion = " AND Estado IN (1, 4) ";
+            condicion = " AND Estado IN (1, 4, 5) ";
         } else {
-            condicion = " AND Estado NOT IN (1, 4) ";
+            condicion = " AND Estado NOT IN (1, 4, 5) ";
         }
         
         

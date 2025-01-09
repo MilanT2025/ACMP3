@@ -1540,7 +1540,7 @@ public class CargaCopere extends javax.swing.JFrame {
 
         MenuRegistrarEmpleado1.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
         MenuRegistrarEmpleado1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Books_1.png"))); // NOI18N
-        MenuRegistrarEmpleado1.setText("Alta / Baja");
+        MenuRegistrarEmpleado1.setText("Alta / Baja / Aporte");
         MenuRegistrarEmpleado1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 MenuRegistrarEmpleado1ActionPerformed(evt);

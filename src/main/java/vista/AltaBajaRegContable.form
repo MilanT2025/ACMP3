@@ -283,9 +283,10 @@
                   <Font name="Roboto" size="13" style="0"/>
                 </Property>
                 <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                  <StringArray count="2">
+                  <StringArray count="3">
                     <StringItem index="0" value="Alta"/>
                     <StringItem index="1" value="Baja"/>
+                    <StringItem index="2" value="Aporte"/>
                   </StringArray>
                 </Property>
               </Properties>
