@@ -32,6 +32,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.RowFilter;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -198,7 +199,7 @@ int valor = 0;
         sorter = new TableRowSorter<>(tb_resultado.getModel());
         tb_resultado.setRowSorter(sorter);
 
-         tb_resultado.setDefaultRenderer(Object.class, new CustomRowColorRenderer(1)); // Índice 4 = columna 17
+        tb_resultado.setDefaultRenderer(Object.class, new CustomRowColorRenderer(1)); // Índice 4 = columna 17
 
         
         cargaDatos();
@@ -306,7 +307,7 @@ int valor = 0;
             } 
             
             String sql = "SELECT "
-                    + "	CASE WHEN (SELECT TOP 1 CONCAT(PorcentajePagado, '%') FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) = '100%' THEN 'PAGADO' WHEN (SELECT TOP 1 CONCAT(PorcentajePagado, '%') FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) = '100.0%' THEN 'PAGADO'WHEN (SELECT COUNT(*) FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº]) > 0 THEN 'PROCESADO' ELSE Estado END AS [Estado] "
+                    + "	CASE WHEN (SELECT TOP 1 CONCAT(PorcentajePagado, '%') FROM CuentasPorPagarDiario WHERE CUO = D1.CUO ORDER BY FechaEvaluacion DESC) = '100%' THEN 'PAGADO' WHEN (SELECT TOP 1 CONCAT(PorcentajePagado, '%') FROM CuentasPorPagarDiario WHERE CUO = D1.CUO ORDER BY FechaEvaluacion DESC) = '100.0%' THEN 'PAGADO'WHEN (SELECT COUNT(*) FROM CuentasPorPagarDiario WHERE CUO = D1.CUO) > 0 THEN 'PROCESADO' ELSE Estado END AS [Estado] "
                     + "  ,CONVERT(INT, [CUO]) AS CUO "
                     + "  ,[Comprobante Nº] "
                     + "  ,FORMAT([F# Registro], 'dd/MM/yyyy') AS [F# Registro] "
@@ -321,10 +322,10 @@ int valor = 0;
                     + "  ,[Plan Cuenta] "
                     + "  ,[Descripcion] "
                     + "  ,[Centro Costo] "
-                    + "  ,(SELECT TOP 1 CASE WHEN CONCAT(PorcentajePagado, '%') = '%' THEN '' ELSE CONCAT(PorcentajePagado, '%') END FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) as PorcentajePag "
-                    + "  ,(SELECT TOP 1 TotalPagado FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) as TotalPago "
-                    + "  ,(SELECT TOP 1 [N° Transferencia] FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) as Transf "
-                    + "  ,(SELECT TOP 1 FORMAT(FechaPago, 'dd/MM/yyyy') FROM CuentasPorPagarDiario WHERE Factura = [Comprobante Nº] ORDER BY FechaEvaluacion DESC) AS FechaPago "
+                    + "  ,(SELECT TOP 1 CASE WHEN CONCAT(PorcentajePagado, '%') = '%' THEN '' ELSE CONCAT(PorcentajePagado, '%') END FROM CuentasPorPagarDiario WHERE CUO = D1.CUO ORDER BY FechaEvaluacion DESC) as PorcentajePag "
+                    + "  ,(SELECT TOP 1 TotalPagado FROM CuentasPorPagarDiario WHERE CUO = D1.CUO ORDER BY FechaEvaluacion DESC) as TotalPago "
+                    + "  ,(SELECT TOP 1 [N° Transferencia] FROM CuentasPorPagarDiario WHERE CUO = D1.CUO ORDER BY FechaEvaluacion DESC) as Transf "
+                    + "  ,(SELECT TOP 1 FORMAT(FechaPago, 'dd/MM/yyyy') FROM CuentasPorPagarDiario WHERE CUO = D1.CUO ORDER BY FechaEvaluacion DESC) AS FechaPago "
                     + "FROM "
                     + "(SELECT "
                     + "	[Estado] "
@@ -350,7 +351,7 @@ int valor = 0;
                     + "UNION "
                     + "SELECT "
                     + "	Estado = '', "
-                    + "	CUO = '', "
+                    + "	CUO, "
                     + "	Factura AS [Comprobante Nº], "
                     + "	FechaEvaluacion AS [F# Registro], "
                     + "	FechaEmision AS [F# Emision], "
@@ -946,6 +947,7 @@ int valor = 0;
                 data[4] = tb_resultado.getValueAt(i, 5);
                 data[5] = tb_resultado.getValueAt(i, 6);
                 data[6] = tb_resultado.getValueAt(i, 11);
+                data[columnCount - 4] = tb_resultado.getValueAt(i, 2);
                 data[columnCount - 1] = false;
                 ini.cargarInfo(data);
                 c++;

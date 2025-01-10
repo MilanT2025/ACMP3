@@ -100,6 +100,7 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
         modelo.addColumn("OPCION"); //7
         
         agregarColumnasPorcentaje();
+        modelo.addColumn("CUO");
         modelo.addColumn("TOTAL");
         modelo.addColumn("RUBRO");
         modelo.addColumn("MANUAL");
@@ -158,8 +159,10 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
                     
                     // Validar que el valor no sea nulo y tenga formato de porcentaje (por ejemplo, "3%")
                     if (value != null) {
-                        for (int i = 8; i < tb_data.getColumnCount()-2; i++) {
-                            tb_data.setValueAt(null, row, i);
+                        for (int i = 8; i < tb_data.getColumnCount() - 2; i++) {
+                            if (i != tb_data.getColumnCount() - 4) { // Excluir columna específica
+                                tb_data.setValueAt(null, row, i);
+                            }
                         }
 
                         // Buscar la columna cuyo encabezado contiene el porcentaje dentro de "[]"
@@ -219,7 +222,7 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
 
         int columnCount = tb_data.getColumnCount();
         for (int i = 0; i < columnCount; i++) {
-            if (i == 6 || (i >= 7 && i <= modelo.getColumnCount()-2)) {
+            if (i == 6 || (i >= 8 && i <= modelo.getColumnCount()-5) || i == modelo.getColumnCount()-3) {
                 tb_data.getColumnModel().getColumn(i).setCellRenderer(new DefaultTableCellRenderer() {
                     @Override
                     public void setValue(Object value) {
@@ -234,7 +237,7 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
 
         configurarComboBoxEnTabla();
        
-        ocultarColumnaAncho(tb_data, modelo.getColumnCount()-1);
+        //ocultarColumnaAncho(tb_data, modelo.getColumnCount()-1);
     }
     
     private JComboBox<String> obtenerComboBoxDesdeBaseDeDatos() {
@@ -296,8 +299,8 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
             Connection con = Conexion.getConnection();
             String sql = "INSERT INTO [dbo].[CuentasPorPagarDiario] " +
              "([N°], [RUC], [Proveedor], [Factura], [FechaEmision], [FechaVencimiento], [Monto], [Porcentaje], " +
-             "[ValorCalculado], [Total], [Rubro], [FechaEvaluacion], [EsManual]) " +
-             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), ?)";
+             "[ValorCalculado], [CUO], [Total], [Rubro], [FechaEvaluacion], [EsManual]) " +
+             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), ?)";
             PreparedStatement pstm = con.prepareStatement(sql);
             for (int i = 0; i < tb_data.getRowCount(); i++) {
                 double total = 0;
@@ -311,15 +314,16 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
                     pstm.setDouble(7, Double.parseDouble(tb_data.getValueAt(i, 6).toString()));
                     pstm.setString(8, tb_data.getValueAt(i, 7).toString());
                     
-                    int totalColumnIndex = tb_data.getColumnCount() - 3; 
+                    int totalColumnIndex = tb_data.getColumnCount() - 4; 
 
                     for (int j = 8; j < totalColumnIndex; j++) {
                         total += parseDoubleOrDefault(tb_data.getValueAt(i, j));
                     }
                     pstm.setDouble(9, total);
-                    pstm.setString(10, getStringOrDefault(tb_data.getValueAt(i, tb_data.getColumnCount()-3), ""));
-                    pstm.setString(11, getStringOrDefault(tb_data.getValueAt(i, tb_data.getColumnCount()-2), ""));
-                    pstm.setBoolean(12, Boolean.parseBoolean(tb_data.getValueAt(i, tb_data.getColumnCount()-1).toString()));
+                    pstm.setInt(10, Integer.parseInt(tb_data.getValueAt(i, tb_data.getColumnCount()-4).toString()));
+                    pstm.setString(11, getStringOrDefault(tb_data.getValueAt(i, tb_data.getColumnCount()-3), ""));
+                    pstm.setString(12, getStringOrDefault(tb_data.getValueAt(i, tb_data.getColumnCount()-2), ""));
+                    pstm.setBoolean(13, Boolean.parseBoolean(tb_data.getValueAt(i, tb_data.getColumnCount()-1).toString()));
                    
                     pstm.executeUpdate();
                 }
