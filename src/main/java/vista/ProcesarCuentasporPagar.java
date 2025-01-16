@@ -237,7 +237,8 @@ public class ProcesarCuentasporPagar extends javax.swing.JDialog {
 
         configurarComboBoxEnTabla();
        
-        //ocultarColumnaAncho(tb_data, modelo.getColumnCount()-1);
+        ocultarColumnaAncho(tb_data, modelo.getColumnCount()-1);
+        ocultarColumnaAncho(tb_data, modelo.getColumnCount()-4);
     }
     
     private JComboBox<String> obtenerComboBoxDesdeBaseDeDatos() {

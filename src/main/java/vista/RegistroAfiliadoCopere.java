@@ -28,7 +28,7 @@ public class RegistroAfiliadoCopere extends javax.swing.JDialog {
     public RegistroAfiliadoCopere(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
-        setSize(550, 500);
+        setSize(550, 400);
         setLocationRelativeTo(null); // Centra el JDialog respecto al JFrame
         ruta.setText(null);
     }

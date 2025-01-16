@@ -104,6 +104,7 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
         modelo.addColumn("TOTALPAGADO"); //18
         modelo.addColumn("NROTRANSFER"); //19
         modelo.addColumn("MONTO"); //20
+        modelo.addColumn("CUO"); //20
         
         JTableHeader header = tb_data.getTableHeader();
         header.setPreferredSize(new java.awt.Dimension(header.getWidth(), 40));
@@ -211,6 +212,9 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
          ocultarColumnaAncho(tb_data, 18);
          ocultarColumnaAncho(tb_data, 19);
          ocultarColumnaAncho(tb_data, 20);
+         
+         //
+         ocultarColumnaAncho(tb_data, 21);
     }
     
     public void ocultarColumnaAncho(JTable tabla, int columnaIndex) {
@@ -272,7 +276,7 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
         modelo.setRowCount(0);
         try {
             int c = 1;
-            Object data[] = new Object[21];
+            Object data[] = new Object[22];
             Connection con = Conexion.getConnection();
             Statement st = con.createStatement();
             String sql = "SELECT "
@@ -292,7 +296,7 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
                     + "	PorcentajePagado, "
                     + "	TotalPagado, "
                     + "	[N° Transferencia], "
-                    + "	Monto "
+                    + "	Monto, CUO "
                     + "FROM CuentasPorPagarDiario "
                     + "ORDER BY Proveedor";
             ResultSet rs = st.executeQuery(sql);
@@ -315,6 +319,7 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
                 data[18] = rs.getObject(15);
                 data[19] = rs.getObject(16);
                 data[20] = rs.getObject(17);
+                data[21] = rs.getInt(18);
                
                 modelo.addRow(data);
                 c++;
@@ -721,9 +726,9 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
             // Configura tu conexión a la base de datos
             conexion = Conexion.getConnection();
 
-            String sql = "DELETE FROM CuentasPorPagarDiario WHERE Factura = ?";
+            String sql = "DELETE FROM CuentasPorPagarDiario WHERE CUO = ?";
             consulta = conexion.prepareStatement(sql);
-            consulta.setString(1, factura);
+            consulta.setInt(1, Integer.parseInt(factura));
 
             int filasAfectadas = consulta.executeUpdate();
             if (filasAfectadas == 0) {
@@ -754,8 +759,8 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
 
     private void tb_dataKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tb_dataKeyPressed
         if (evt.getKeyCode() == KeyEvent.VK_DELETE) {
-            String factura = modelo.getValueAt(tb_data.getSelectedRow(), 4).toString();
-
+            String factura = modelo.getValueAt(tb_data.getSelectedRow(), 21).toString();
+            System.out.println(factura);
                 int confirmacion = JOptionPane.showConfirmDialog(null,
                         "¿Está seguro que desea eliminar este registro?",
                         "Confirmar eliminación",
@@ -771,6 +776,7 @@ public class ModuloPago_CuentasPorPagar extends javax.swing.JDialog {
                             JOptionPane.showMessageDialog(null,
                                     "El registro ha sido eliminado exitosamente.");
                             llenar_tabla();
+                            CuentasporPagar.jButton1.doClick();
                         } else {
                             JOptionPane.showMessageDialog(null,
                                     "Contraseña incorrecta. No se realizara ninguna acción.",

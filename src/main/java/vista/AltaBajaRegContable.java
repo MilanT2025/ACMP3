@@ -286,15 +286,13 @@ public class AltaBajaRegContable extends javax.swing.JDialog {
             String estado = "";
             if (cbopcion.getSelectedItem().toString().equals("Alta")) {
                 estado = "4";
-            } else if (cbopcion.getSelectedItem().toString().equals("Aporte")) {
-                estado = "5";
-            }
+            } 
             altaPersonal(monto, estado);
         }
     }//GEN-LAST:event_btnguardarActionPerformed
 
     private void cbopcionItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbopcionItemStateChanged
-        if (cbopcion.getSelectedItem().toString().equals("Alta")) {
+        if (cbopcion.getSelectedItem().toString().equals("Alta")|| cbopcion.getSelectedItem().toString().equals("Aporte")) {
             jLabel7.setVisible(true);
             txtmonto.setVisible(true);
             

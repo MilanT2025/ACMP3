@@ -143,9 +143,13 @@ public class Gratificacion extends javax.swing.JFrame {
 
         agregarColumnasPorMes(jdc_mes.getMonth() + 1);
         
+        int monthIndex = (jdc_mes.getMonth() - 1 + 12) % 12;
+        String monthName = meses[monthIndex];
+        int year = jdc_año.getYear() - (monthIndex == 11 ? 1 : 0); 
+       
         modelo.addColumn("Diferencia Grati");
         modelo.addColumn("Provision 9% - [" + meses[jdc_mes.getMonth()] + " " + jdc_año.getYear() + "]");
-        modelo.addColumn("Diferencia 9% - [" + meses[jdc_mes.getMonth()-1] + " " + jdc_año.getYear() + "]");
+        modelo.addColumn("Diferencia 9% - [" + monthName + " " + year + "]");
         modelo.addColumn("Diferencia 9%");
         modelo.addColumn("Situacion");
 
@@ -287,9 +291,11 @@ public class Gratificacion extends javax.swing.JFrame {
            
         } 
         
+        int monthIndex = (jdc_mes.getMonth() - 1 + 12) % 12;
+        String monthName = meses[monthIndex];int year = jdc_año.getYear() - (monthIndex == 11 ? 1 : 0); 
         modelo.addColumn("Ajuste dias");
-        modelo.addColumn("Provision - Sistema [" + meses[mesSeleccionado-1] + " " + jdc_año.getYear() + "]");
-        modelo.addColumn("Provision [" + meses[mesSeleccionado-2] + " " + jdc_año.getYear() + "]");
+        modelo.addColumn("Provision - Sistema [" + monthName + " " + year + "]"); 
+        modelo.addColumn("Provision [" + monthName + " " + year + "]"); 
 
     }
 
