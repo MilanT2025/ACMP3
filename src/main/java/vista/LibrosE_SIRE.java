@@ -737,6 +737,7 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
                                 if (i == 7) {
                                     fila[i + 1] = "";
                                 }
+                                
                             }
                         }
                     }
@@ -779,7 +780,7 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
                     for (int i = 4; i < columnas.length; i++) {
                         if (i < fila.length - 1) {
                             fila[i + 1] = columnas[i]; // Desplazar los datos hacia adelante
-
+                            
                         }
 
                     }
@@ -1470,9 +1471,8 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
         c = 0;
         
         for (int i = 0; i < modelo2.getRowCount(); i++) {
-            if (Double.parseDouble(modelo2.getValueAt(i, 26).toString()) == 0) {
-                modelo2.setValueAt(tipocambio_reemplazar, i, 26);
-                c++;
+            if (!modelo2.getValueAt(i, 25).equals("USD")) {
+                modelo2.setValueAt("", i, 26);
             }
         }
         
