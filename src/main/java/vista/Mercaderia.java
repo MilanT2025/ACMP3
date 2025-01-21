@@ -79,7 +79,7 @@ public class Mercaderia extends javax.swing.JFrame {
     /**
      * Creates new form Depreciacion
      */
-    public Mercaderia() {
+    public Mercaderia(String usuario) {
         initComponents();
 
         locale = new Locale("es", "PE");
@@ -98,7 +98,7 @@ public class Mercaderia extends javax.swing.JFrame {
             public void windowClosing(WindowEvent e) {
                 setVisible(false);
                 FlatMacDarkLaf.setup();
-                Application anteriorFrame = new Application();
+                Application anteriorFrame = new Application(usuario);
                 anteriorFrame.setVisible(true);
             }
         });
@@ -935,7 +935,7 @@ public class Mercaderia extends javax.swing.JFrame {
             java.awt.EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     UIManager.getLookAndFeelDefaults().put("Table.alternateRowColor", new Color(254, 238, 184));
-                    new Mercaderia().setVisible(true);
+                    new Mercaderia(null).setVisible(true);
                 }
             });
         } catch (UnsupportedLookAndFeelException ex) {

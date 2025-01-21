@@ -92,7 +92,7 @@ public class CuentasporPagar extends javax.swing.JFrame {
     /**
      * Creates new form CuentasporPagar
      */
-    public CuentasporPagar() {
+    public CuentasporPagar(String usuario) {
         initComponents();
         filtrosadicionales(false);
         locale = new Locale("es", "PE");
@@ -116,7 +116,7 @@ public class CuentasporPagar extends javax.swing.JFrame {
             public void windowClosing(WindowEvent e) {
                 setVisible(false);
                 FlatMacDarkLaf.setup();
-                Application anteriorFrame = new Application();
+                Application anteriorFrame = new Application(usuario);
                 anteriorFrame.setVisible(true);
             }
         });
@@ -1016,7 +1016,7 @@ int valor = 0;
             java.awt.EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     UIManager.getLookAndFeelDefaults().put("Table.alternateRowColor", new Color(254, 238, 184));
-                    new CuentasporPagar().setVisible(true);
+                    new CuentasporPagar(null).setVisible(true);
                 }
             });
         } catch (UnsupportedLookAndFeelException ex) {

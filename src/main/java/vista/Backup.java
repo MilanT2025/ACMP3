@@ -35,24 +35,28 @@ public class Backup extends javax.swing.JFrame {
     /**
      * Creates new form Backup
      */
-    public Backup() throws UnsupportedLookAndFeelException {
-        initComponents();
-        Locale.setDefault(new Locale("es", "ES"));
-        this.setResizable(false);
-        this.setIconImage(new ImageIcon(System.getProperty("user.dir") + "/logoACMP.png").getImage());
-        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        UIManager.setLookAndFeel(new FlatLightLaf());
-        jProgressBar1.setStringPainted(true);
-        this.setLocationRelativeTo(null);
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                setVisible(false);
-                FlatMacDarkLaf.setup();
-                Application anteriorFrame = new Application();
-                anteriorFrame.setVisible(true);
-            }
-        });
+    public Backup(String usuario) {
+        try {
+            initComponents();
+            Locale.setDefault(new Locale("es", "ES"));
+            this.setResizable(false);
+            this.setIconImage(new ImageIcon(System.getProperty("user.dir") + "/logoACMP.png").getImage());
+            setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+            UIManager.setLookAndFeel(new FlatLightLaf());
+            jProgressBar1.setStringPainted(true);
+            this.setLocationRelativeTo(null);
+            addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    setVisible(false);
+                    FlatMacDarkLaf.setup();
+                    Application anteriorFrame = new Application(usuario);
+                    anteriorFrame.setVisible(true);
+                }
+            });
+        } catch (UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(Backup.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     private void iniciarRespaldo() {
@@ -242,11 +246,7 @@ public class Backup extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                try {
-                    new Backup().setVisible(true);
-                } catch (UnsupportedLookAndFeelException ex) {
-                    Logger.getLogger(Backup.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                new Backup(null).setVisible(true);
             }
         });
     }

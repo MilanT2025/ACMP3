@@ -73,7 +73,7 @@ public class CargaCopere extends javax.swing.JFrame {
     private final Modelo2 modeloCaja = new Modelo2();
     private final Modelo3 modeloOprefa = new Modelo3();
 
-    public CargaCopere() {
+    public CargaCopere(String usuario) {
         initComponents();
         Locale.setDefault(new Locale("es", "ES"));
         this.setIconImage(new ImageIcon(System.getProperty("user.dir") + "/logoACMP.png").getImage());
@@ -83,7 +83,7 @@ public class CargaCopere extends javax.swing.JFrame {
             public void windowClosing(WindowEvent e) {
                 setVisible(false); 
                 FlatMacDarkLaf.setup();
-                Application anteriorFrame = new Application();
+                Application anteriorFrame = new Application(usuario);
                 anteriorFrame.setVisible(true);
             }
         });
@@ -1822,7 +1822,7 @@ public class CargaCopere extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new CargaCopere().setVisible(true);
+                new CargaCopere(null).setVisible(true);
             }
         });
     }

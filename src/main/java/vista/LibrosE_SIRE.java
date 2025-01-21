@@ -15,7 +15,6 @@ import java.awt.Cursor;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -25,9 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -50,11 +46,6 @@ import javax.swing.JTable;
 import javax.swing.RowFilter;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
@@ -88,7 +79,7 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
     /**
      * Creates new form LibrosE_SIRE
      */
-    public LibrosE_SIRE() {
+    public LibrosE_SIRE(String usuario) {
         initComponents();
         this.setIconImage(new ImageIcon(System.getProperty("user.dir") + "/logoACMP.png").getImage());
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -97,7 +88,7 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
             public void windowClosing(WindowEvent e) {
                 setVisible(false); 
                 FlatMacDarkLaf.setup();
-                Application anteriorFrame = new Application();
+                Application anteriorFrame = new Application(usuario);
                 anteriorFrame.setVisible(true);
             }
         });
@@ -2082,7 +2073,7 @@ public class LibrosE_SIRE extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new LibrosE_SIRE().setVisible(true);
+                new LibrosE_SIRE(null).setVisible(true);
             }
         });
     }

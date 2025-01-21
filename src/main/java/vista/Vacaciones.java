@@ -105,7 +105,7 @@ public class Vacaciones extends javax.swing.JFrame {
     /**
      * Creates new form Depreciacion
      */
-    public Vacaciones() {
+    public Vacaciones(String usuario) {
         initComponents();
         UIManager.getLookAndFeelDefaults().put("Table.alternateRowColor", new Color(254, 238, 184));
         Locale.setDefault(new Locale("es", "ES"));
@@ -116,7 +116,7 @@ public class Vacaciones extends javax.swing.JFrame {
             public void windowClosing(WindowEvent e) {
                 setVisible(false);
                 FlatMacDarkLaf.setup();
-                Application anteriorFrame = new Application();
+                Application anteriorFrame = new Application(usuario);
                 anteriorFrame.setVisible(true);
             }
         });
@@ -1546,7 +1546,7 @@ public class Vacaciones extends javax.swing.JFrame {
             java.awt.EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     UIManager.getLookAndFeelDefaults().put("Table.alternateRowColor", new Color(254, 238, 184));
-                    new Vacaciones().setVisible(true);
+                    new Vacaciones(null).setVisible(true);
                 }
             });
         } catch (UnsupportedLookAndFeelException ex) {

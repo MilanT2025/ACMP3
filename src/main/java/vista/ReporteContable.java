@@ -5,21 +5,28 @@
 package vista;
 
 import Controlador.Conexion;
+import Controlador.DatabaseUtility;
 import Controlador.Options;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
@@ -27,6 +34,15 @@ import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.view.JasperViewer;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
@@ -67,6 +83,7 @@ public class ReporteContable extends javax.swing.JDialog {
         cbtipo = new javax.swing.JComboBox<>();
         dcannio = new com.toedter.calendar.JYearChooser();
         jLabel6 = new javax.swing.JLabel();
+        jCheckBox1 = new javax.swing.JCheckBox();
         btnimprimir = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -135,6 +152,8 @@ public class ReporteContable extends javax.swing.JDialog {
         jLabel6.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
         jLabel6.setText("Año:");
 
+        jCheckBox1.setText("En Excel");
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -160,7 +179,10 @@ public class ReporteContable extends javax.swing.JDialog {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(cbnomape, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(dcannio, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .addComponent(dcannio, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jCheckBox1)))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -182,7 +204,9 @@ public class ReporteContable extends javax.swing.JDialog {
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(cbnomape))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jCheckBox1)
+                .addContainerGap())
         );
 
         btnimprimir.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
@@ -254,20 +278,221 @@ public class ReporteContable extends javax.swing.JDialog {
     private void btnimprimirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnimprimirActionPerformed
         int annio = dcannio.getYear(), idPersonal = Integer.parseInt(((Options) cbnomape.getSelectedItem()).getValue());
         String regcont = cbregcontable.getSelectedItem().toString().toUpperCase();
+        String query, defaultFileName;
+        List<Object[]> data;
+        
         if (cbtipo.getSelectedItem().toString().equals("General")) {
+             if (jCheckBox1.isSelected()) {
+                 switch (cbregcontable.getSelectedItem().toString()) {
+                     case "Copere":
+                         query = "SELECT \n"
+                                 + "	Tipo =  'Copere' ,\n"
+                                 + "	Año,\n"
+                                 + "	ROW_NUMBER() OVER (ORDER BY p.A_Paterno, p.A_Materno, p.Nombres) AS Nro,\n"
+                                 + "	p.DNI,\n"
+                                 + "    p.A_Paterno + ' ' + p.A_Materno + ' ' + p.Nombres AS Empleado,\n"
+                                 + "    ISNULL([APORTE], 0) AS Aporte,\n"
+                                 + "    ISNULL([DEUDA], 0) AS Deuda\n"
+                                 + "FROM \n"
+                                 + "    (\n"
+                                 + "        SELECT \n"
+                                 + "            h.Numero_CIP,\n"
+                                 + "            CASE \n"
+                                 + "                WHEN h.Estado IN (1, 4, 5) THEN 'APORTE'\n"
+                                 + "                WHEN h.Estado IN (2, 3) THEN 'DEUDA'\n"
+                                 + "                ELSE 'Otro'\n"
+                                 + "            END AS Tipo,\n"
+                                 + "            h.Monto,\n"
+                                 + "            h.Año\n"
+                                 + "        FROM [dbo].[HistorialCopere] h\n"
+                                 + "        INNER JOIN [dbo].[Personal] p ON h.Numero_CIP = p.NroCip\n"
+                                 + "        WHERE h.Año =  " + annio + "\n"
+                                 + "    ) AS DatosClasificados\n"
+                                 + "PIVOT\n"
+                                 + "    (\n"
+                                 + "        SUM(Monto)\n"
+                                 + "        FOR Tipo IN ([APORTE], [DEUDA])\n"
+                                 + "    ) AS pvt\n"
+                                 + "INNER JOIN [dbo].[Personal] p ON p.NroCip = pvt.Numero_CIP\n"
+                                 + "ORDER BY \n"
+                                 + "    p.A_Paterno, p.A_Materno, p.Nombres;";
+                         data = DatabaseUtility.executeQuery(query);
+                         defaultFileName = "Informe_Copere";
+                         exportToExcel(data, defaultFileName);
+                         break;
+                     case "Caja de Pensiones":
+                         query = "SELECT \n"
+                                 + "	Tipo =  'Caja de Pensiones' ,\n"
+                                 + "	Año,\n"
+                                 + "	ROW_NUMBER() OVER (ORDER BY p.A_Paterno, p.A_Materno, p.Nombres) AS Nro,\n"
+                                 + "	p.DNI,\n"
+                                 + "    p.A_Paterno + ' ' + p.A_Materno + ' ' + p.Nombres AS Empleado,\n"
+                                 + "    ISNULL([APORTE], 0) AS Aporte,\n"
+                                 + "    ISNULL([DEUDA], 0) AS Deuda\n"
+                                 + "FROM \n"
+                                 + "    (\n"
+                                 + "        SELECT \n"
+                                 + "            h.Documento,\n"
+                                 + "            CASE \n"
+                                 + "                WHEN h.Estado IN (1, 4, 5) THEN 'APORTE'\n"
+                                 + "                WHEN h.Estado IN (2, 3) THEN 'DEUDA'\n"
+                                 + "                ELSE 'Otro'\n"
+                                 + "            END AS Tipo,\n"
+                                 + "            h.Monto,\n"
+                                 + "            h.Año\n"
+                                 + "        FROM [dbo].[HistorialCajaPensiones] h\n"
+                                 + "        INNER JOIN [dbo].[Personal] p ON h.Documento = p.Dni\n"
+                                 + "        WHERE h.Año =  " + annio + "\n"
+                                 + "    ) AS DatosClasificados\n"
+                                 + "PIVOT\n"
+                                 + "    (\n"
+                                 + "        SUM(Monto)\n"
+                                 + "        FOR Tipo IN ([APORTE], [DEUDA])\n"
+                                 + "    ) AS pvt\n"
+                                 + "INNER JOIN [dbo].[Personal] p ON p.Dni = pvt.Documento\n"
+                                 + "ORDER BY \n"
+                                 + "    p.A_Paterno, p.A_Materno, p.Nombres;";
+                         data = DatabaseUtility.executeQuery(query);
+                         defaultFileName = "Informe_Caja_Pensiones";
+                         exportToExcel(data, defaultFileName);
+                         break;
+                     case "Oprefa":
+                         query = "SELECT \n"
+                                 + "	Tipo =  'Oprefa' ,\n"
+                                 + "	Año,\n"
+                                 + "	ROW_NUMBER() OVER (ORDER BY p.A_Paterno, p.A_Materno, p.Nombres) AS Nro,\n"
+                                 + "	p.DNI,\n"
+                                 + "    p.A_Paterno + ' ' + p.A_Materno + ' ' + p.Nombres AS Empleado,\n"
+                                 + "    ISNULL([APORTE], 0) AS Aporte,\n"
+                                 + "    ISNULL([DEUDA], 0) AS Deuda\n"
+                                 + "FROM \n"
+                                 + "    (\n"
+                                 + "        SELECT \n"
+                                 + "            h.Documento,\n"
+                                 + "            CASE \n"
+                                 + "                WHEN h.Estado IN (1, 4, 5) THEN 'APORTE'\n"
+                                 + "                WHEN h.Estado IN (2, 3) THEN 'DEUDA'\n"
+                                 + "                ELSE 'Otro'\n"
+                                 + "            END AS Tipo,\n"
+                                 + "            h.Monto,\n"
+                                 + "            h.Año\n"
+                                 + "        FROM [dbo].[HistorialOprefa] h\n"
+                                 + "        INNER JOIN [dbo].[Personal] p ON h.Documento = p.Dni\n"
+                                 + "        WHERE h.Año =  " + annio + "\n"
+                                 + "    ) AS DatosClasificados\n"
+                                 + "PIVOT\n"
+                                 + "    (\n"
+                                 + "        SUM(Monto)\n"
+                                 + "        FOR Tipo IN ([APORTE], [DEUDA])\n"
+                                 + "    ) AS pvt\n"
+                                 + "INNER JOIN [dbo].[Personal] p ON p.Dni = pvt.Documento\n"
+                                 + "ORDER BY \n"
+                                 + "    p.A_Paterno, p.A_Materno, p.Nombres;";
+                         data = DatabaseUtility.executeQuery(query);
+                         defaultFileName = "Informe_Oprefa";
+                         exportToExcel(data, defaultFileName);
+                         break;
+                 }
+                 return;
+            }
             imprimirReporteGeneral(regcont, annio);
         } else {
             imprimirReporteEspecifico(regcont, annio, idPersonal);
         }
     }//GEN-LAST:event_btnimprimirActionPerformed
 
+    public void exportToExcel(List<Object[]> data, String defaultFileName) {
+        // Crear el JFileChooser para seleccionar la ubicación
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Guardar archivo Excel");
+        fileChooser.setSelectedFile(new File(defaultFileName + ".xlsx")); // Establecer el nombre predeterminado
+
+        // Mostrar el diálogo de guardar
+        int userSelection = fileChooser.showSaveDialog(null);
+
+        if (userSelection != JFileChooser.APPROVE_OPTION) {
+            return; // El usuario canceló
+        }
+
+        File fileToSave = fileChooser.getSelectedFile();
+
+        // Asegurarse de que el archivo tenga extensión .xlsx
+        if (!fileToSave.getName().endsWith(".xlsx")) {
+            fileToSave = new File(fileToSave.getAbsolutePath() + ".xlsx");
+        }
+
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Datos");
+
+        // Establecer el estilo
+        CellStyle headerStyle = workbook.createCellStyle();
+        headerStyle.setBorderBottom(BorderStyle.THIN);
+        headerStyle.setBorderTop(BorderStyle.THIN);
+        headerStyle.setBorderLeft(BorderStyle.THIN);
+        headerStyle.setBorderRight(BorderStyle.THIN);
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
+
+        // Crear fila de encabezado
+        Row headerRow = sheet.createRow(0);
+        String[] headers = {"Tipo", "Año", "Nro", "DNI", "Empleado", "Aporte", "Deuda"};
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(headerStyle);
+        }
+
+        // Rellenar datos
+        int rowNum = 1;
+        for (Object[] row : data) {
+            Row excelRow = sheet.createRow(rowNum++);
+            for (int colNum = 0; colNum < row.length; colNum++) {
+                Cell cell = excelRow.createCell(colNum);
+                if (row[colNum] instanceof String) {
+                    cell.setCellValue((String) row[colNum]);
+                } else if (row[colNum] instanceof Integer) {
+                    cell.setCellValue((Integer) row[colNum]);
+                } else if (row[colNum] instanceof Double) {
+                    cell.setCellValue((Double) row[colNum]);
+                }
+            }
+        }
+
+        // Subtotales
+        Row subtotalRow = sheet.createRow(rowNum);
+        subtotalRow.createCell(4).setCellValue("Subtotal");
+        subtotalRow.createCell(5).setCellFormula("SUM(F2:F" + rowNum + ")");
+        subtotalRow.createCell(6).setCellFormula("SUM(G2:G" + rowNum + ")");
+
+        // Agregar filtros
+        sheet.setAutoFilter(new CellRangeAddress(0, 0, 0, headers.length - 1));
+
+        // Ajustar tamaños de las columnas
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        // Guardar el archivo
+        try (FileOutputStream fileOut = new FileOutputStream(fileToSave)) {
+            workbook.write(fileOut);
+            JOptionPane.showMessageDialog(null, "Archivo Excel guardado correctamente.");
+        } catch (IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al guardar el archivo Excel.");
+        }
+    }
+    
+    
     private void cbtipoItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbtipoItemStateChanged
         if (cbtipo.getSelectedItem().toString().equals("General")) {
             jLabel4.setVisible(false);
             cbnomape.setVisible(false);
+            jCheckBox1.setVisible(true);
         } else {
             jLabel4.setVisible(true);
             cbnomape.setVisible(true);
+            jCheckBox1.setVisible(false);
         }
     }//GEN-LAST:event_cbtipoItemStateChanged
 
@@ -319,6 +544,7 @@ public class ReporteContable extends javax.swing.JDialog {
     private javax.swing.JComboBox<String> cbregcontable;
     private javax.swing.JComboBox<String> cbtipo;
     private com.toedter.calendar.JYearChooser dcannio;
+    private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;

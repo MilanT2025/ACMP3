@@ -79,7 +79,7 @@ public class Txt_Plame extends javax.swing.JFrame {
     /**
      * Creates new form LibrosE_SIRE
      */
-    public Txt_Plame() {
+    public Txt_Plame(String usuario) {
         initComponents();
         this.setIconImage(new ImageIcon(System.getProperty("user.dir") + "/logoACMP.png").getImage());
         
@@ -89,7 +89,7 @@ public class Txt_Plame extends javax.swing.JFrame {
             public void windowClosing(WindowEvent e) {
                 setVisible(false); 
                 FlatMacDarkLaf.setup();
-                Application anteriorFrame = new Application();
+                Application anteriorFrame = new Application(usuario);
                 anteriorFrame.setVisible(true);
             }
         });
@@ -2631,7 +2631,7 @@ public class Txt_Plame extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Txt_Plame().setVisible(true);
+                new Txt_Plame(null).setVisible(true);
             }
         });
     }

@@ -89,7 +89,7 @@ public class Flujo_Caja extends javax.swing.JFrame {
     /**
      * Creates new form LibrosE_SIRE
      */
-    public Flujo_Caja() {
+    public Flujo_Caja(String usuario) {
         initComponents();
         
         locale = new Locale("es", "ES");
@@ -107,7 +107,7 @@ public class Flujo_Caja extends javax.swing.JFrame {
             public void windowClosing(WindowEvent e) {
                 setVisible(false); 
                 FlatMacDarkLaf.setup();
-                Application anteriorFrame = new Application();
+                Application anteriorFrame = new Application(usuario);
                 anteriorFrame.setVisible(true);
             }
         });
@@ -1528,7 +1528,7 @@ public class Flujo_Caja extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Flujo_Caja().setVisible(true);
+                new Flujo_Caja(null).setVisible(true);
             }
         });
     }

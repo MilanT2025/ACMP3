@@ -9,7 +9,8 @@ public class Application extends JFrame {
 
     private DesktopPaneCustom desktopPaneCustom;
 
-    public Application() {
+    public Application(String usuario) {
+        FlatMacDarkLaf.setup();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setUndecorated(false);
         setSize(new Dimension(1366, 768));
@@ -17,13 +18,13 @@ public class Application extends JFrame {
         setResizable(false);
         setIconImage(new ImageIcon(System.getProperty("user.dir") + "/logoACMP.png").getImage());
         setTitle("Automatización de Procesos - Asociación Circulo Militar del Perú - v2.0");
-        desktopPaneCustom = new DesktopPaneCustom(this);
+        desktopPaneCustom = new DesktopPaneCustom(this, usuario);
         getContentPane().add(desktopPaneCustom);
     }
-
+    
     public static void main(String[] args) {
         FlatMacDarkLaf.setup();
-        EventQueue.invokeLater(() -> new Application().setVisible(true));
+        EventQueue.invokeLater(() -> new Application(null).setVisible(true));
     }
 
     public void ocultarVentana() {

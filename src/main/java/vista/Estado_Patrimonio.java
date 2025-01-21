@@ -69,7 +69,7 @@ public class Estado_Patrimonio extends javax.swing.JFrame {
     /**
      * Creates new form LibrosE_SIRE
      */
-    public Estado_Patrimonio() {
+    public Estado_Patrimonio(String usuario) {
         initComponents();
         this.setIconImage(new ImageIcon(System.getProperty("user.dir") + "/logoACMP.png").getImage());
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -78,7 +78,7 @@ public class Estado_Patrimonio extends javax.swing.JFrame {
             public void windowClosing(WindowEvent e) {
                 setVisible(false); 
                 FlatMacDarkLaf.setup();
-                Application anteriorFrame = new Application();
+                Application anteriorFrame = new Application(usuario);
                 anteriorFrame.setVisible(true);
             }
         });
@@ -1023,7 +1023,7 @@ public class Estado_Patrimonio extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Estado_Patrimonio().setVisible(true);
+                new Estado_Patrimonio(null).setVisible(true);
             }
         });
     }

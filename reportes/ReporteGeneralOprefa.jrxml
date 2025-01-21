@@ -9,6 +9,7 @@
 		<![CDATA[SELECT 
 	Tipo =  $P{Tipo} ,
 	Año,
+	ROW_NUMBER() OVER (ORDER BY p.A_Paterno, p.A_Materno, p.Nombres) AS Nro,
 	p.DNI,
     p.A_Paterno + ' ' + p.A_Materno + ' ' + p.Nombres AS Empleado,
     ISNULL([APORTE], 0) AS Aporte,
@@ -44,6 +45,10 @@ ORDER BY
 	<field name="Año" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.name" value="Año"/>
 		<property name="com.jaspersoft.studio.field.label" value="Año"/>
+	</field>
+	<field name="Nro" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.name" value="Nro"/>
+		<property name="com.jaspersoft.studio.field.label" value="Nro"/>
 	</field>
 	<field name="DNI" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="DNI"/>
@@ -95,7 +100,7 @@ ORDER BY
 	<columnHeader>
 		<band height="22" splitType="Stretch">
 			<staticText>
-				<reportElement x="0" y="0" width="80" height="22" uuid="fe025850-01a0-4bc3-b67b-4959d3c67102">
+				<reportElement x="30" y="0" width="50" height="22" uuid="fe025850-01a0-4bc3-b67b-4959d3c67102">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7851e51f-4d73-455d-ad13-72acf9a222bc"/>
 				</reportElement>
 				<box>
@@ -155,12 +160,27 @@ ORDER BY
 				</textElement>
 				<text><![CDATA[Deuda]]></text>
 			</staticText>
+			<staticText>
+				<reportElement x="0" y="0" width="30" height="22" uuid="ba48aa2d-74b8-4ce7-8381-267249db8d07">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7851e51f-4d73-455d-ad13-72acf9a222bc"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Yu Gothic UI" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[N°]]></text>
+			</staticText>
 		</band>
 	</columnHeader>
 	<detail>
 		<band height="19" splitType="Stretch">
 			<textField>
-				<reportElement x="0" y="0" width="80" height="19" uuid="b064f191-5f60-49a1-b155-a131cd2fbaa8">
+				<reportElement x="30" y="0" width="50" height="19" uuid="b064f191-5f60-49a1-b155-a131cd2fbaa8">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7851e51f-4d73-455d-ad13-72acf9a222bc"/>
 				</reportElement>
 				<box>
@@ -219,6 +239,21 @@ ORDER BY
 					<font fontName="Yu Gothic UI" size="11"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{Deuda}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="0" width="30" height="19" uuid="5f06876d-9c23-4509-8f11-0e7661cdc4b1">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7851e51f-4d73-455d-ad13-72acf9a222bc"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Yu Gothic UI" size="11"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Nro}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

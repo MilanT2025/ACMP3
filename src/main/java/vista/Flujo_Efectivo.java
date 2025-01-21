@@ -82,7 +82,7 @@ public class Flujo_Efectivo extends javax.swing.JFrame {
     /**
      * Creates new form LibrosE_SIRE
      */
-    public Flujo_Efectivo() {
+    public Flujo_Efectivo(String usuario) {
         initComponents();
         
         locale = new Locale("es", "ES");
@@ -99,7 +99,7 @@ public class Flujo_Efectivo extends javax.swing.JFrame {
             public void windowClosing(WindowEvent e) {
                 setVisible(false); 
                 FlatMacDarkLaf.setup();
-                Application anteriorFrame = new Application();
+                Application anteriorFrame = new Application(usuario);
                 anteriorFrame.setVisible(true);
             }
         });
@@ -1862,7 +1862,7 @@ public class Flujo_Efectivo extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Flujo_Efectivo().setVisible(true);
+                new Flujo_Efectivo(null).setVisible(true);
             }
         });
     }

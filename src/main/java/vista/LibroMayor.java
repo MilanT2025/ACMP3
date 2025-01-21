@@ -64,7 +64,7 @@ public class LibroMayor extends javax.swing.JFrame {
     /**
      * Creates new form LibroMayor
      */
-    public LibroMayor() {
+    public LibroMayor(String usuario) {
         initComponents();
         this.setIconImage(new ImageIcon(System.getProperty("user.dir") + "/logoACMP.png").getImage());
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -73,7 +73,7 @@ public class LibroMayor extends javax.swing.JFrame {
             public void windowClosing(WindowEvent e) {
                 setVisible(false);
                 FlatMacDarkLaf.setup();
-                Application anteriorFrame = new Application();
+                Application anteriorFrame = new Application(usuario);
                 anteriorFrame.setVisible(true);
             }
         });
@@ -1088,7 +1088,7 @@ public class LibroMayor extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new LibroMayor().setVisible(true);
+                new LibroMayor(null).setVisible(true);
             }
         });
     }

@@ -49,7 +49,7 @@ public class Excel_AFPNet extends javax.swing.JFrame {
     /**
      * Creates new form JGUIForm
      */
-    public Excel_AFPNet() {
+    public Excel_AFPNet(String usuario) {
         initComponents();
         this.setIconImage(new ImageIcon(System.getProperty("user.dir") + "/logoACMP.png").getImage());
         
@@ -59,7 +59,7 @@ public class Excel_AFPNet extends javax.swing.JFrame {
             public void windowClosing(WindowEvent e) {
                 setVisible(false); 
                 FlatMacDarkLaf.setup();
-                Application anteriorFrame = new Application();
+                Application anteriorFrame = new Application(usuario);
                 anteriorFrame.setVisible(true);
             }
         });
@@ -1078,7 +1078,7 @@ public class Excel_AFPNet extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Excel_AFPNet().setVisible(true);
+                new Excel_AFPNet(null).setVisible(true);
             }
         });
     }

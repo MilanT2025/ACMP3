@@ -6,14 +6,16 @@ import java.awt.*;
 public class DesktopPaneCustom extends JDesktopPane {
 
     private Menu menu;
+    private String usuario;
 
-    public DesktopPaneCustom(Application application) {
+    public DesktopPaneCustom(Application application, String usuario) {
+        this.usuario = usuario;
         init(application);  // Pasar la referencia de la ventana principal
     }
 
     private void init(Application application) {
         setLayout(new DesktopLayout());
-        menu = new Menu(this, application);  // Pasar la referencia de la ventana principal al menú
+        menu = new Menu(this, application, usuario);  // Pasar la referencia de la ventana principal al menú
         setLayer(menu, JLayeredPane.FRAME_CONTENT_LAYER);
         add(menu);
     }

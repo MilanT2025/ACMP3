@@ -1,10 +1,17 @@
 package main;
 
+import Controlador.Conexion;
 import com.formdev.flatlaf.FlatLightLaf;
 import net.miginfocom.swing.MigLayout;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Point2D;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vista.Backup;
@@ -27,10 +34,12 @@ public class Menu extends JPanel {
 
     private DesktopPaneCustom desktopPaneCustom;
     private Application application;
+    private String usuario;
 
-    public Menu(DesktopPaneCustom desktopPaneCustom, Application application) {
+    public Menu(DesktopPaneCustom desktopPaneCustom, Application application, String usuario) {
         this.desktopPaneCustom = desktopPaneCustom;
         this.application = application;
+        this.usuario = usuario;
         init();
     }
 
@@ -67,10 +76,12 @@ public class Menu extends JPanel {
         Item itemTesoreria = new Item("<html><center>Cuentas por Pagar<br>(Tesoreria)</html>", "raven/menu/user.svg");
         Item itemBackup = new Item("<html><center>Copia de Seguridad<br>de Base de Datos</html>", "raven/menu/setting.svg");
         
+        Item itemUsuario = new Item("<html><center>Usuarios</html>", "raven/menu/setting.svg");
+        
 
         itemAFPNet.addActionListener(e -> {
             FlatLightLaf.setup();
-            Excel_AFPNet ini = new Excel_AFPNet();
+            Excel_AFPNet ini = new Excel_AFPNet(this.usuario);
             ini.setVisible(true);
             application.setVisible(false);
 
@@ -78,14 +89,14 @@ public class Menu extends JPanel {
 
         itemPDTPlame.addActionListener(e -> {
             FlatLightLaf.setup();
-            Txt_Plame ini = new Txt_Plame();
+            Txt_Plame ini = new Txt_Plame(this.usuario);
             ini.setVisible(true);
             application.setVisible(false);
         });
 
         itemSIRE.addActionListener(e -> {
             FlatLightLaf.setup();
-            LibrosE_SIRE ini = new LibrosE_SIRE();
+            LibrosE_SIRE ini = new LibrosE_SIRE(this.usuario);
             ini.setVisible(true);
             application.setVisible(false);
 
@@ -93,93 +104,113 @@ public class Menu extends JPanel {
 
         itemPatrimonio.addActionListener(e -> {
             FlatLightLaf.setup();
-            Estado_Patrimonio ini = new Estado_Patrimonio();
+            Estado_Patrimonio ini = new Estado_Patrimonio(this.usuario);
             ini.setVisible(true);
             application.setVisible(false);
         });
 
         itemFlujoEfectivo.addActionListener(e -> {
             FlatLightLaf.setup();
-            Flujo_Efectivo ini = new Flujo_Efectivo();
+            Flujo_Efectivo ini = new Flujo_Efectivo(this.usuario);
             ini.setVisible(true);
             application.setVisible(false);
         });
 
         itemFlujoCaja.addActionListener(e -> {
             FlatLightLaf.setup();
-            Flujo_Caja ini = new Flujo_Caja();
+            Flujo_Caja ini = new Flujo_Caja(this.usuario);
             ini.setVisible(true);
             application.setVisible(false);
         });
 
         itemAsociados.addActionListener(e -> {
             FlatLightLaf.setup();
-            CargaCopere ini = new CargaCopere();
+            CargaCopere ini = new CargaCopere(this.usuario);
             ini.setVisible(true);
             application.setVisible(false);
         });
 
         itemLibroMayor.addActionListener(e -> {
             FlatLightLaf.setup();
-            LibroMayor ini = new LibroMayor();
+            LibroMayor ini = new LibroMayor(this.usuario);
             ini.setVisible(true);
             application.setVisible(false);
         });
 
         itemMercaderias.addActionListener(e -> {
             FlatLightLaf.setup();
-            Mercaderia ini = new Mercaderia();
+            Mercaderia ini = new Mercaderia(this.usuario);
             ini.setVisible(true);
             application.setVisible(false);
         });
 
         itemDepreciacion.addActionListener(e -> {
             FlatLightLaf.setup();
-            Depreciacion ini = new Depreciacion();
+            Depreciacion ini = new Depreciacion(this.usuario);
             ini.setVisible(true);
             application.setVisible(false);
         });
 
         itemCTS.addActionListener(e -> {
             FlatLightLaf.setup();
-            CTS ini = new CTS();
+            CTS ini = new CTS(this.usuario);
             ini.setVisible(true);
             application.setVisible(false);
         });
 
         itemGratificacion.addActionListener(e -> {
             FlatLightLaf.setup();
-            Gratificacion ini = new Gratificacion();
+            Gratificacion ini = new Gratificacion(this.usuario);
             ini.setVisible(true);
             application.setVisible(false);
         });
 
         itemVacaciones.addActionListener(e -> {
             FlatLightLaf.setup();
-            Vacaciones ini = new Vacaciones();
+            Vacaciones ini = new Vacaciones(this.usuario);
             ini.setVisible(true);
             application.setVisible(false);
         });
         
         itemTesoreria.addActionListener(e -> {
             FlatLightLaf.setup();
-            CuentasporPagar ini = new CuentasporPagar();
+            CuentasporPagar ini = new CuentasporPagar(this.usuario);
             ini.setVisible(true);
             application.setVisible(false);
         });
         
         itemBackup.addActionListener(e -> {
-            try {
                 FlatLightLaf.setup();
-                Backup ini = new Backup();
+                Backup ini = new Backup(this.usuario);
                 ini.setVisible(true);
                 application.setVisible(false);
-            } catch (UnsupportedLookAndFeelException ex) {
-                Logger.getLogger(Menu.class.getName()).log(Level.SEVERE, null, ex);
-            }
         });
+        
+        itemUsuario.addActionListener(e -> {
+            System.out.println("EN PROCESO" + this.usuario);
+        });
+        
+        componentesMap.put("itemAFPNet", itemAFPNet);
+        componentesMap.put("itemPDTPlame", itemPDTPlame);
+        componentesMap.put("itemSIRE", itemSIRE);
+        componentesMap.put("itemPatrimonio", itemPatrimonio);
+        componentesMap.put("itemFlujoEfectivo", itemFlujoEfectivo);
+        componentesMap.put("itemFlujoCaja", itemFlujoCaja);
+        componentesMap.put("itemAsociados", itemAsociados);
+        componentesMap.put("itemLibroMayor", itemLibroMayor);
+        componentesMap.put("itemMercaderias", itemMercaderias);
+        componentesMap.put("itemDepreciacion", itemDepreciacion);
+        componentesMap.put("itemCTS", itemCTS);
+        componentesMap.put("itemGratificacion", itemGratificacion);
+        componentesMap.put("itemVacaciones", itemVacaciones);
+        componentesMap.put("itemTesoreria", itemTesoreria);
+        componentesMap.put("itemBackup", itemBackup);
+        componentesMap.put("itemUsuario", itemUsuario);
+        
+        verificarModulos(this.usuario);
+        
 
-        blurChild.add(itemAFPNet);
+        /*blurChild.add(itemAFPNet);
         blurChild.add(itemPDTPlame);
         blurChild.add(itemSIRE);
         blurChild.add(itemPatrimonio);
@@ -194,6 +225,7 @@ public class Menu extends JPanel {
         blurChild.add(itemVacaciones);
         blurChild.add(itemTesoreria);
         blurChild.add(itemBackup);
+        blurChild.add(itemUsuario);*/
     }
 
     private Style getStyle() {
@@ -210,4 +242,41 @@ public class Menu extends JPanel {
 
     private BlurChild blurChild;
     private BlurBackground background;
+    
+    private Map<String, JComponent> componentesMap = new HashMap<>();
+    
+    
+    private void verificarModulos(String usuario) {
+        try {
+            Connection con = Conexion.getConnection();
+            String sql = "SELECT Modulo FROM Usuario U "
+                    + "INNER JOIN UsuarioRol UR ON U.idRol = UR.idRol "
+                    + "WHERE usuario = ?";
+
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setString(1, usuario);
+
+            ResultSet rs = pst.executeQuery();
+
+            while (rs.next()) {
+                String nombreModulo = rs.getString("Modulo");
+                agregarComponente(nombreModulo);
+            }
+
+            rs.close();
+            pst.close();
+            con.close();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(Menu.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+// Método para agregar componentes dinámicamente
+    private void agregarComponente(String nombreModulo) {
+        if (componentesMap.containsKey(nombreModulo)) {
+            blurChild.add(componentesMap.get(nombreModulo));
+        } 
+    }
 }
+

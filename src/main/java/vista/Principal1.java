@@ -121,9 +121,9 @@ public class Principal1 extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-        CuentasporPagar ini = new CuentasporPagar();
+        /*CuentasporPagar ini = new CuentasporPagar();
         ini.setVisible(true);
-        this.setVisible(false);
+        this.setVisible(false);*/
     }//GEN-LAST:event_jButton5ActionPerformed
 
     /**
