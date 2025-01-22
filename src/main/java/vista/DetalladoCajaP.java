@@ -128,8 +128,8 @@ public class DetalladoCajaP extends javax.swing.JDialog {
         this.setLocationRelativeTo(null);
         llenar_tabla();
         cargarDatosPrincipales(numerocip);
-        cargarDatosAporteDeuda(numerocip, 1, modelo);
-        cargarDatosAporteDeuda(numerocip, 0, modelo2);
+        cargarDatosAporteDeuda(numerocip, "Aporte", modelo);
+        cargarDatosAporteDeuda(numerocip, "Deuda", modelo2);
         cargarSumaTotal();
 
     }
@@ -154,37 +154,103 @@ public class DetalladoCajaP extends javax.swing.JDialog {
         }
     }
 
-    private void cargarDatosAporteDeuda(String numerocip, int estado, DefaultTableModel modelo) {
-        String condicion;
-        if (estado == 1) {
-            condicion = " AND Estado IN (1, 4, 5) ";
-        } else {
-            condicion = " AND Estado NOT IN (1, 4, 5) ";
+    private void cargarDatosAporteDeuda(String numerocip, String tipo, DefaultTableModel modelo) {
+        String sql = null;
+        switch (tipo) {
+            case "Aporte":
+                sql = "SELECT "
+                        + "	Año, "
+                        + "	SUM(Enero) AS Enero, "
+                        + "	SUM(Febrero) AS Febrero, "
+                        + "	SUM(Marzo) AS Marzo, "
+                        + "	SUM(Abril) AS Abril, "
+                        + "	SUM(Mayo) AS Mayo, "
+                        + "	SUM(Junio) AS Junio, "
+                        + "	SUM(Julio) AS Julio, "
+                        + "	SUM(Agosto) AS Agosto, "
+                        + "	SUM(Septiembre) AS Septiembre, "
+                        + "	SUM(Octubre) AS Octubre, "
+                        + "	SUM(Noviembre) AS Noviembre, "
+                        + "	SUM(Diciembre) AS Diciembre "
+                        + "FROM "
+                        + " "
+                        + "(SELECT Año, "
+                        + " SUM(CASE WHEN Mes = 1 THEN Monto ELSE 0 END) AS Enero, "
+                        + " SUM(CASE WHEN Mes = 2 THEN Monto ELSE 0 END) AS Febrero, "
+                        + " SUM(CASE WHEN Mes = 3 THEN Monto ELSE 0 END) AS Marzo, "
+                        + " SUM(CASE WHEN Mes = 4 THEN Monto ELSE 0 END) AS Abril, "
+                        + " SUM(CASE WHEN Mes = 5 THEN Monto ELSE 0 END) AS Mayo, "
+                        + " SUM(CASE WHEN Mes = 6 THEN Monto ELSE 0 END) AS Junio, "
+                        + " SUM(CASE WHEN Mes = 7 THEN Monto ELSE 0 END) AS Julio, "
+                        + " SUM(CASE WHEN Mes = 8 THEN Monto ELSE 0 END) AS Agosto, "
+                        + " SUM(CASE WHEN Mes = 9 THEN Monto ELSE 0 END) AS Septiembre, "
+                        + " SUM(CASE WHEN Mes = 10 THEN Monto ELSE 0 END) AS Octubre, "
+                        + " SUM(CASE WHEN Mes = 11 THEN Monto ELSE 0 END) AS Noviembre, "
+                        + " SUM(CASE WHEN Mes = 12 THEN Monto ELSE 0 END) AS Diciembre "
+                        + " FROM HistorialCajaPensiones hc "
+                        + " WHERE Documento = ? AND Estado IN (1, 4, 5) "
+                        + " GROUP BY Año "
+                        + " "
+                        + " UNION "
+                        + " "
+                        + " SELECT Año, "
+                        + " SUM(CASE WHEN Mes = 1 THEN MontoPagado ELSE 0 END) AS Enero, "
+                        + " SUM(CASE WHEN Mes = 2 THEN MontoPagado ELSE 0 END) AS Febrero, "
+                        + " SUM(CASE WHEN Mes = 3 THEN MontoPagado ELSE 0 END) AS Marzo, "
+                        + " SUM(CASE WHEN Mes = 4 THEN MontoPagado ELSE 0 END) AS Abril, "
+                        + " SUM(CASE WHEN Mes = 5 THEN MontoPagado ELSE 0 END) AS Mayo, "
+                        + " SUM(CASE WHEN Mes = 6 THEN MontoPagado ELSE 0 END) AS Junio, "
+                        + " SUM(CASE WHEN Mes = 7 THEN MontoPagado ELSE 0 END) AS Julio, "
+                        + " SUM(CASE WHEN Mes = 8 THEN MontoPagado ELSE 0 END) AS Agosto, "
+                        + " SUM(CASE WHEN Mes = 9 THEN MontoPagado ELSE 0 END) AS Septiembre, "
+                        + " SUM(CASE WHEN Mes = 10 THEN MontoPagado ELSE 0 END) AS Octubre, "
+                        + " SUM(CASE WHEN Mes = 11 THEN MontoPagado ELSE 0 END) AS Noviembre, "
+                        + " SUM(CASE WHEN Mes = 12 THEN MontoPagado ELSE 0 END) AS Diciembre "
+                        + " FROM HistorialPagos hc "
+                        + " WHERE Documento = ? AND RegContable = 'Caja de Pensiones' "
+                        + " GROUP BY Año) AS D1 "
+                        + " GROUP BY D1.Año "
+                        + " ORDER BY Año DESC;";
+                break;
+
+            case "Deuda":
+                sql = "SELECT "
+                        + "    HC.Año, "
+                        + "    CAST(SUM(CASE WHEN HC.Mes = 1 THEN HC.Monto - ISNULL(HP.TotalPagado, 0) ELSE 0 END) AS DECIMAL(10,2)) AS Enero, "
+                        + "    CAST(SUM(CASE WHEN HC.Mes = 2 THEN HC.Monto - ISNULL(HP.TotalPagado, 0) ELSE 0 END) AS DECIMAL(10,2)) AS Febrero, "
+                        + "    CAST(SUM(CASE WHEN HC.Mes = 3 THEN HC.Monto - ISNULL(HP.TotalPagado, 0) ELSE 0 END) AS DECIMAL(10,2)) AS Marzo, "
+                        + "    CAST(SUM(CASE WHEN HC.Mes = 4 THEN HC.Monto - ISNULL(HP.TotalPagado, 0) ELSE 0 END) AS DECIMAL(10,2)) AS Abril, "
+                        + "    CAST(SUM(CASE WHEN HC.Mes = 5 THEN HC.Monto - ISNULL(HP.TotalPagado, 0) ELSE 0 END) AS DECIMAL(10,2)) AS Mayo, "
+                        + "    CAST(SUM(CASE WHEN HC.Mes = 6 THEN HC.Monto - ISNULL(HP.TotalPagado, 0) ELSE 0 END) AS DECIMAL(10,2)) AS Junio, "
+                        + "    CAST(SUM(CASE WHEN HC.Mes = 7 THEN HC.Monto - ISNULL(HP.TotalPagado, 0) ELSE 0 END) AS DECIMAL(10,2)) AS Julio, "
+                        + "    CAST(SUM(CASE WHEN HC.Mes = 8 THEN HC.Monto - ISNULL(HP.TotalPagado, 0) ELSE 0 END) AS DECIMAL(10,2)) AS Agosto, "
+                        + "    CAST(SUM(CASE WHEN HC.Mes = 9 THEN HC.Monto - ISNULL(HP.TotalPagado, 0) ELSE 0 END) AS DECIMAL(10,2)) AS Septiembre, "
+                        + "    CAST(SUM(CASE WHEN HC.Mes = 10 THEN HC.Monto - ISNULL(HP.TotalPagado, 0) ELSE 0 END) AS DECIMAL(10,2)) AS Octubre, "
+                        + "    CAST(SUM(CASE WHEN HC.Mes = 11 THEN HC.Monto - ISNULL(HP.TotalPagado, 0) ELSE 0 END) AS DECIMAL(10,2)) AS Noviembre, "
+                        + "    CAST(SUM(CASE WHEN HC.Mes = 12 THEN HC.Monto - ISNULL(HP.TotalPagado, 0) ELSE 0 END) AS DECIMAL(10,2)) AS Diciembre "
+                        + "FROM HistorialCajaPensiones hc "
+                        + " LEFT JOIN "
+                        + "    ( "
+                        + "        SELECT Documento, Año, Mes, SUM(MontoPagado) AS TotalPagado "
+                        + "        FROM HistorialPagos "
+                        + "        WHERE RegContable = 'Caja de Pensiones' "
+                        + "        GROUP BY Documento, Año, Mes "
+                        + "    ) HP "
+                        + "    ON HC.Documento = HP.Documento "
+                        + "    AND HC.Año = HP.Año "
+                        + "    AND HC.Mes = HP.Mes "
+                        + " WHERE HC.Documento = ? AND Estado NOT IN (1, 4, 5) "
+                        + " GROUP BY HC.Año "
+                        + " ORDER BY HC.Año DESC;";
+                break;
+
         }
         
-        
-        String sql = "SELECT Año, "
-               + "SUM(CASE WHEN Mes = 1 THEN Monto ELSE 0 END) AS Enero, "
-               + "SUM(CASE WHEN Mes = 2 THEN Monto ELSE 0 END) AS Febrero, "
-               + "SUM(CASE WHEN Mes = 3 THEN Monto ELSE 0 END) AS Marzo, "
-               + "SUM(CASE WHEN Mes = 4 THEN Monto ELSE 0 END) AS Abril, "
-               + "SUM(CASE WHEN Mes = 5 THEN Monto ELSE 0 END) AS Mayo, "
-               + "SUM(CASE WHEN Mes = 6 THEN Monto ELSE 0 END) AS Junio, "
-               + "SUM(CASE WHEN Mes = 7 THEN Monto ELSE 0 END) AS Julio, "
-               + "SUM(CASE WHEN Mes = 8 THEN Monto ELSE 0 END) AS Agosto, "
-               + "SUM(CASE WHEN Mes = 9 THEN Monto ELSE 0 END) AS Septiembre, "
-               + "SUM(CASE WHEN Mes = 10 THEN Monto ELSE 0 END) AS Octubre, "
-               + "SUM(CASE WHEN Mes = 11 THEN Monto ELSE 0 END) AS Noviembre, "
-               + "SUM(CASE WHEN Mes = 12 THEN Monto ELSE 0 END) AS Diciembre "
-               + "FROM HistorialCajaPensiones hc "
-               + "LEFT JOIN Personal pe ON hc.Documento = pe.NroCip "
-               + "WHERE Documento = ? " + condicion
-               + "GROUP BY Año "
-               + "ORDER BY Año DESC";
-        
-
         try (Connection con = Conexion.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, numerocip);
+            if (tipo.equals("Aporte")) {
+                ps.setString(2, numerocip);
+            }
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     String[] data = new String[14];

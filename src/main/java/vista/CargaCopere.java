@@ -172,6 +172,13 @@ public class CargaCopere extends javax.swing.JFrame {
         
         isInitialized = true; 
     }
+    
+    private void cargarestructuras() {
+        cargarEstructuraCopere();
+        cargarEstructuraCajaPensiones();
+        cargarEstructuraOprefa();
+
+    }
 
     private void mostrarDialogoProgreso(JFrame parentFrame) {
         JDialog dialogoProgreso = new JDialog(parentFrame, "Guardando...", true);
@@ -665,8 +672,27 @@ public class CargaCopere extends javax.swing.JFrame {
             }
 
             // Segunda consulta: Obtener aportes
-            String consultaAportes = "SELECT Numero_CIP, SUM(Monto) AS Aporte FROM HistorialCopere "
-                    + "WHERE Año = " + jdc_año.getYear() + " AND Estado = 1 GROUP BY Numero_CIP";
+            String consultaAportes = "SELECT "
+                    + "	Documento, "
+                    + "	SUM(Aporte) AS Aporte "
+                    + "FROM "
+                    + "(SELECT Numero_CIP AS Documento, SUM(Monto) AS Aporte FROM HistorialCopere "
+                    + "WHERE "
+                    + "	Año = " + jdc_año.getYear() + " "
+                    + "	 "
+                    + "	AND Estado IN (1, 4, 5)  GROUP BY Numero_CIP "
+                    + "UNION "
+                    + "SELECT "
+                    + "	Documento, "
+                    + "	SUM(MontoPagado) AS Aporte "
+                    + "FROM HistorialPagos "
+                    + "WHERE "
+                    + "	Año = " + jdc_año.getYear() + " "
+                    + " "
+                    + "AND RegContable = 'Copere' "
+                    + "GROUP BY Documento) AS Aportes "
+                    + "GROUP BY Documento";
+            
             Map<String, Double> aporteMap = new HashMap<>();
             try (PreparedStatement psAportes = con.prepareStatement(consultaAportes)) {
                 ResultSet rs = psAportes.executeQuery();
@@ -679,8 +705,9 @@ public class CargaCopere extends javax.swing.JFrame {
             }
 
             // Tercera consulta: Obtener deudas
-            String consultaDeudas = "SELECT Numero_CIP, SUM(Monto) AS Deuda FROM HistorialCopere "
-                    + "WHERE Año = " + jdc_año.getYear() + "  AND Estado <> 1 GROUP BY Numero_CIP";
+            String consultaDeudas = "SELECT Numero_CIP AS Documento, SUM(Monto) - SUM(TotalPagado) AS Deuda FROM HistorialCopere HC "
+                    + " LEFT JOIN (SELECT Documento, Año, Mes, SUM(MontoPagado) AS TotalPagado FROM HistorialPagos WHERE RegContable = 'Copere' GROUP BY Documento, Año, Mes) HP ON HC.Numero_CIP = HP.Documento AND HC.Año = HP.Año AND HC.Mes = HP.Mes"
+                    + " WHERE HC.Año = " + jdc_año.getYear() + "  AND Estado NOT IN (1, 4, 5) GROUP BY Numero_CIP";
             Map<String, Double> deudaMap = new HashMap<>();
             try (PreparedStatement psDeudas = con.prepareStatement(consultaDeudas)) {
                 ResultSet rs = psDeudas.executeQuery();
@@ -692,8 +719,26 @@ public class CargaCopere extends javax.swing.JFrame {
                 rs.close();
             }
             
-            String consultaAportesCaja = "select Documento, SUM(Monto) AS Aporte from HistorialCajaPensiones "
-                    + "WHERE Año = " + jdc_año.getYear() + " AND Estado = 1 GROUP BY Documento";
+            String consultaAportesCaja = "SELECT "
+                    + "	Documento, "
+                    + "	SUM(Aporte) AS Aporte "
+                    + "FROM "
+                    + "(SELECT Documento, SUM(Monto) AS Aporte FROM HistorialCajaPensiones "
+                    + "WHERE "
+                    + "	Año = " + jdc_año.getYear() + " "
+                    + "	 "
+                    + "	AND Estado IN (1, 4, 5) GROUP BY Documento "
+                    + "UNION "
+                    + "SELECT "
+                    + "	Documento, "
+                    + "	SUM(MontoPagado) AS Aporte "
+                    + "FROM HistorialPagos "
+                    + "WHERE "
+                    + "	Año = " + jdc_año.getYear() + " "
+                    + " "
+                    + "AND RegContable = 'Caja de Pensiones' "
+                    + "GROUP BY Documento) AS Aportes "
+                    + "GROUP BY Documento";
             Map<String, Double> aporteMapCaja = new HashMap<>();
             try (PreparedStatement psAportesCaja = con.prepareStatement(consultaAportesCaja)) {
                 ResultSet rs = psAportesCaja.executeQuery();
@@ -706,8 +751,9 @@ public class CargaCopere extends javax.swing.JFrame {
             }
 
             // Tercera consulta: Obtener deudas
-            String consultaDeudasCaja = "select Documento, SUM(Monto) AS Deuda from HistorialCajaPensiones "
-                    + "WHERE Año = " + jdc_año.getYear() + " AND Estado <> 1 GROUP BY Documento";
+            String consultaDeudasCaja = "SELECT HC.Documento, SUM(Monto) - SUM(TotalPagado) AS Deuda FROM HistorialCajaPensiones HC "
+                    + " LEFT JOIN (SELECT Documento, Año, Mes, SUM(MontoPagado) AS TotalPagado FROM HistorialPagos WHERE RegContable = 'Caja de Pensiones' GROUP BY Documento, Año, Mes) HP ON HC.Documento = HP.Documento AND HC.Año = HP.Año AND HC.Mes = HP.Mes"
+                    + " WHERE HC.Año = " + jdc_año.getYear() + "  AND Estado NOT IN (1, 4, 5) GROUP BY HC.Documento";
             Map<String, Double> deudaMapCaja = new HashMap<>();
             try (PreparedStatement psDeudasCaja = con.prepareStatement(consultaDeudasCaja)) {
                 ResultSet rs = psDeudasCaja.executeQuery();
@@ -719,8 +765,26 @@ public class CargaCopere extends javax.swing.JFrame {
                 rs.close();
             }
             
-            String consultaAportesOprefa = "select Documento, SUM(Monto) AS Aporte from HistorialOprefa "
-                    + "WHERE Año = " + jdc_año.getYear() + " AND Estado = 1 GROUP BY Documento";
+            String consultaAportesOprefa = "SELECT "
+                    + "	Documento, "
+                    + "	SUM(Aporte) AS Aporte "
+                    + "FROM "
+                    + "(SELECT Documento, SUM(Monto) AS Aporte FROM HistorialOprefa "
+                    + "WHERE "
+                    + "	Año = " + jdc_año.getYear() + " "
+                    + "	 "
+                    + "	AND Estado IN (1, 4, 5)  GROUP BY Documento "
+                    + "UNION "
+                    + "SELECT "
+                    + "	Documento, "
+                    + "	SUM(MontoPagado) AS Aporte "
+                    + "FROM HistorialPagos "
+                    + "WHERE "
+                    + "	Año = " + jdc_año.getYear() + " "
+                    + " "
+                    + "AND RegContable = 'Oprefa' "
+                    + "GROUP BY Documento) AS Aportes "
+                    + "GROUP BY Documento";
             Map<String, Double> aporteMapOprefa = new HashMap<>();
             try (PreparedStatement psAportesOprefa = con.prepareStatement(consultaAportesOprefa)) {
                 ResultSet rs = psAportesOprefa.executeQuery();
@@ -733,8 +797,9 @@ public class CargaCopere extends javax.swing.JFrame {
             }
 
             // Tercera consulta: Obtener deudas
-            String consultaDeudasOprefa = "select Documento, SUM(Monto) AS Deuda from HistorialOprefa "
-                    + "WHERE Año = " + jdc_año.getYear() + " AND Estado <> 1 GROUP BY Documento";
+            String consultaDeudasOprefa = "SELECT HC.Documento, SUM(Monto) - SUM(TotalPagado) AS Deuda FROM HistorialOprefa HC "
+                    + " LEFT JOIN (SELECT Documento, Año, Mes, SUM(MontoPagado) AS TotalPagado FROM HistorialPagos WHERE RegContable = 'Oprefa' GROUP BY Documento, Año, Mes) HP ON HC.Documento = HP.Documento AND HC.Año = HP.Año AND HC.Mes = HP.Mes"
+                    + " WHERE HC.Año = " + jdc_año.getYear() + "  AND Estado NOT IN (1, 4, 5) GROUP BY HC.Documento";
             Map<String, Double> deudaMapOprefa = new HashMap<>();
             try (PreparedStatement psDeudasOprefa = con.prepareStatement(consultaDeudasOprefa)) {
                 ResultSet rs = psDeudasOprefa.executeQuery();
@@ -1706,12 +1771,14 @@ public class CargaCopere extends javax.swing.JFrame {
 
     private void jdc_añoPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_jdc_añoPropertyChange
         if (isInitialized && "year".equals(evt.getPropertyName())) {
+            cargarestructuras();
             cargarDatos();
         }
     }//GEN-LAST:event_jdc_añoPropertyChange
 
     private void jdc_mesPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_jdc_mesPropertyChange
         if (isInitialized && "month".equals(evt.getPropertyName())) {
+            cargarestructuras();
             cargarDatos();
         }
     }//GEN-LAST:event_jdc_mesPropertyChange

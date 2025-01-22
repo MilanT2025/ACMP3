@@ -13,7 +13,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -64,6 +66,9 @@ public class AltaBajaRegContable extends javax.swing.JDialog {
         jLabel7 = new javax.swing.JLabel();
         dcfechabaja = new com.toedter.calendar.JDateChooser("dd/MM/yyyy","##/##/####", '_');
         txtmonto = new javax.swing.JTextField();
+        txtdeuda = new javax.swing.JTextField();
+        jLabel8 = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
         btnguardar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -83,7 +88,7 @@ public class AltaBajaRegContable extends javax.swing.JDialog {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
+                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 413, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -107,11 +112,18 @@ public class AltaBajaRegContable extends javax.swing.JDialog {
                 cbregcontableItemStateChanged(evt);
             }
         });
+        cbregcontable.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbregcontableActionPerformed(evt);
+            }
+        });
 
         jLabel3.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
+        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabel3.setText("N° CIP:");
 
         txtdocumento.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
+        txtdocumento.setDisabledTextColor(new java.awt.Color(255, 0, 0));
         txtdocumento.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 txtdocumentoKeyPressed(evt);
@@ -141,11 +153,32 @@ public class AltaBajaRegContable extends javax.swing.JDialog {
         jLabel6.setText("Fecha Baja:");
 
         jLabel7.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
-        jLabel7.setText("Monto Pagado:");
+        jLabel7.setText("Monto Aporte:");
 
         dcfechabaja.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
 
         txtmonto.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
+
+        txtdeuda.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
+        txtdeuda.setText("0.00");
+        txtdeuda.setDisabledTextColor(new java.awt.Color(255, 0, 0));
+        txtdeuda.setEnabled(false);
+        txtdeuda.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtdeudaActionPerformed(evt);
+            }
+        });
+
+        jLabel8.setFont(new java.awt.Font("Roboto", 1, 13)); // NOI18N
+        jLabel8.setText("Deuda Total:");
+
+        jButton1.setFont(new java.awt.Font("Roboto", 0, 13)); // NOI18N
+        jButton1.setText("Limpiar");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -153,44 +186,48 @@ public class AltaBajaRegContable extends javax.swing.JDialog {
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel8, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(txtdeuda)
+                    .addComponent(txtmonto, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(dcfechabaja, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(cbopcion, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txtnomape)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE))
-                        .addGap(6, 6, 6)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtdocumento)
-                            .addComponent(cbregcontable, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(jLabel7, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(txtdocumento)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtnomape)
-                            .addComponent(cbopcion, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(dcfechabaja, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(txtmonto, javax.swing.GroupLayout.Alignment.TRAILING))))
+                        .addComponent(jButton1))
+                    .addComponent(cbregcontable, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cbregcontable, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(8, 8, 8)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtdocumento, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(txtdocumento)
-                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(txtnomape, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(txtnomape)
-                    .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtdeuda)
+                    .addComponent(jLabel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(cbopcion)
@@ -248,7 +285,7 @@ public class AltaBajaRegContable extends javax.swing.JDialog {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(0, 0, 0))
+                .addContainerGap())
         );
 
         pack();
@@ -260,11 +297,17 @@ public class AltaBajaRegContable extends javax.swing.JDialog {
         }else{
             jLabel3.setText("N° DNI:");
         }
+        
+        txtdocumento.setEnabled(true);
+        txtdocumento.setText("");
+        txtnomape.setText("");
+        txtdeuda.setText("0.00");
     }//GEN-LAST:event_cbregcontableItemStateChanged
 
     private void txtdocumentoKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtdocumentoKeyPressed
         if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
             cargarNomape();
+            
         }
   
     }//GEN-LAST:event_txtdocumentoKeyPressed
@@ -277,19 +320,173 @@ public class AltaBajaRegContable extends javax.swing.JDialog {
             return;
         }
         
+        if (Double.parseDouble(txtmonto.getText()) > Double.parseDouble(txtdeuda.getText())) {
+            JOptionPane.showMessageDialog(this, "El MONTO APORTE no puede ser MAYOR a la DEUDA TOTAL", "Error", JOptionPane.ERROR_MESSAGE);
+            txtmonto.requestFocus();
+            txtmonto.selectAll();
+            return;
+        }
         
         if (cbopcion.getSelectedItem().toString().equals("Baja")) {
             String fechabaja = new SimpleDateFormat("dd/MM/yyyy").format(dcfechabaja.getDate());
             bajaPersonal(fechabaja);
-        } else {
-            Double monto = Double.valueOf(txtmonto.getText());
+        } else if (cbopcion.getSelectedItem().toString().equals("Aporte")) {
+            /*Double monto = Double.valueOf(txtmonto.getText());
             String estado = "";
             if (cbopcion.getSelectedItem().toString().equals("Alta")) {
                 estado = "4";
             } 
-            altaPersonal(monto, estado);
+            altaPersonal(monto, estado);*/
+            guardarPago();
+        } else if (cbopcion.getSelectedItem().toString().equals("Alta")) {
+            /*Double monto = Double.valueOf(txtmonto.getText());
+            String estado = "";
+            if (cbopcion.getSelectedItem().toString().equals("Alta")) {
+                estado = "4";
+            } 
+            altaPersonal(monto, estado);*/
+            activarPersonalAlta();
+            guardarPago();
         }
     }//GEN-LAST:event_btnguardarActionPerformed
+
+    
+    public void insertarPago(String documento, int año, int mes, double montoPagado, String tiporegistro) {
+        String sql = "INSERT INTO HistorialPagos (Documento, Año, Mes, MontoPagado, FechaPago, RegContable) "
+                + "VALUES (?, ?, ?, ?, GETDATE(), ?)";
+
+        try (Connection conn = Conexion.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, documento);
+            pstmt.setInt(2, año);
+            pstmt.setInt(3, mes);
+            pstmt.setDouble(4, montoPagado);
+            pstmt.setString(5, tiporegistro);
+
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void registrarPago(String documento, double montoPago, String queryPersonalizado, String registrocontable) {
+        List<RegistroContable> registros = obtenerRegistrosOrdenados(documento, queryPersonalizado);
+
+        for (RegistroContable registro : registros) {
+            if (montoPago <= 0) {
+                break;
+            }
+
+            double montoPagado = obtenerMontoPagado(documento, registro.getAño(), registro.getMes());
+            double saldoPendiente = registro.getMonto() - montoPagado;
+
+            if (saldoPendiente > 0) {
+                double pagoAplicado = Math.min(saldoPendiente, montoPago);
+                insertarPago(documento, registro.getAño(), registro.getMes(), pagoAplicado, registrocontable);
+                montoPago -= pagoAplicado;
+            }
+        }
+    }
+    
+    public double obtenerMontoPagado(String documento, int año, int mes) {
+        String sql = "SELECT ISNULL(SUM(MontoPagado), 0) AS TotalPagado "
+                + "FROM HistorialPagos WHERE Documento = ? AND Año = ? AND Mes = ?";
+        double totalPagado = 0;
+
+        try (Connection conn = Conexion.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, documento);
+            pstmt.setInt(2, año);
+            pstmt.setInt(3, mes);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                totalPagado = rs.getDouble("TotalPagado");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return totalPagado;
+    }
+    
+    public List<RegistroContable> obtenerRegistrosOrdenados(String documento, String sql) {
+        List<RegistroContable> registros = new ArrayList<>();
+
+        try (Connection conn = Conexion.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, documento);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                RegistroContable registro = new RegistroContable(
+                        rs.getInt(1),
+                        rs.getInt(2),
+                        rs.getString(3),
+                        rs.getDouble(4)
+                );
+                registros.add(registro);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return registros;
+    }
+    
+    public class RegistroContable {
+
+        private int año;
+        private int mes;
+        private String documento;
+        private double monto;
+
+        // Constructor
+        public RegistroContable(int año, int mes, String documento, double monto) {
+            this.año = año;
+            this.mes = mes;
+            this.documento = documento;
+            this.monto = monto;
+        }
+
+        // Getters y Setters
+        public int getAño() {
+            return año;
+        }
+
+        public void setAño(int año) {
+            this.año = año;
+        }
+
+        public int getMes() {
+            return mes;
+        }
+
+        public void setMes(int mes) {
+            this.mes = mes;
+        }
+
+        public String getDocumento() {
+            return documento;
+        }
+
+        public void setDocumento(String documento) {
+            this.documento = documento;
+        }
+
+        public double getMonto() {
+            return monto;
+        }
+
+        public void setMonto(double monto) {
+            this.monto = monto;
+        }
+
+        @Override
+        public String toString() {
+            return "RegistroContable{"
+                    + "año=" + año
+                    + ", mes=" + mes
+                    + ", documento='" + documento + '\''
+                    + ", monto=" + monto
+                    + '}';
+        }
+    }
 
     private void cbopcionItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbopcionItemStateChanged
         if (cbopcion.getSelectedItem().toString().equals("Alta") || cbopcion.getSelectedItem().toString().equals("Aporte")) {
@@ -298,16 +495,31 @@ public class AltaBajaRegContable extends javax.swing.JDialog {
             
             jLabel6.setVisible(false);
             dcfechabaja.setVisible(false);
+            jLabel7.setText("Monto Aporte:");
             
         }else{
-            jLabel7.setVisible(false);
-            txtmonto.setVisible(false);
-            
+            jLabel7.setText("Adicionar Monto Deuda:");
+           
             jLabel6.setVisible(true);
             dcfechabaja.setVisible(true);
         
         }
     }//GEN-LAST:event_cbopcionItemStateChanged
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        txtdocumento.setEnabled(true);
+        txtdocumento.setText("");
+        txtnomape.setText("");
+        txtdeuda.setText("0.00");
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void cbregcontableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbregcontableActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cbregcontableActionPerformed
+
+    private void txtdeudaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtdeudaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtdeudaActionPerformed
 
     /**
      * @param args the command line arguments
@@ -357,6 +569,7 @@ public class AltaBajaRegContable extends javax.swing.JDialog {
     private javax.swing.JComboBox<String> cbopcion;
     private javax.swing.JComboBox<String> cbregcontable;
     private com.toedter.calendar.JDateChooser dcfechabaja;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -364,9 +577,11 @@ public class AltaBajaRegContable extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JTextField txtdeuda;
     private javax.swing.JTextField txtdocumento;
     private javax.swing.JTextField txtmonto;
     private javax.swing.JTextField txtnomape;
@@ -376,20 +591,59 @@ public class AltaBajaRegContable extends javax.swing.JDialog {
         try {
             Connection con = Conexion.getConnection();
             Statement st = con.createStatement();
-            String sql = "";
-            if (cbregcontable.getSelectedItem().toString().equals("Copere")) {
-                 sql = "SELECT CONCAT(Nombres, ' ', A_Paterno, ' ', A_Materno) FROM Personal WHERE NroCip = '" + txtdocumento.getText() + "'";
-            } else {
-                 sql = "SELECT CONCAT(Nombres, ' ', A_Paterno, ' ', A_Materno) FROM Personal WHERE Dni = '" + txtdocumento.getText() + "'";
+            String sql = "", sql2 = "";
+            switch (cbregcontable.getSelectedItem().toString()) {
+                case "Copere":
+                    sql = "SELECT CONCAT(Nombres, ' ', A_Paterno, ' ', A_Materno) FROM Personal WHERE NroCip = '" + txtdocumento.getText() + "'";
+                    sql2 = "SELECT "
+                            + " SUM(Monto) - SUM(Pagado) AS Deuda "
+                            + "FROM "
+                            + "(SELECT Monto, "
+                            + "(SELECT ISNULL(SUM(MontoPagado), 0) FROM HistorialPagos WHERE  Documento = HR.Numero_CIP AND Año = HR.Año AND Mes = HR.Mes AND RegContable = 'Copere') AS Pagado "
+                            + "FROM HistorialCopere HR "
+                            + "WHERE HR.Estado IN (2, 3) AND HR.Numero_CIP = '" + txtdocumento.getText() + "') AS Pagos";
+                    break;
+                case "Caja de Pensiones":
+                    sql = "SELECT CONCAT(Nombres, ' ', A_Paterno, ' ', A_Materno) FROM Personal WHERE Dni = '" + txtdocumento.getText() + "'";
+                    sql2 = "SELECT "
+                            + " SUM(Monto) - SUM(Pagado) AS Deuda "
+                            + "FROM "
+                            + "(SELECT Monto, "
+                            + "(SELECT ISNULL(SUM(MontoPagado), 0) FROM HistorialPagos WHERE  Documento = HR.Documento AND Año = HR.Año AND Mes = HR.Mes AND RegContable = 'Caja de Pensiones') AS Pagado "
+                            + "FROM HistorialCajaPensiones HR "
+                            + "WHERE HR.Estado IN (2, 3) AND HR.Documento = '" + txtdocumento.getText() + "') AS Pagos";
+                    break;
+                case "Oprefa":
+                    sql = "SELECT CONCAT(Nombres, ' ', A_Paterno, ' ', A_Materno) FROM Personal WHERE Dni = '" + txtdocumento.getText() + "'";
+                    sql2 = "SELECT "
+                            + " SUM(Monto) - SUM(Pagado) AS Deuda "
+                            + "FROM "
+                            + "(SELECT Monto, "
+                            + "(SELECT ISNULL(SUM(MontoPagado), 0) FROM HistorialPagos WHERE  Documento = HR.Documento AND Año = HR.Año AND Mes = HR.Mes AND RegContable = 'Oprefa') AS Pagado "
+                            + "FROM HistorialOprefa HR "
+                            + "WHERE HR.Estado IN (2, 3) AND HR.Documento = '" + txtdocumento.getText() + "') AS Pagos";
+                    break;
+                default:
+                    break;
             }
             
             ResultSet rs = st.executeQuery(sql);
             if (rs.next()) {
                 txtnomape.setText(rs.getString(1));
+                txtdocumento.setEnabled(false);
             } else {
                 txtnomape.setText("");
+                txtdocumento.setEnabled(true);
                 JOptionPane.showMessageDialog(this, "El N° de Documento No Existe", "ERROR", JOptionPane.ERROR_MESSAGE);
             }
+            
+            rs = st.executeQuery(sql2);
+            if (rs.next()) {
+                txtdeuda.setText(rs.getString(1));
+            } else {
+                txtdeuda.setText("0.00");
+            }
+            
             rs.close();
             st.close();
             con.close();
@@ -431,6 +685,55 @@ public class AltaBajaRegContable extends javax.swing.JDialog {
             Logger.getLogger(AltaBajaRegContable.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    
+    private void guardarPago() {
+        String documento = txtdocumento.getText().trim();
+        String montoStr = txtmonto.getText().trim();
+
+        if (documento.isEmpty() || montoStr.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Por favor, ingrese el DNI y el monto.");
+            return;
+        }
+
+        try {
+            double montoPago = Double.parseDouble(montoStr);
+
+            // Llamar al método registrarPago (suponiendo que ya está implementado)
+            String queryPersonalizado = null;
+            
+            switch (cbregcontable.getSelectedItem().toString()) {
+                case "Copere":
+                    queryPersonalizado = "SELECT Año, Mes, Numero_CIP, Monto FROM HistorialCopere where Estado IN (2, 3) AND Numero_CIP = ?";
+                    break;
+                case "Caja de Pensiones":
+                    queryPersonalizado = "SELECT Año, Mes, Documento, Monto FROM HistorialCajaPensiones where Estado IN (2, 3) AND Documento = ?";
+                    break;
+                case "Oprefa":
+                    queryPersonalizado = "SELECT Año, Mes, Documento, Monto FROM HistorialOprefa where Estado IN (2, 3) AND Documento = ?";
+                    break;
+                default:
+                    break;
+            }
+            registrarPago(documento, montoPago, queryPersonalizado, cbregcontable.getSelectedItem().toString());
+
+            JOptionPane.showMessageDialog(null, "Pago registrado exitosamente.");
+            txtdocumento.setText("");
+            txtnomape.setText("");
+            txtmonto.setText("");
+            txtmonto.setText("");
+            txtdocumento.setEnabled(true);
+            
+            CargaCopere.jButton1.doClick();
+            this.dispose();
+
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(null, "El monto debe ser un número válido.");
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Error al registrar el pago: " + ex.getMessage());
+        }
+    }
+    
  // 4 SIGNIFICA ALTA Y 5 SIGNIFICA APORTRE
     private void altaPersonal(Double monto, String estado) {
             try {
@@ -513,6 +816,36 @@ public class AltaBajaRegContable extends javax.swing.JDialog {
                     e.printStackTrace();
                     System.out.println("Error al ejecutar la operación: " + e.getMessage());
                 }
+            } catch (SQLException ex) {
+                Logger.getLogger(AltaBajaRegContable.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+            CargaCopere.jButton1.doClick();
+            this.dispose();
+        }
+    
+    private void activarPersonalAlta() {
+            try {
+                Connection con = Conexion.getConnection();
+                String sql = "", read = "", update = "", insert = "";
+                switch (cbregcontable.getSelectedItem().toString()) {
+                    case "Copere" -> {
+                        sql = "UPDATE EstructuraCopere SET Estado = 1 WHERE Numero_CIP = ?";
+                    }
+                    case "Caja de Pensiones" -> {
+                        sql = "UPDATE EstructuraCajaPensiones SET Estado = 1 WHERE Documento = ?";
+                    }
+                    case "Oprefa" -> {
+                        sql = "UPDATE EstructuraOprefa SET Estado = 1 WHERE DNI = ?";
+                    }
+                }
+                
+                String documento = txtdocumento.getText();
+                
+                PreparedStatement pstm = con.prepareStatement(sql);
+                pstm.setString(1, documento);
+                pstm.executeUpdate();
+                
             } catch (SQLException ex) {
                 Logger.getLogger(AltaBajaRegContable.class.getName()).log(Level.SEVERE, null, ex);
             }
