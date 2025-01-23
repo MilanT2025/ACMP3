@@ -285,111 +285,132 @@ public class ReporteContable extends javax.swing.JDialog {
              if (jCheckBox1.isSelected()) {
                  switch (cbregcontable.getSelectedItem().toString()) {
                      case "Copere":
-                         query = "SELECT \n"
-                                 + "	Tipo =  'Copere' ,\n"
-                                 + "	Año,\n"
-                                 + "	ROW_NUMBER() OVER (ORDER BY p.A_Paterno, p.A_Materno, p.Nombres) AS Nro,\n"
-                                 + "	p.DNI,\n"
-                                 + "    p.A_Paterno + ' ' + p.A_Materno + ' ' + p.Nombres AS Empleado,\n"
-                                 + "    ISNULL([APORTE], 0) AS Aporte,\n"
-                                 + "    ISNULL([DEUDA], 0) AS Deuda\n"
-                                 + "FROM \n"
-                                 + "    (\n"
-                                 + "        SELECT \n"
-                                 + "            h.Numero_CIP,\n"
-                                 + "            CASE \n"
-                                 + "                WHEN h.Estado IN (1, 4, 5) THEN 'APORTE'\n"
-                                 + "                WHEN h.Estado IN (2, 3) THEN 'DEUDA'\n"
-                                 + "                ELSE 'Otro'\n"
-                                 + "            END AS Tipo,\n"
-                                 + "            h.Monto,\n"
-                                 + "            h.Año\n"
-                                 + "        FROM [dbo].[HistorialCopere] h\n"
-                                 + "        INNER JOIN [dbo].[Personal] p ON h.Numero_CIP = p.NroCip\n"
-                                 + "        WHERE h.Año =  " + annio + "\n"
-                                 + "    ) AS DatosClasificados\n"
-                                 + "PIVOT\n"
-                                 + "    (\n"
-                                 + "        SUM(Monto)\n"
-                                 + "        FOR Tipo IN ([APORTE], [DEUDA])\n"
-                                 + "    ) AS pvt\n"
-                                 + "INNER JOIN [dbo].[Personal] p ON p.NroCip = pvt.Numero_CIP\n"
-                                 + "ORDER BY \n"
-                                 + "    p.A_Paterno, p.A_Materno, p.Nombres;";
+                         query = "DECLARE @ANNIO INT, @REGCONT VARCHAR(20);"
+                                 + " "
+                                 + "SET @ANNIO = " + annio + ";"
+                                 + " "
+                                 + "SET @REGCONT = '" + regcont + "'"
+                                 + " "
+                                 + "SELECT "
+                                 + "	ROW_NUMBER() OVER (ORDER BY p.A_Paterno, p.A_Materno, p.Nombres) AS Nro, "
+                                 + "	Aporte.Documento, "
+                                 + "	P.A_Paterno + ' ' + P.A_Materno + ' ' + P.Nombres AS Empleado, "
+                                 + "	Aporte.Aporte, "
+                                 + "	ISNULL(Deuda.Deuda, 0) AS Deuda "
+                                 + "FROM "
+                                 + " "
+                                 + "(SELECT "
+                                 + "	Numero_CIP AS Documento, "
+                                 + "	Monto AS Aporte "
+                                 + " FROM [dbo].[HistorialCopere] "
+                                 + " WHERE Año = @ANNIO AND Estado IN (1, 4, 5) "
+                                 + " "
+                                 + " UNION "
+                                 + " "
+                                 + " SELECT Documento, SUM(MontoPagado) AS Aporte FROM HistorialPagos WHERE RegContable = @REGCONT AND Año = @ANNIO GROUP BY Documento) AS Aporte "
+                                 + " "
+                                 + " LEFT JOIN "
+                                 + " ( "
+                                 + " SELECT "
+                                 + "	H.Numero_CIP AS Documento, "
+                                 + "	H.Monto - ISNULL(HP.Monto, 0) AS Deuda "
+                                 + " FROM [dbo].[HistorialCopere] H "
+                                 + " LEFT JOIN ( "
+                                 + " SELECT Año, Mes, Documento, SUM(MontoPagado) AS Monto FROM HistorialPagos WHERE RegContable = @REGCONT AND Año = @ANNIO GROUP BY Año, Mes, Documento "
+                                 + " ) HP ON H.Año = HP.Año AND H.Mes = HP.Mes AND H.Numero_CIP = HP.Documento "
+                                 + " WHERE H.Año = @ANNIO AND Estado IN (2, 3)) AS Deuda ON Aporte.Documento = Deuda.Documento "
+                                 + " "
+                                 + " LEFT JOIN Personal P ON Aporte.Documento = P.NroCip "
+                                 + " "
+                                 + " ORDER BY Empleado";
                          data = DatabaseUtility.executeQuery(query);
-                         defaultFileName = "Informe_Copere";
+                         defaultFileName = "Reporte_General_Copere_"+annio;
                          exportToExcel(data, defaultFileName);
                          break;
                      case "Caja de Pensiones":
-                         query = "SELECT \n"
-                                 + "	Tipo =  'Caja de Pensiones' ,\n"
-                                 + "	Año,\n"
-                                 + "	ROW_NUMBER() OVER (ORDER BY p.A_Paterno, p.A_Materno, p.Nombres) AS Nro,\n"
-                                 + "	p.DNI,\n"
-                                 + "    p.A_Paterno + ' ' + p.A_Materno + ' ' + p.Nombres AS Empleado,\n"
-                                 + "    ISNULL([APORTE], 0) AS Aporte,\n"
-                                 + "    ISNULL([DEUDA], 0) AS Deuda\n"
-                                 + "FROM \n"
-                                 + "    (\n"
-                                 + "        SELECT \n"
-                                 + "            h.Documento,\n"
-                                 + "            CASE \n"
-                                 + "                WHEN h.Estado IN (1, 4, 5) THEN 'APORTE'\n"
-                                 + "                WHEN h.Estado IN (2, 3) THEN 'DEUDA'\n"
-                                 + "                ELSE 'Otro'\n"
-                                 + "            END AS Tipo,\n"
-                                 + "            h.Monto,\n"
-                                 + "            h.Año\n"
-                                 + "        FROM [dbo].[HistorialCajaPensiones] h\n"
-                                 + "        INNER JOIN [dbo].[Personal] p ON h.Documento = p.Dni\n"
-                                 + "        WHERE h.Año =  " + annio + "\n"
-                                 + "    ) AS DatosClasificados\n"
-                                 + "PIVOT\n"
-                                 + "    (\n"
-                                 + "        SUM(Monto)\n"
-                                 + "        FOR Tipo IN ([APORTE], [DEUDA])\n"
-                                 + "    ) AS pvt\n"
-                                 + "INNER JOIN [dbo].[Personal] p ON p.Dni = pvt.Documento\n"
-                                 + "ORDER BY \n"
-                                 + "    p.A_Paterno, p.A_Materno, p.Nombres;";
+                         query = "DECLARE @ANNIO INT, @REGCONT VARCHAR(20);"
+                                 + " "
+                                 + "SET @ANNIO = " + annio + ";"
+                                 + " "
+                                 + "SET @REGCONT = '" + regcont + "'"
+                                 + " "
+                                 + "SELECT "
+                                 + "	ROW_NUMBER() OVER (ORDER BY p.A_Paterno, p.A_Materno, p.Nombres) AS Nro, "
+                                 + "	Aporte.Documento, "
+                                 + "	P.A_Paterno + ' ' + P.A_Materno + ' ' + P.Nombres AS Empleado, "
+                                 + "	Aporte.Aporte, "
+                                 + "	ISNULL(Deuda.Deuda, 0) AS Deuda "
+                                 + "FROM "
+                                 + " "
+                                 + "(SELECT "
+                                 + "	Documento AS Documento, "
+                                 + "	Monto AS Aporte "
+                                 + " FROM [dbo].HistorialCajaPensiones "
+                                 + " WHERE Año = @ANNIO AND Estado IN (1, 4, 5) "
+                                 + " "
+                                 + " UNION "
+                                 + " "
+                                 + " SELECT Documento, SUM(MontoPagado) AS Aporte FROM HistorialPagos WHERE RegContable = @REGCONT AND Año = @ANNIO GROUP BY Documento) AS Aporte "
+                                 + " "
+                                 + " LEFT JOIN "
+                                 + " ( "
+                                 + " SELECT "
+                                 + "	H.Documento AS Documento, "
+                                 + "	H.Monto - ISNULL(HP.Monto, 0) AS Deuda "
+                                 + " FROM [dbo].HistorialCajaPensiones H "
+                                 + " LEFT JOIN ( "
+                                 + " SELECT Año, Mes, Documento, SUM(MontoPagado) AS Monto FROM HistorialPagos WHERE RegContable = @REGCONT AND Año = @ANNIO GROUP BY Año, Mes, Documento "
+                                 + " ) HP ON H.Año = HP.Año AND H.Mes = HP.Mes AND H.Documento = HP.Documento "
+                                 + " WHERE H.Año = @ANNIO AND Estado IN (2, 3)) AS Deuda ON Aporte.Documento = Deuda.Documento "
+                                 + " "
+                                 + " LEFT JOIN Personal P ON Aporte.Documento = P.Dni "
+                                 + " "
+                                 + " ORDER BY Empleado";
                          data = DatabaseUtility.executeQuery(query);
-                         defaultFileName = "Informe_Caja_Pensiones";
+                         defaultFileName = "Reporte_General_Caja_Pensiones_"+annio;
                          exportToExcel(data, defaultFileName);
                          break;
                      case "Oprefa":
-                         query = "SELECT \n"
-                                 + "	Tipo =  'Oprefa' ,\n"
-                                 + "	Año,\n"
-                                 + "	ROW_NUMBER() OVER (ORDER BY p.A_Paterno, p.A_Materno, p.Nombres) AS Nro,\n"
-                                 + "	p.DNI,\n"
-                                 + "    p.A_Paterno + ' ' + p.A_Materno + ' ' + p.Nombres AS Empleado,\n"
-                                 + "    ISNULL([APORTE], 0) AS Aporte,\n"
-                                 + "    ISNULL([DEUDA], 0) AS Deuda\n"
-                                 + "FROM \n"
-                                 + "    (\n"
-                                 + "        SELECT \n"
-                                 + "            h.Documento,\n"
-                                 + "            CASE \n"
-                                 + "                WHEN h.Estado IN (1, 4, 5) THEN 'APORTE'\n"
-                                 + "                WHEN h.Estado IN (2, 3) THEN 'DEUDA'\n"
-                                 + "                ELSE 'Otro'\n"
-                                 + "            END AS Tipo,\n"
-                                 + "            h.Monto,\n"
-                                 + "            h.Año\n"
-                                 + "        FROM [dbo].[HistorialOprefa] h\n"
-                                 + "        INNER JOIN [dbo].[Personal] p ON h.Documento = p.Dni\n"
-                                 + "        WHERE h.Año =  " + annio + "\n"
-                                 + "    ) AS DatosClasificados\n"
-                                 + "PIVOT\n"
-                                 + "    (\n"
-                                 + "        SUM(Monto)\n"
-                                 + "        FOR Tipo IN ([APORTE], [DEUDA])\n"
-                                 + "    ) AS pvt\n"
-                                 + "INNER JOIN [dbo].[Personal] p ON p.Dni = pvt.Documento\n"
-                                 + "ORDER BY \n"
-                                 + "    p.A_Paterno, p.A_Materno, p.Nombres;";
+                         query = "DECLARE @ANNIO INT, @REGCONT VARCHAR(20);"
+                                 + " "
+                                 + "SET @ANNIO = " + annio + ";"
+                                 + " "
+                                 + "SET @REGCONT = '" + regcont + "'"
+                                 + " "
+                                 + "SELECT "
+                                 + "	ROW_NUMBER() OVER (ORDER BY p.A_Paterno, p.A_Materno, p.Nombres) AS Nro, "
+                                 + "	Aporte.Documento, "
+                                 + "	P.A_Paterno + ' ' + P.A_Materno + ' ' + P.Nombres AS Empleado, "
+                                 + "	Aporte.Aporte, "
+                                 + "	ISNULL(Deuda.Deuda, 0) AS Deuda "
+                                 + "FROM "
+                                 + " "
+                                 + "(SELECT "
+                                 + "	Documento AS Documento, "
+                                 + "	Monto AS Aporte "
+                                 + " FROM [dbo].HistorialOprefa "
+                                 + " WHERE Año = @ANNIO AND Estado IN (1, 4, 5) "
+                                 + " "
+                                 + " UNION "
+                                 + " "
+                                 + " SELECT Documento, SUM(MontoPagado) AS Aporte FROM HistorialPagos WHERE RegContable = @REGCONT AND Año = @ANNIO GROUP BY Documento) AS Aporte "
+                                 + " "
+                                 + " LEFT JOIN "
+                                 + " ( "
+                                 + " SELECT "
+                                 + "	H.Documento AS Documento, "
+                                 + "	H.Monto - ISNULL(HP.Monto, 0) AS Deuda "
+                                 + " FROM [dbo].HistorialOprefa H "
+                                 + " LEFT JOIN ( "
+                                 + " SELECT Año, Mes, Documento, SUM(MontoPagado) AS Monto FROM HistorialPagos WHERE RegContable = @REGCONT AND Año = @ANNIO GROUP BY Año, Mes, Documento "
+                                 + " ) HP ON H.Año = HP.Año AND H.Mes = HP.Mes AND H.Documento = HP.Documento "
+                                 + " WHERE H.Año = @ANNIO AND Estado IN (2, 3)) AS Deuda ON Aporte.Documento = Deuda.Documento "
+                                 + " "
+                                 + " LEFT JOIN Personal P ON Aporte.Documento = P.Dni "
+                                 + " "
+                                 + " ORDER BY Empleado";
                          data = DatabaseUtility.executeQuery(query);
-                         defaultFileName = "Informe_Oprefa";
+                         defaultFileName = "Reporte_General_Oprefa_"+annio;
                          exportToExcel(data, defaultFileName);
                          break;
                  }
@@ -436,7 +457,7 @@ public class ReporteContable extends javax.swing.JDialog {
 
         // Crear fila de encabezado
         Row headerRow = sheet.createRow(0);
-        String[] headers = {"Tipo", "Año", "Nro", "DNI", "Empleado", "Aporte", "Deuda"};
+        String[] headers = {"Nro", "DNI", "Empleado", "Aporte", "Deuda"};
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(headers[i]);
@@ -461,9 +482,9 @@ public class ReporteContable extends javax.swing.JDialog {
 
         // Subtotales
         Row subtotalRow = sheet.createRow(rowNum);
-        subtotalRow.createCell(4).setCellValue("Subtotal");
-        subtotalRow.createCell(5).setCellFormula("SUM(F2:F" + rowNum + ")");
-        subtotalRow.createCell(6).setCellFormula("SUM(G2:G" + rowNum + ")");
+        subtotalRow.createCell(2).setCellValue("Subtotal");
+        subtotalRow.createCell(3).setCellFormula("SUM(D2:D" + rowNum + ")");
+        subtotalRow.createCell(4).setCellFormula("SUM(E2:E" + rowNum + ")");
 
         // Agregar filtros
         sheet.setAutoFilter(new CellRangeAddress(0, 0, 0, headers.length - 1));

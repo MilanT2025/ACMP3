@@ -24,14 +24,12 @@ public class DatabaseUtility {
              ResultSet rs = stmt.executeQuery()) {
             
             while (rs.next()) {
-                Object[] row = new Object[7];
-                row[0] = rs.getString("Tipo");
-                row[1] = rs.getInt("Año");
-                row[2] = rs.getInt("Nro");
-                row[3] = rs.getString("DNI");
-                row[4] = rs.getString("Empleado");
-                row[5] = rs.getDouble("Aporte");
-                row[6] = rs.getDouble("Deuda");
+                Object[] row = new Object[5];
+                row[0] = rs.getInt("Nro");
+                row[1] = rs.getString("DNI");
+                row[2] = rs.getString("Empleado");
+                row[3] = rs.getDouble("Aporte");
+                row[4] = rs.getDouble("Deuda");
                 results.add(row);
             }
         } catch (SQLException e) {

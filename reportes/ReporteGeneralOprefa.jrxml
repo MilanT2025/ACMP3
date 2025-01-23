@@ -6,53 +6,51 @@
 	<parameter name="Tipo" class="java.lang.String"/>
 	<parameter name="Año" class="java.lang.Integer"/>
 	<queryString>
-		<![CDATA[SELECT 
-	Tipo =  $P{Tipo} ,
-	Año,
+		<![CDATA[DECLARE @ANNIO INT, @REGCONT VARCHAR(20);
+
+SET @ANNIO =  $P{Año} ;
+SET @REGCONT = $P{Tipo};
+
+SELECT 
 	ROW_NUMBER() OVER (ORDER BY p.A_Paterno, p.A_Materno, p.Nombres) AS Nro,
-	p.DNI,
-    p.A_Paterno + ' ' + p.A_Materno + ' ' + p.Nombres AS Empleado,
-    ISNULL([APORTE], 0) AS Aporte,
-    ISNULL([DEUDA], 0) AS Deuda
-FROM 
-    (
-        SELECT 
-            h.Documento,
-            CASE 
-                WHEN h.Estado IN (1, 4, 5) THEN 'APORTE'
-                WHEN h.Estado IN (2, 3) THEN 'DEUDA'
-                ELSE 'Otro'
-            END AS Tipo,
-            h.Monto,
-            h.Año
-        FROM [dbo].[HistorialOprefa] h
-        INNER JOIN [dbo].[Personal] p ON h.Documento = p.Dni
-        WHERE h.Año =  $P{Año} 
-    ) AS DatosClasificados
-PIVOT
-    (
-        SUM(Monto)
-        FOR Tipo IN ([APORTE], [DEUDA])
-    ) AS pvt
-INNER JOIN [dbo].[Personal] p ON p.Dni = pvt.Documento
-ORDER BY 
-    p.A_Paterno, p.A_Materno, p.Nombres;]]>
+	Aporte.Documento,
+	P.A_Paterno + ' ' + P.A_Materno + ' ' + P.Nombres AS Empleado,
+	Aporte.Aporte,
+	ISNULL(Deuda.Deuda, 0) AS Deuda
+FROM
+
+(SELECT 
+	Documento AS Documento,
+	Monto AS Aporte
+ FROM [dbo].HistorialOprefa
+ WHERE Año = @ANNIO AND Estado IN (1, 4, 5)
+
+ UNION
+
+ SELECT Documento, SUM(MontoPagado) AS Aporte FROM HistorialPagos WHERE RegContable = @REGCONT AND Año = @ANNIO GROUP BY Documento) AS Aporte
+
+ LEFT JOIN
+ (
+ SELECT 
+	H.Documento AS Documento,
+	H.Monto - ISNULL(HP.Monto, 0) AS Deuda
+ FROM [dbo].HistorialOprefa H
+ LEFT JOIN (
+ SELECT Año, Mes, Documento, SUM(MontoPagado) AS Monto FROM HistorialPagos WHERE RegContable = @REGCONT AND Año = @ANNIO GROUP BY Año, Mes, Documento
+ ) HP ON H.Año = HP.Año AND H.Mes = HP.Mes AND H.Documento = HP.Documento
+ WHERE H.Año = @ANNIO AND Estado IN (2, 3)) AS Deuda ON Aporte.Documento = Deuda.Documento
+
+ LEFT JOIN Personal P ON Aporte.Documento = P.Dni 
+
+ ORDER BY Empleado]]>
 	</queryString>
-	<field name="Tipo" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="Tipo"/>
-		<property name="com.jaspersoft.studio.field.label" value="Tipo"/>
-	</field>
-	<field name="Año" class="java.lang.Integer">
-		<property name="com.jaspersoft.studio.field.name" value="Año"/>
-		<property name="com.jaspersoft.studio.field.label" value="Año"/>
-	</field>
 	<field name="Nro" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.name" value="Nro"/>
 		<property name="com.jaspersoft.studio.field.label" value="Nro"/>
 	</field>
-	<field name="DNI" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="DNI"/>
-		<property name="com.jaspersoft.studio.field.label" value="DNI"/>
+	<field name="Documento" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="Documento"/>
+		<property name="com.jaspersoft.studio.field.label" value="Documento"/>
 	</field>
 	<field name="Empleado" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="Empleado"/>
@@ -86,7 +84,7 @@ ORDER BY
 				<textElement textAlignment="Center">
 					<font fontName="Yu Gothic UI" size="12" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Filtro (Año: " + $F{Año} + " - Reg. Contable: " + $F{Tipo} + ")"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Filtro (Año: " + $P{Año} + " - Reg. Contable: " + $P{Tipo} + ")"]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="0" width="555" height="20" uuid="87b0d4bf-d4b7-441b-ae34-046b081b6c56"/>
@@ -100,8 +98,9 @@ ORDER BY
 	<columnHeader>
 		<band height="22" splitType="Stretch">
 			<staticText>
-				<reportElement x="30" y="0" width="50" height="22" uuid="fe025850-01a0-4bc3-b67b-4959d3c67102">
+				<reportElement x="30" y="0" width="70" height="22" uuid="fe025850-01a0-4bc3-b67b-4959d3c67102">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7851e51f-4d73-455d-ad13-72acf9a222bc"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<box>
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -115,8 +114,9 @@ ORDER BY
 				<text><![CDATA[DNI]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="80" y="0" width="325" height="22" uuid="ae7fefd6-f175-4645-a3c5-f5a30f3704cd">
+				<reportElement x="100" y="0" width="305" height="22" uuid="ae7fefd6-f175-4645-a3c5-f5a30f3704cd">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="d501e48a-68f0-4fda-bd7a-6e66889ce818"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<box>
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -180,7 +180,7 @@ ORDER BY
 	<detail>
 		<band height="19" splitType="Stretch">
 			<textField>
-				<reportElement x="30" y="0" width="50" height="19" uuid="b064f191-5f60-49a1-b155-a131cd2fbaa8">
+				<reportElement x="30" y="0" width="70" height="19" uuid="b064f191-5f60-49a1-b155-a131cd2fbaa8">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7851e51f-4d73-455d-ad13-72acf9a222bc"/>
 				</reportElement>
 				<box>
@@ -192,10 +192,10 @@ ORDER BY
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="Yu Gothic UI" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{DNI}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Documento}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="80" y="0" width="325" height="19" uuid="5b73eea9-bc2e-4c48-82c3-7958a3a24804">
+				<reportElement x="100" y="0" width="305" height="19" uuid="5b73eea9-bc2e-4c48-82c3-7958a3a24804">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="d501e48a-68f0-4fda-bd7a-6e66889ce818"/>
 				</reportElement>
 				<box>
@@ -210,7 +210,7 @@ ORDER BY
 				</textElement>
 				<textFieldExpression><![CDATA[$F{Empleado}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField pattern="#,##0.00#;(#,##0.00#-)">
 				<reportElement x="405" y="0" width="75" height="19" uuid="f9ba8d0d-23b2-4ef3-9ce1-049368310eb2">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="08fa5509-959a-4ac9-b2e9-2daf76c1c710"/>
 				</reportElement>
@@ -225,7 +225,7 @@ ORDER BY
 				</textElement>
 				<textFieldExpression><![CDATA[$F{Aporte}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField pattern="#,##0.00#;(#,##0.00#-)">
 				<reportElement x="480" y="0" width="75" height="19" uuid="c26b9b42-595e-4979-ac20-c240dfe4ca31">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="468b7f16-c3d5-40f1-aa65-8c635d1e8973"/>
 				</reportElement>
@@ -282,7 +282,7 @@ ORDER BY
 	</columnFooter>
 	<summary>
 		<band height="20">
-			<textField pattern="0.00">
+			<textField pattern="#,##0.00#;(#,##0.00#-)">
 				<reportElement x="405" y="0" width="75" height="20" uuid="fe2ece77-bc2f-4933-ac9b-8e371afa550f"/>
 				<box>
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>

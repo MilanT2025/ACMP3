@@ -7,49 +7,84 @@
 	<parameter name="Año" class="java.lang.Integer"/>
 	<parameter name="idPersonal" class="java.lang.Integer"/>
 	<queryString>
-		<![CDATA[SELECT
-    h.FechaRegistro,
-    h.Año,
-    DATENAME(MONTH, DATEFROMPARTS(h.Año, h.Mes, 1)) AS [Mes],
-    p.Dni,
-    p.NroCip,
-    p.A_Paterno + ' ' + p.A_Materno + ' ' + p.Nombres AS Empleado,
-    CASE 
-        WHEN h.Estado = 1 THEN 'Aporte Normal'
+		<![CDATA[DECLARE @ANNIO INT, @REGCONT VARCHAR(20), @IDPERSONAL INT;
+
+SET @ANNIO =  $P{Año} ;
+SET @REGCONT =  $P{Tipo} ;
+SET @IDPERSONAL =  $P{idPersonal} ;
+
+SELECT
+	FechaRegistro,
+	Mes,
+	DATENAME(MONTH, DATEFROMPARTS(@ANNIO, Aporte.Mes, 1)) AS [Mes],
+	P.Dni,
+    P.NroCip,
+	p.A_Paterno + ' ' + p.A_Materno + ' ' + p.Nombres AS Empleado,
+	'Aporte Normal' AS Tipo,
+	'Aporte' AS Clasificacion,
+	Aporte.Aporte AS Monto
+FROM
+(SELECT 
+	FORMAT(FechaRegistro, 'dd/MM/yyyy') AS FechaRegistro,
+	Mes,
+	Documento AS Documento,
+	Monto AS Aporte,
+	Estado
+ FROM [dbo].HistorialOprefa
+ WHERE Año = @ANNIO AND Estado IN (1, 4, 5) 
+
+ UNION
+
+ SELECT FORMAT(FechaPago, 'dd/MM/yyyy') as FechaRegistro, Mes, Documento, SUM(MontoPagado) AS Aporte, 1 AS Estado FROM HistorialPagos WHERE RegContable = @REGCONT AND Año = @ANNIO GROUP BY Documento, Mes, FechaPago) AS Aporte
+ LEFT JOIN Personal P ON Aporte.Documento = P.Dni
+ WHERE P.IdPersonal = @IDPERSONAL
+ 
+ UNION
+		   
+ SELECT 
+	FORMAT(FechaRegistro, 'dd/MM/yyyy') AS FechaRegistro,
+	H.Mes,
+	DATENAME(MONTH, DATEFROMPARTS(@ANNIO, H.Mes, 1)) AS [Mes],
+	P.Dni,
+	P.NroCip,
+	p.A_Paterno + ' ' + p.A_Materno + ' ' + p.Nombres AS Empleado,
+	CASE 
         WHEN h.Estado = 2 THEN 'Falta de Liquidez'
         WHEN h.Estado = 3 THEN 'No Recibe Sueldo'
-        WHEN h.Estado = 4 THEN 'Aporte por Alta'
-        WHEN h.Estado = 5 THEN 'Aporte Manual'
-        ELSE 'Otro'
     END AS Tipo,
-    CASE 
-        WHEN h.Estado IN (2, 3) THEN 'Deuda'
-        ELSE 'Aporte'
-    END AS Clasificacion,
-    h.Monto
-FROM
-    [dbo].[HistorialOprefa] h
-INNER JOIN 
-    [dbo].[Personal] p ON h.Documento = p.Dni
-WHERE
-    h.Año =  $P{Año}  AND
-    p.IdPersonal =  $P{idPersonal} 
-ORDER BY
-    h.Año DESC,
-    h.Mes DESC,
-    p.A_Paterno,
-    p.A_Materno,
-    p.Nombres;]]>
+	'Deuda' AS Clasificacion,
+	H.Monto - ISNULL(HP.Monto, 0) AS Monto
+ FROM [dbo].HistorialOprefa H
+ LEFT JOIN (
+	SELECT 
+		Año, 
+		Mes, 
+		Documento, 
+		SUM(MontoPagado) AS Monto 
+	FROM HistorialPagos 
+	WHERE 
+		RegContable = @REGCONT AND 
+		Año = @ANNIO 
+	GROUP BY 
+		Año, 
+		Mes, 
+		Documento
+ ) HP ON H.Año = HP.Año AND H.Mes = HP.Mes AND H.Documento = HP.Documento
+LEFT JOIN Personal P ON H.Documento = P.Dni
+ WHERE H.Año = @ANNIO AND Estado IN (2, 3) AND P.IdPersonal = @IDPERSONAL
+
+ORDER BY 
+    Aporte.Mes ASC]]>
 	</queryString>
 	<field name="FechaRegistro" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="FechaRegistro"/>
 		<property name="com.jaspersoft.studio.field.label" value="FechaRegistro"/>
 	</field>
-	<field name="Año" class="java.lang.Integer">
-		<property name="com.jaspersoft.studio.field.name" value="Año"/>
-		<property name="com.jaspersoft.studio.field.label" value="Año"/>
+	<field name="Mes" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="Mes"/>
+		<property name="com.jaspersoft.studio.field.label" value="Mes"/>
 	</field>
-	<field name="Mes" class="java.lang.String">
+	<field name="COLUMN_3" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="Mes"/>
 		<property name="com.jaspersoft.studio.field.label" value="Mes"/>
 	</field>
@@ -112,7 +147,7 @@ ORDER BY
 				<textElement textAlignment="Center">
 					<font fontName="Yu Gothic UI" size="12" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Filtro (Año: " + $F{Año} + " - Reg. Contable: " +$P{Tipo} + ")"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Filtro (Año: " + $P{Año} + " - Reg. Contable: " +$P{Tipo} + ")"]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="0" width="555" height="20" uuid="87b0d4bf-d4b7-441b-ae34-046b081b6c56"/>
@@ -276,7 +311,7 @@ ORDER BY
 				</textElement>
 				<textFieldExpression><![CDATA[$F{Clasificacion}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField pattern="#,##0.00#;(#,##0.00#-)">
 				<reportElement x="480" y="0" width="75" height="19" uuid="62a5e673-05a6-4b69-8aeb-21d93b401384">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="468b7f16-c3d5-40f1-aa65-8c635d1e8973"/>
 				</reportElement>
@@ -317,9 +352,9 @@ ORDER BY
 		</band>
 	</columnFooter>
 	<summary>
-		<band height="137">
-			<textField>
-				<reportElement x="254" y="42" width="60" height="57" uuid="47e39293-46bf-42c6-bf31-f315f37ed38b">
+		<band height="99">
+			<textField pattern="#,##0.00#;(#,##0.00#-)">
+				<reportElement x="254" y="42" width="60" height="19" uuid="47e39293-46bf-42c6-bf31-f315f37ed38b">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -350,7 +385,7 @@ ORDER BY
 				<text><![CDATA[Resumen]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="42" width="70" height="57" uuid="a1ae7387-bae1-4c53-b797-c8dd82b0e274">
+				<reportElement x="0" y="42" width="70" height="19" uuid="a1ae7387-bae1-4c53-b797-c8dd82b0e274">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7851e51f-4d73-455d-ad13-72acf9a222bc"/>
 				</reportElement>
 				<box>
@@ -365,7 +400,7 @@ ORDER BY
 				<text><![CDATA[Aporte]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="99" width="70" height="38" uuid="66fe4db3-c3ba-4487-a165-244b109ed4ac">
+				<reportElement x="0" y="61" width="70" height="38" uuid="66fe4db3-c3ba-4487-a165-244b109ed4ac">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7851e51f-4d73-455d-ad13-72acf9a222bc"/>
 				</reportElement>
 				<box>
@@ -379,8 +414,8 @@ ORDER BY
 				</textElement>
 				<text><![CDATA[Deuda]]></text>
 			</staticText>
-			<textField>
-				<reportElement x="254" y="99" width="60" height="38" uuid="b23e1ca6-431d-441f-b68f-b187c979e609">
+			<textField pattern="#,##0.00#;(#,##0.00#-)">
+				<reportElement x="254" y="61" width="60" height="38" uuid="b23e1ca6-431d-441f-b68f-b187c979e609">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<box>
@@ -413,7 +448,7 @@ ORDER BY
 				<text><![CDATA[Aporte Normal]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="70" y="99" width="124" height="19" uuid="162936c2-fbf3-417f-bf8c-644c5fd33192">
+				<reportElement x="70" y="61" width="124" height="19" uuid="162936c2-fbf3-417f-bf8c-644c5fd33192">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7851e51f-4d73-455d-ad13-72acf9a222bc"/>
 				</reportElement>
 				<box>
@@ -428,37 +463,7 @@ ORDER BY
 				<text><![CDATA[Falta de Liquidez]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="70" y="61" width="124" height="19" uuid="82d19ac6-3f46-46d8-9687-f8e8c7490545">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7851e51f-4d73-455d-ad13-72acf9a222bc"/>
-				</reportElement>
-				<box>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="Yu Gothic UI" size="12" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Aporte por Alta]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="70" y="80" width="124" height="19" uuid="fc9cab5c-1733-4fae-ab5a-72a6d8c4fa71">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7851e51f-4d73-455d-ad13-72acf9a222bc"/>
-				</reportElement>
-				<box>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="Yu Gothic UI" size="12" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Aporte Manual]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="70" y="118" width="124" height="19" uuid="2d787b6e-f10f-41d9-96f5-add82d109c81">
+				<reportElement x="70" y="80" width="124" height="19" uuid="2d787b6e-f10f-41d9-96f5-add82d109c81">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7851e51f-4d73-455d-ad13-72acf9a222bc"/>
 				</reportElement>
 				<box>
@@ -472,7 +477,7 @@ ORDER BY
 				</textElement>
 				<text><![CDATA[No Recibe Sueldo]]></text>
 			</staticText>
-			<textField>
+			<textField pattern="#,##0.00#;(#,##0.00#-)">
 				<reportElement x="194" y="42" width="60" height="19" uuid="7f123092-27bd-407a-883e-b2e6384ee191">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -488,40 +493,8 @@ ORDER BY
 				</textElement>
 				<textFieldExpression><![CDATA[$V{AporteNormal}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="194" y="61" width="60" height="19" uuid="f5b61947-b023-45f6-850f-bf5f828cc21a">
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-				</reportElement>
-				<box>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="Yu Gothic UI"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{AporteAlta}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="194" y="80" width="60" height="19" uuid="5539f739-3f01-40e4-9a38-ddcc848e40b9">
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-				</reportElement>
-				<box>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="Yu Gothic UI"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{AporteManual}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="194" y="99" width="60" height="19" uuid="fcb3f83f-4953-4c98-a559-8bfa3645c8c4">
+			<textField pattern="#,##0.00#;(#,##0.00#-)">
+				<reportElement x="194" y="61" width="60" height="19" uuid="fcb3f83f-4953-4c98-a559-8bfa3645c8c4">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -536,8 +509,8 @@ ORDER BY
 				</textElement>
 				<textFieldExpression><![CDATA[$V{DeudaLiquidez}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="194" y="118" width="60" height="19" uuid="21f62054-4f5e-4599-9696-229d78c817da">
+			<textField pattern="#,##0.00#;(#,##0.00#-)">
+				<reportElement x="194" y="80" width="60" height="19" uuid="21f62054-4f5e-4599-9696-229d78c817da">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>

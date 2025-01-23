@@ -76,9 +76,6 @@ public class Menu extends JPanel {
         Item itemTesoreria = new Item("<html><center>Cuentas por Pagar<br>(Tesoreria)</html>", "raven/menu/user.svg");
         Item itemBackup = new Item("<html><center>Copia de Seguridad<br>de Base de Datos</html>", "raven/menu/setting.svg");
         
-        Item itemUsuario = new Item("<html><center>Usuarios</html>", "raven/menu/setting.svg");
-        
-
         itemAFPNet.addActionListener(e -> {
             FlatLightLaf.setup();
             Excel_AFPNet ini = new Excel_AFPNet(this.usuario);
@@ -186,10 +183,6 @@ public class Menu extends JPanel {
                 application.setVisible(false);
         });
         
-        itemUsuario.addActionListener(e -> {
-            System.out.println("EN PROCESO" + this.usuario);
-        });
-        
         componentesMap.put("itemAFPNet", itemAFPNet);
         componentesMap.put("itemPDTPlame", itemPDTPlame);
         componentesMap.put("itemSIRE", itemSIRE);
@@ -205,7 +198,6 @@ public class Menu extends JPanel {
         componentesMap.put("itemVacaciones", itemVacaciones);
         componentesMap.put("itemTesoreria", itemTesoreria);
         componentesMap.put("itemBackup", itemBackup);
-        componentesMap.put("itemUsuario", itemUsuario);
         
         verificarModulos(this.usuario);
         

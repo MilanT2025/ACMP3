@@ -705,7 +705,7 @@ public class CargaCopere extends javax.swing.JFrame {
             }
 
             // Tercera consulta: Obtener deudas
-            String consultaDeudas = "SELECT Numero_CIP AS Documento, SUM(Monto) - SUM(TotalPagado) AS Deuda FROM HistorialCopere HC "
+            String consultaDeudas = "SELECT Numero_CIP AS Documento, SUM(Monto) - ISNULL(SUM(TotalPagado), 0) AS Deuda FROM HistorialCopere HC "
                     + " LEFT JOIN (SELECT Documento, Año, Mes, SUM(MontoPagado) AS TotalPagado FROM HistorialPagos WHERE RegContable = 'Copere' GROUP BY Documento, Año, Mes) HP ON HC.Numero_CIP = HP.Documento AND HC.Año = HP.Año AND HC.Mes = HP.Mes"
                     + " WHERE HC.Año = " + jdc_año.getYear() + "  AND Estado NOT IN (1, 4, 5) GROUP BY Numero_CIP";
             Map<String, Double> deudaMap = new HashMap<>();
@@ -751,7 +751,7 @@ public class CargaCopere extends javax.swing.JFrame {
             }
 
             // Tercera consulta: Obtener deudas
-            String consultaDeudasCaja = "SELECT HC.Documento, SUM(Monto) - SUM(TotalPagado) AS Deuda FROM HistorialCajaPensiones HC "
+            String consultaDeudasCaja = "SELECT HC.Documento, SUM(Monto) - ISNULL(SUM(TotalPagado), 0) AS Deuda FROM HistorialCajaPensiones HC "
                     + " LEFT JOIN (SELECT Documento, Año, Mes, SUM(MontoPagado) AS TotalPagado FROM HistorialPagos WHERE RegContable = 'Caja de Pensiones' GROUP BY Documento, Año, Mes) HP ON HC.Documento = HP.Documento AND HC.Año = HP.Año AND HC.Mes = HP.Mes"
                     + " WHERE HC.Año = " + jdc_año.getYear() + "  AND Estado NOT IN (1, 4, 5) GROUP BY HC.Documento";
             Map<String, Double> deudaMapCaja = new HashMap<>();
@@ -797,7 +797,7 @@ public class CargaCopere extends javax.swing.JFrame {
             }
 
             // Tercera consulta: Obtener deudas
-            String consultaDeudasOprefa = "SELECT HC.Documento, SUM(Monto) - SUM(TotalPagado) AS Deuda FROM HistorialOprefa HC "
+            String consultaDeudasOprefa = "SELECT HC.Documento, SUM(Monto) - ISNULL(SUM(TotalPagado), 0) AS Deuda FROM HistorialOprefa HC "
                     + " LEFT JOIN (SELECT Documento, Año, Mes, SUM(MontoPagado) AS TotalPagado FROM HistorialPagos WHERE RegContable = 'Oprefa' GROUP BY Documento, Año, Mes) HP ON HC.Documento = HP.Documento AND HC.Año = HP.Año AND HC.Mes = HP.Mes"
                     + " WHERE HC.Año = " + jdc_año.getYear() + "  AND Estado NOT IN (1, 4, 5) GROUP BY HC.Documento";
             Map<String, Double> deudaMapOprefa = new HashMap<>();
