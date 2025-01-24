@@ -187,6 +187,10 @@
                   <TableHeader reorderingAllowed="false" resizingAllowed="true"/>
                 </Property>
               </Properties>
+              <Events>
+                <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="tb_resultadoMouseClicked"/>
+                <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="tb_resultadoKeyPressed"/>
+              </Events>
             </Component>
           </SubComponents>
         </Container>
@@ -242,8 +246,8 @@
                           <Component id="jRadioButton2" alignment="0" max="32767" attributes="0"/>
                           <Component id="jLabel16" alignment="0" max="32767" attributes="0"/>
                           <Component id="jLabel14" alignment="0" max="32767" attributes="0"/>
-                          <Component id="jComboBox1" alignment="0" max="32767" attributes="0"/>
                           <Component id="jRadioButton1" alignment="0" max="32767" attributes="0"/>
+                          <Component id="jComboBox1" alignment="0" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
