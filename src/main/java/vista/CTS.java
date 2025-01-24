@@ -11,6 +11,7 @@ import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -60,6 +61,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.oxbow.swingbits.table.filter.TableRowFilterSupport;
 
 /**
  *
@@ -98,11 +100,10 @@ public class CTS extends javax.swing.JFrame {
             }
         });
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
-
         jdc_mes.setMonth((Calendar.getInstance().get(Calendar.MONTH))-1);
         llenar_tabla();
         FuncionesGlobales.colocarnombremesannio(jdc_año, jdc_mes, txt_razonsocial2);
-        
+       
         jdc_mes.addPropertyChangeListener("month", (java.beans.PropertyChangeEvent evt) -> {
             llenar_tabla();
             FuncionesGlobales.colocarnombremesannio(jdc_año, jdc_mes, txt_razonsocial2);
@@ -112,8 +113,9 @@ public class CTS extends javax.swing.JFrame {
             FuncionesGlobales.colocarnombremesannio(jdc_año, jdc_mes, txt_razonsocial2);
         });
     }
-
+    
     private void llenar_tabla() {
+        this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         modelo.setRowCount(0);
         modelo.setColumnCount(0);
 
@@ -167,6 +169,16 @@ public class CTS extends javax.swing.JFrame {
                     }
                 });
             }
+        }
+        
+        ocultarColumnaAncho(tb_resultado, 10);
+        TableRowFilterSupport.forTable(tb_resultado).searchable(true).actions(true).useTableRenderers(true).apply();
+        
+        if (!verificarPlanilla(jdc_año.getYear(), jdc_mes.getMonth()+1)) {
+            this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            JOptionPane.showMessageDialog(this, "Falta cargar el archivo de Planilla Sueldo correspondiente al año y mes seleccionado.",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            return;
         }
 
         cargaEmpleados();
@@ -269,6 +281,8 @@ public class CTS extends javax.swing.JFrame {
             modelo.addColumn("Provision - Sistema [" + meses[newMonth] + " " + selectYear + "]");
 
             inicioCTS = "01/11/" + jdc_año.getYear();
+            
+            queryComision = null;
 
             queryDescuento = "SELECT "
                     + "	FORMAT(DATEFROMPARTS(Año, Mes, 1), 'MMMM yyyy') AS Mes_Año, "
@@ -349,6 +363,7 @@ public class CTS extends javax.swing.JFrame {
     }
 
     private void cargaEmpleados() {
+        modelo.setRowCount(0);
         try {
             int c = 1;
             Object data[] = new Object[9];
@@ -391,7 +406,40 @@ public class CTS extends javax.swing.JFrame {
 
         cargaAsigNetoGrati();
     }
+    
+    
+    private boolean verificarPlanilla(int annio, int mes){
+        try {
+            Connection con = Conexion.getConnection();
+            String sql = "SELECT COUNT(*) AS Datos FROM PlanillaSueldo WHERE Año = ? AND Mes = ?";
+            PreparedStatement pstm = con.prepareStatement(sql);
+            pstm.setInt(1, annio);
+            pstm.setInt(2, mes);
+            ResultSet rs = pstm.executeQuery();
 
+            if (rs.next()) {
+                if (rs.getInt(1) > 0) {
+                    return true;
+                }else{
+                    return false;
+                }
+            }
+            rs.close();
+            pstm.close();
+            con.close();
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(CTS.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+    }
+    /*
+    private void limpiarColumnas(int columna){
+        for (int i = 0; i < tb_resultado.getRowCount(); i++) {
+            tb
+        }
+    }
+*/
     private void cargaAsigNetoGrati() {
         try {
             Connection con = Conexion.getConnection();
@@ -439,20 +487,22 @@ public class CTS extends javax.swing.JFrame {
     }
 
     private void cargaComisiones() {
+        for (int i = 0; i < tb_resultado.getRowCount(); i++) {
+            tb_resultado.setValueAt(null, i, 12);
+        }
         if (queryComision != null) {
             try {
                 Connection con = Conexion.getConnection();
                 Statement st = con.createStatement();
                 String sql = queryComision;
                 ResultSet rs = st.executeQuery(sql);
-
+                
                 while (rs.next()) {
                     String nroDocIdent = rs.getString(1);
                     Object comision = rs.getObject(2);
 
                     for (int i = 0; i < tb_resultado.getRowCount(); i++) {
-                        if (tb_resultado.getValueAt(i, 1) != null
-                                && tb_resultado.getValueAt(i, 1).toString().trim().equals(nroDocIdent.trim())) {
+                        if (tb_resultado.getValueAt(i, 1) != null && tb_resultado.getValueAt(i, 1).toString().trim().equals(nroDocIdent.trim())) {
                             tb_resultado.setValueAt(comision, i, 12);
                         }
                     }
@@ -571,53 +621,59 @@ public class CTS extends javax.swing.JFrame {
         cargarProvisionHistorial();
     }
     
-    private void cargarProvisionHistorial(){
-        try {
-            String columnName = tb_resultado.getColumnName(25).toLowerCase();
-            int year = 0;
-            String formattedMonth = null;
-
-            // Usar matcher para extraer el contenido entre []
-            Matcher matcher = Pattern.compile("\\[(.*?)\\]").matcher(columnName);
-            if (matcher.find()) {
-                SimpleDateFormat sdf = new SimpleDateFormat("MMMM yyyy");
-
-                // Parsear el String en un objeto Date
-                Date date = sdf.parse(matcher.group(1));
-
-                // Obtener el mes (0 para enero, 11 para diciembre)
-                int month = date.getMonth();  // El mes es 0-indexed (enero = 0, diciembre = 11)
-
-                // Obtener el año
-                year = date.getYear() + 1900; // getYear() retorna el año desde 1900, por lo que hay que sumar 1900
-
-                // Formatear el mes a 2 dígitos (si es necesario)
-                formattedMonth = String.format("%02d", month + 1); // Ajuste para convertir 0 -> 01, 1 -> 02, ..., 11 -> 12
-
+    private void cargarProvisionHistorial() {
+        if ((jdc_mes.getMonth() + 1) == 5 || (jdc_mes.getMonth() + 1) == 11) {
+            for (int i = 0; i < tb_resultado.getRowCount(); i++) {
+                tb_resultado.setValueAt(0.00, i, 25);
             }
-            
-            Connection con = Conexion.getConnection();
-            Statement st = con.createStatement();
-            String sql = "SELECT NroDocumento, Provision FROM ProvisionHistorial WHERE Año = " + year + " AND Mes = " + formattedMonth + " ";
-            ResultSet rs = st.executeQuery(sql);
-            while (rs.next()) {
-                for (int i = 0; i < tb_resultado.getRowCount(); i++) {
-                    if (tb_resultado.getValueAt(i, 1).toString().equals(rs.getString(1))) {
-                        tb_resultado.setValueAt(rs.getObject(2), i, 25);
+        } else {
+
+            try {
+                String columnName = tb_resultado.getColumnName(25).toLowerCase();
+                int year = 0;
+                String formattedMonth = null;
+
+                // Usar matcher para extraer el contenido entre []
+                Matcher matcher = Pattern.compile("\\[(.*?)\\]").matcher(columnName);
+                if (matcher.find()) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("MMMM yyyy");
+
+                    // Parsear el String en un objeto Date
+                    Date date = sdf.parse(matcher.group(1));
+
+                    // Obtener el mes (0 para enero, 11 para diciembre)
+                    int month = date.getMonth();  // El mes es 0-indexed (enero = 0, diciembre = 11)
+
+                    // Obtener el año
+                    year = date.getYear() + 1900; // getYear() retorna el año desde 1900, por lo que hay que sumar 1900
+
+                    // Formatear el mes a 2 dígitos (si es necesario)
+                    formattedMonth = String.format("%02d", month + 1); // Ajuste para convertir 0 -> 01, 1 -> 02, ..., 11 -> 12
+
+                }
+
+                Connection con = Conexion.getConnection();
+                Statement st = con.createStatement();
+                String sql = "SELECT NroDocumento, Provision FROM ProvisionHistorial WHERE Año = " + year + " AND Mes = " + formattedMonth + " ";
+                ResultSet rs = st.executeQuery(sql);
+                while (rs.next()) {
+                    for (int i = 0; i < tb_resultado.getRowCount(); i++) {
+                        if (tb_resultado.getValueAt(i, 1).toString().equals(rs.getString(1))) {
+                            tb_resultado.setValueAt(rs.getObject(2), i, 25);
+                        }
                     }
                 }
+                rs.close();
+                st.close();
+                con.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(CTS.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ParseException ex) {
+                Logger.getLogger(CTS.class.getName()).log(Level.SEVERE, null, ex);
             }
-            rs.close();
-            st.close();
-            con.close();
-            
-            
-        } catch (SQLException ex) {
-            Logger.getLogger(CTS.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ParseException ex) {
-            Logger.getLogger(CTS.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         cargarDiferenciasyAdicionales();
     }
     
@@ -635,6 +691,10 @@ public class CTS extends javax.swing.JFrame {
             }
         }
         packColumns(tb_resultado);
+        
+        tb_resultado.revalidate();
+        tb_resultado.repaint();
+        this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
     
     
@@ -865,6 +925,16 @@ public class CTS extends javax.swing.JFrame {
         tb_resultado.setShowGrid(true);
         tb_resultado.setShowVerticalLines(false);
         tb_resultado.getTableHeader().setReorderingAllowed(false);
+        tb_resultado.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tb_resultadoMouseClicked(evt);
+            }
+        });
+        tb_resultado.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                tb_resultadoKeyPressed(evt);
+            }
+        });
         jScrollPane1.setViewportView(tb_resultado);
 
         jPanel14.setBackground(new java.awt.Color(255, 255, 255));
@@ -945,8 +1015,8 @@ public class CTS extends javax.swing.JFrame {
                     .addComponent(jRadioButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel16, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jComboBox1)
-                    .addComponent(jRadioButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jRadioButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jComboBox1))
                 .addContainerGap())
         );
 
@@ -1074,9 +1144,17 @@ public class CTS extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
     // Método para exportar archivos en XLSX
+    private void CursorCargando(){
+        this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+    }
+    
+    private void CursorNormal(){
+        this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+    }
 
-
-    public static void exportarArchivoExcel(DefaultTableModel model) {
+    public void exportarArchivoExcel(JTable table) {
+        CursorCargando();
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
         JFileChooser jFileChooser = new JFileChooser();
         jFileChooser.setDialogTitle("Guardar archivo Excel");
         jFileChooser.setFileFilter(new FileNameExtensionFilter("Archivos XLSX", "xlsx"));
@@ -1088,9 +1166,8 @@ public class CTS extends javax.swing.JFrame {
                 selectedFile = new File(selectedFile.getAbsolutePath() + ".xlsx");
             }
             try (Workbook workbook = new XSSFWorkbook(); FileOutputStream fos = new FileOutputStream(selectedFile)) {
-                Sheet sheet = workbook.createSheet("Datos");
+                Sheet sheet = workbook.createSheet("Datos Filtrados");
 
-                // Estilo para cabeceras
                 CellStyle headerStyle = workbook.createCellStyle();
                 Font headerFont = workbook.createFont();
                 headerFont.setFontName("Bahnschrift");
@@ -1098,72 +1175,64 @@ public class CTS extends javax.swing.JFrame {
                 headerFont.setBold(true);
                 headerStyle.setFont(headerFont);
                 headerStyle.setAlignment(HorizontalAlignment.CENTER);
-                headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-                headerStyle.setWrapText(true);
 
-                // Estilo para datos
                 CellStyle dataStyle = workbook.createCellStyle();
                 Font dataFont = workbook.createFont();
                 dataFont.setFontName("Calibri");
                 dataFont.setFontHeightInPoints((short) 10);
                 dataStyle.setFont(dataFont);
                 dataStyle.setAlignment(HorizontalAlignment.LEFT);
-                dataStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
-                // Estilo para datos numéricos
                 CellStyle numericStyle = workbook.createCellStyle();
                 numericStyle.setFont(dataFont);
                 numericStyle.setAlignment(HorizontalAlignment.RIGHT);
-                numericStyle.setVerticalAlignment(VerticalAlignment.CENTER);
                 numericStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
 
-                // Crear encabezados
                 Row headerRow = sheet.createRow(0);
-                headerRow.setHeightInPoints(66);
-                for (int i = 0; i < model.getColumnCount(); i++) {
-                    Cell cell = headerRow.createCell(i);
-                    cell.setCellValue(model.getColumnName(i));
-                    cell.setCellStyle(headerStyle);
+                int colIndex = 0;
+                for (int i = 0; i < table.getColumnCount(); i++) {
+                    if (table.getColumnModel().getColumn(i).getWidth() > 0) {
+                        Cell cell = headerRow.createCell(colIndex++);
+                        cell.setCellValue(table.getColumnName(i));
+                        cell.setCellStyle(headerStyle);
+                    }
                 }
 
-                // Crear datos
-                for (int i = 0; i < model.getRowCount(); i++) {
-                    Row row = sheet.createRow(i + 1);
-                    for (int j = 0; j < model.getColumnCount(); j++) {
-                        Cell cell = row.createCell(j);
-                        Object value = model.getValueAt(i, j);
-
-                        if (value instanceof Number) {
-                            cell.setCellValue(((Number) value).doubleValue());
-                            cell.setCellStyle(numericStyle);
-                        } else {
-                            String cellValue = (value != null) ? value.toString() : "";
-                            cell.setCellValue(cellValue);
-                            cell.setCellStyle(dataStyle);
+                int rowIndex = 1;
+                for (int i = 0; i < table.getRowCount(); i++) {
+                    if (table.getRowHeight(i) > 0) {
+                        Row row = sheet.createRow(rowIndex++);
+                        colIndex = 0;
+                        for (int j = 0; j < table.getColumnCount(); j++) {
+                            if (table.getColumnModel().getColumn(j).getWidth() > 0) {
+                                Cell cell = row.createCell(colIndex++);
+                                Object value = table.getValueAt(i, j);
+                                if (value instanceof Number) {
+                                    cell.setCellValue(((Number) value).doubleValue());
+                                    cell.setCellStyle(numericStyle);
+                                } else {
+                                    cell.setCellValue(value != null ? value.toString() : "");
+                                    cell.setCellStyle(dataStyle);
+                                }
+                            }
                         }
                     }
                 }
 
-                // Ajustar el tamaño de las columnas
-                for (int i = 0; i < model.getColumnCount(); i++) {
-                    // Ajustar al tamaño de los títulos
+                for (int i = 0; i < colIndex; i++) {
                     sheet.autoSizeColumn(i);
-                    int currentWidth = sheet.getColumnWidth(i);
-                    sheet.autoSizeColumn(i);
-                    int adjustedWidth = Math.max(sheet.getColumnWidth(i), currentWidth);
-                    sheet.setColumnWidth(i, adjustedWidth);
                 }
 
-                // Inmovilizar fila 1
                 sheet.createFreezePane(0, 1);
-
                 workbook.write(fos);
                 JOptionPane.showMessageDialog(null, "Archivo exportado exitosamente.");
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(null, "Error al exportar el archivo: " + e.getMessage());
             }
+            CursorNormal();
         } else {
             JOptionPane.showMessageDialog(null, "Exportación cancelada.");
+            CursorNormal();
         }
     }
 
@@ -1180,16 +1249,6 @@ public class CTS extends javax.swing.JFrame {
             guardarPrevisionMensual();
         }
     }//GEN-LAST:event_jButton3ActionPerformed
-
-    private void ExportarExcelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ExportarExcelActionPerformed
-        DefaultTableModel modelo = (DefaultTableModel) tb_resultado.getModel();
-
-        if (modelo.getRowCount() == 0) {
-            JOptionPane.showMessageDialog(null, "No hay datos para exportar.");
-            return;
-        }
-
-        exportarArchivoExcel(modelo);    }//GEN-LAST:event_ExportarExcelActionPerformed
 
     private void jMenu2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenu2ActionPerformed
 
@@ -1310,6 +1369,55 @@ public class CTS extends javax.swing.JFrame {
         exportarAExcel(model, meses[mesSeleccionado].substring(0, 3).toUpperCase() + " " + String.valueOf(año).substring(2, 4));
         
     }//GEN-LAST:event_jMenuItem2ActionPerformed
+
+    private void ExportarExcelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ExportarExcelActionPerformed
+        DefaultTableModel modelo = (DefaultTableModel) tb_resultado.getModel();
+
+        if (modelo.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(null, "No hay datos para exportar.");
+            return;
+        }
+
+        exportarArchivoExcel(tb_resultado);
+    }//GEN-LAST:event_ExportarExcelActionPerformed
+
+    private void tb_resultadoKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tb_resultadoKeyPressed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tb_resultadoKeyPressed
+
+    public int obtenerPosicionMes(int mes) {
+        if (mes == 11) return 1;
+        if (mes == 12) return 2;
+        if (mes == 1) return 3;
+        if (mes == 2) return 4;
+        if (mes == 3) return 5;
+        if (mes == 4) return 6;
+        if (mes == 5) return 1;
+        if (mes == 6) return 2;
+        if (mes == 7) return 3;
+        if (mes == 8) return 4;
+        if (mes == 9) return 5;
+        if (mes == 10) return 6;
+        return 0;
+    }
+    private void tb_resultadoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tb_resultadoMouseClicked
+        if (evt.getClickCount() == 2 && evt.getButton() == MouseEvent.BUTTON1) {
+            int selectedColumn = tb_resultado.getSelectedColumn(); // Obtiene la columna seleccionada
+
+            if (selectedColumn == 12) {  // Verifica si es la columna 13 (índice 12)
+                int selectedRow = tb_resultado.getSelectedRow(); // Obtiene la fila seleccionada
+
+                if (selectedRow != -1) {  // Verifica que haya una fila seleccionada
+                    String documento = tb_resultado.getValueAt(selectedRow, 1).toString();
+                    String trabajador = tb_resultado.getValueAt(selectedRow, 2).toString();
+                    String inicioPeriodo = tb_resultado.getValueAt(selectedRow, 3).toString();
+
+                    MostrarBonificaciones ini = new MostrarBonificaciones(this, true, documento, trabajador, inicioPeriodo, (obtenerPosicion((jdc_mes.getMonth()+1))-1), 6.0);
+                    ini.setVisible(true);
+                }
+            }
+        }
+    }//GEN-LAST:event_tb_resultadoMouseClicked
 
     // Método para exportar los datos de la tabla a Excel
     public static void exportarAExcel(DefaultTableModel model, String mesannio) {
