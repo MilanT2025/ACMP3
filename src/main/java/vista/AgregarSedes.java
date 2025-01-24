@@ -222,7 +222,7 @@ public class AgregarSedes extends javax.swing.JDialog {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
+    
     private void btnAgregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAgregarActionPerformed
 
         String sedeName = TxtSede.getText(); // Obtener el texto del campo TxtSede

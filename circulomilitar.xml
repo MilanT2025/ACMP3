@@ -15,7 +15,7 @@
   <manifest></manifest>
   <icon>C:\Users\ejmg3\Documents\NetBeansProjects\Acmp\logoACMP.ico</icon>
   <jre>
-    <path>jre/jdk-20</path>
+    <path>jre\jdk</path>
     <requiresJdk>false</requiresJdk>
     <requires64Bit>false</requires64Bit>
     <minVersion></minVersion>

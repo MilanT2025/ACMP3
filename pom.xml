@@ -115,7 +115,7 @@
                     </descriptorRefs>           
                     <archive>
                         <manifest>
-                            <mainClass>main.Application</mainClass>
+                            <mainClass>vista.InicioSesion</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

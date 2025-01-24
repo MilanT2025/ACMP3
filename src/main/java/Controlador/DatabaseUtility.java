@@ -26,7 +26,7 @@ public class DatabaseUtility {
             while (rs.next()) {
                 Object[] row = new Object[5];
                 row[0] = rs.getInt("Nro");
-                row[1] = rs.getString("DNI");
+                row[1] = rs.getString("Documento");
                 row[2] = rs.getString("Empleado");
                 row[3] = rs.getDouble("Aporte");
                 row[4] = rs.getDouble("Deuda");

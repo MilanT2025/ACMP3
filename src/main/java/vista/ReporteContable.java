@@ -324,7 +324,7 @@ public class ReporteContable extends javax.swing.JDialog {
                                  + " "
                                  + " ORDER BY Empleado";
                          data = DatabaseUtility.executeQuery(query);
-                         defaultFileName = "Reporte_General_Copere_"+annio;
+                         defaultFileName = "Reporte_General_Copere_"+annio; 
                          exportToExcel(data, defaultFileName);
                          break;
                      case "Caja de Pensiones":
