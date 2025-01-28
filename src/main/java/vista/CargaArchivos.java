@@ -1596,10 +1596,6 @@ public class CargaArchivos extends javax.swing.JDialog {
         worker.execute();
     }//GEN-LAST:event_btn_subirActionPerformed
     
-    private Gratificacion Gratificacion;
-    private Vacaciones Vacaciones;
-    private CTS CTS;
-
     private void btn_eliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_eliminarActionPerformed
         if (cb_tipo2.getSelectedIndex() == 0) {
             JOptionPane.showMessageDialog(this, "Seleccione el Tipo de Archivo", "Mensaje", JOptionPane.ERROR_MESSAGE);
@@ -1635,20 +1631,11 @@ public class CargaArchivos extends javax.swing.JDialog {
                             break;
                         case "Planilla de Sueldo":
                             eliminararchivo("PlanillaSueldo");
-                            // Verifica si el JButton2 está disponible (instanciado) para hacerle click
-                            if (Gratificacion != null && Gratificacion.jButton2 != null) {
-                                Gratificacion.jButton2.doClick();
-                            }
+                            Gratificacion.jButton2.doClick();
 
-                            // Verifica si el JFrame de Vacaciones está abierto
-                            if (Vacaciones != null && Vacaciones.isVisible()) {
-                                Vacaciones.jButton2.doClick();
-                            }
+                            Vacaciones.jButton2.doClick();
 
-                            // Verifica si el JFrame de CTS está abierto
-                            if (CTS != null && CTS.isVisible()) {
-                                CTS.jButton2.doClick();
-                            }
+                            CTS.jButton2.doClick();
                             break;
                         case "Cuentas por Pagar":
                             eliminararchivo("CuentasPorPagar");

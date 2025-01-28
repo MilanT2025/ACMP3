@@ -17,7 +17,7 @@ public class Application extends JFrame {
         setLocationRelativeTo(null);
         setResizable(false);
         setIconImage(new ImageIcon(System.getProperty("user.dir") + "/logoACMP.png").getImage());
-        setTitle("Automatización de Procesos - Asociación Circulo Militar del Perú - v2.0");
+        setTitle("Automatización de Procesos - Asociación Circulo Militar del Perú - v4.0");
         desktopPaneCustom = new DesktopPaneCustom(this, usuario);
         getContentPane().add(desktopPaneCustom);
     }
