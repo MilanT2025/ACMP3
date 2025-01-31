@@ -143,6 +143,7 @@ public class CuentasporPagar extends javax.swing.JFrame {
         jMonthChooser1.setEnabled(estado);
         jLabel4.setEnabled(estado);
         jLabel5.setEnabled(estado);
+        jCheckBox1.setEnabled(estado);
     }
     
    
@@ -388,7 +389,99 @@ int valor = 0;
 
         packColumns(tb_resultado);
     }
+        private void cargaDatosAnio() {
+        try {
+            Object data[] = new Object[20];
+            Connection con = Conexion.getConnection();
+            Statement st = con.createStatement();
+            String filtroadicional = " ";
+            if (jCheckBox1.isSelected()) {
+                filtroadicional = " WHERE YEAR([F# Registro]) = " + jYearChooser1.getYear() + " ";
+            } 
+            
+            String sql = "SELECT "
+                    + "	CASE WHEN (SELECT TOP 1 CONCAT(PorcentajePagado, '%') FROM CuentasPorPagarDiario WHERE CUO = D1.CUO ORDER BY FechaEvaluacion DESC) = '100%' THEN 'PAGADO' WHEN (SELECT TOP 1 CONCAT(PorcentajePagado, '%') FROM CuentasPorPagarDiario WHERE CUO = D1.CUO ORDER BY FechaEvaluacion DESC) = '100.0%' THEN 'PAGADO'WHEN (SELECT COUNT(*) FROM CuentasPorPagarDiario WHERE CUO = D1.CUO) > 0 THEN 'PROCESADO' ELSE Estado END AS [Estado] "
+                    + "  ,CONVERT(INT, [CUO]) AS CUO "
+                    + "  ,[Comprobante Nº] "
+                    + "  ,FORMAT([F# Registro], 'dd/MM/yyyy') AS [F# Registro] "
+                    + "  ,FORMAT([F# Emision], 'dd/MM/yyyy') AS [F# Emision] "
+                    + "  ,FORMAT([F# Vencimiento], 'dd/MM/yyyy') AS [F# Vencimiento] "
+                    + "  ,[Nro Doc# Ident#] "
+                    + "  ,[Razon Social] "
+                    + "  ,[Moneda] "
+                    + "  ,[Total] "
+                    + "  ,[Saldo MN] "
+                    + "  ,[Saldo ME] "
+                    + "  ,[Plan Cuenta] "
+                    + "  ,[Descripcion] "
+                    + "  ,[Centro Costo] "
+                    + "  ,(SELECT TOP 1 CASE WHEN CONCAT(PorcentajePagado, '%') = '%' THEN '' ELSE CONCAT(PorcentajePagado, '%') END FROM CuentasPorPagarDiario WHERE CUO = D1.CUO ORDER BY FechaEvaluacion DESC) as PorcentajePag "
+                    + "  ,(SELECT TOP 1 TotalPagado FROM CuentasPorPagarDiario WHERE CUO = D1.CUO ORDER BY FechaEvaluacion DESC) as TotalPago "
+                    + "  ,(SELECT TOP 1 [N° Transferencia] FROM CuentasPorPagarDiario WHERE CUO = D1.CUO ORDER BY FechaEvaluacion DESC) as Transf "
+                    + "  ,(SELECT TOP 1 FORMAT(FechaPago, 'dd/MM/yyyy') FROM CuentasPorPagarDiario WHERE CUO = D1.CUO ORDER BY FechaEvaluacion DESC) AS FechaPago "
+                    + "FROM "
+                    + "(SELECT "
+                    + "	[Estado] "
+                    + "	,[CUO] "
+                    + "	,[Comprobante Nº] "
+                    + "	,[F# Registro] "
+                    + "	,[F# Emision] "
+                    + "	,[F# Vencimiento] "
+                    + "	,[Nro Doc# Ident#] "
+                    + "	,[Razon Social] "
+                    + "	,[Moneda] "
+                    + "	,[Total] "
+                    + "	,[Saldo MN] "
+                    + "	,[Saldo ME] "
+                    + "	,[Plan Cuenta] "
+                    + "	,[Descripcion] "
+                    + "	,[Centro Costo] "
+                    + " FROM CuentasPorPagar "
+                    + " WHERE "
+                    + "	 Estado = 'PENDIENTE' AND "
+                    + "	 [Plan Cuenta] LIKE '42%' AND "
+                    + "	 FechaCarga = '" + new SimpleDateFormat("dd/MM/yyyy").format(jDateChooser1.getDate()) + "' "
+                    + "UNION "
+                    + "SELECT "
+                    + "	Estado = '', "
+                    + "	CUO, "
+                    + "	Factura AS [Comprobante Nº], "
+                    + "	FechaEvaluacion AS [F# Registro], "
+                    + "	FechaEmision AS [F# Emision], "
+                    + "	FechaVencimiento AS [F# Vencimiento], "
+                    + "	RUC AS [Nro Doc# Ident#], "
+                    + "	Proveedor AS [Razon Social], "
+                    + "	Moneda = 'S/', "
+                    + "	Total = '', "
+                    + "	Total AS [Saldo MN], "
+                    + "	[Saldo ME] = '', "
+                    + "	[Plan Cuenta] = '', "
+                    + "	Rubro AS [Descripcion], "
+                    + "	[Centro Costo] = '' "
+                    + "FROM CuentasPorPagarDiario "
+                    + "WHERE "
+                    + "	EsManual = 1) AS D1 "
+                    + filtroadicional
+                    + "ORDER BY [Razon Social], [F# Emision]";
 
+            ResultSet rs = st.executeQuery(sql);
+            while (rs.next()) {
+                data[0] = false;
+                for (int i = 1; i < data.length; i++) {
+                    data[i] = rs.getObject(i);
+                }
+                modelo.addRow(data);
+            }
+            rs.close();
+            st.close();
+            con.close();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(Mercaderia.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        packColumns(tb_resultado);
+    }
     private void packColumns(JTable table) {
         TableColumnModel columnModel = table.getColumnModel();
         for (int columnIndex = 0; columnIndex < columnModel.getColumnCount(); columnIndex++) {
@@ -436,6 +529,10 @@ int valor = 0;
         jMonthChooser1 = new com.toedter.calendar.JMonthChooser();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
+        jPanel8 = new javax.swing.JPanel();
+        jYearChooser2 = new com.toedter.calendar.JYearChooser();
+        jLabel6 = new javax.swing.JLabel();
+        jCheckBox2 = new javax.swing.JCheckBox();
         txt_razonsocial2 = new javax.swing.JLabel();
         jButton2 = new javax.swing.JButton();
         jPanel7 = new javax.swing.JPanel();
@@ -533,6 +630,40 @@ int valor = 0;
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        jPanel8.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel8.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Filtros Adicionales [F. Registro]", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Roboto", 1, 12), new java.awt.Color(255, 0, 0))); // NOI18N
+
+        jLabel6.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
+        jLabel6.setText("Año:");
+
+        javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
+        jPanel8.setLayout(jPanel8Layout);
+        jPanel8Layout.setHorizontalGroup(
+            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel8Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel6)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jYearChooser2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(89, Short.MAX_VALUE))
+        );
+        jPanel8Layout.setVerticalGroup(
+            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel8Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jYearChooser2, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jCheckBox2.setFont(new java.awt.Font("Roboto", 1, 12)); // NOI18N
+        jCheckBox2.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                jCheckBox2ItemStateChanged(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel14Layout = new javax.swing.GroupLayout(jPanel14);
         jPanel14.setLayout(jPanel14Layout);
         jPanel14Layout.setHorizontalGroup(
@@ -541,6 +672,10 @@ int valor = 0;
                 .addContainerGap()
                 .addComponent(jDateChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, 221, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jCheckBox2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jCheckBox1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -549,14 +684,18 @@ int valor = 0;
         jPanel14Layout.setVerticalGroup(
             jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel14Layout.createSequentialGroup()
-                .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jCheckBox1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-            .addGroup(jPanel14Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jDateChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel14Layout.createSequentialGroup()
+                .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel14Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jCheckBox2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jCheckBox1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         txt_razonsocial2.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
@@ -613,7 +752,7 @@ int valor = 0;
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 150, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel5Layout.setVerticalGroup(
@@ -705,7 +844,7 @@ int valor = 0;
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(txt_razonsocial2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -998,6 +1137,10 @@ int valor = 0;
         }
     }//GEN-LAST:event_jCheckBox1ItemStateChanged
 
+    private void jCheckBox2ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jCheckBox2ItemStateChanged
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jCheckBox2ItemStateChanged
+
     /**
      * @param args the command line arguments
      */
@@ -1031,12 +1174,14 @@ int valor = 0;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JCheckBox jCheckBox1;
+    private javax.swing.JCheckBox jCheckBox2;
     private com.toedter.calendar.JDateChooser jDateChooser1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
@@ -1051,8 +1196,10 @@ int valor = 0;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
     private javax.swing.JScrollPane jScrollPane1;
     private com.toedter.calendar.JYearChooser jYearChooser1;
+    private com.toedter.calendar.JYearChooser jYearChooser2;
     private javax.swing.JTable tb_resultado;
     private javax.swing.JLabel txt_razonsocial2;
     // End of variables declaration//GEN-END:variables
