@@ -1732,7 +1732,8 @@ public class CargaCopere extends javax.swing.JFrame {
     }//GEN-LAST:event_btnExportarCajaActionPerformed
 
     private void btnAfiliadoOprefaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAfiliadoOprefaActionPerformed
-        // TODO add your handling code here:
+        RegistroAfiliadoOprefa ini = new RegistroAfiliadoOprefa(this, true);
+        ini.setVisible(true);
     }//GEN-LAST:event_btnAfiliadoOprefaActionPerformed
 
     private void tbOprefaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tbOprefaMouseClicked
